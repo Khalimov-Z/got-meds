@@ -7,15 +7,28 @@
 
 ---
 
-## 🏗 Архитектура спецификаций (Features)
+## 🏗 Архитектура спецификаций
 
-Этот бизнес-контекст является корневым документом (точкой входа). Технические детали и реализация разбиты по следующим модулям в директории `features/`:
+Этот бизнес-контекст является корневым документом (точкой входа). Все спецификации разбиты на две группы:
+
+### Функциональные модули (`features/`)
 
 * 📱 **[Спецификация Клиентского Приложения](./features/client-app/client-app-spec.md)** — Пользовательские истории (User Stories), UI/UX экраны, логика карты и кнопок.
 * 🎛 **[Спецификация Админ-панели](./features/admin-panel/admin-panel-spec.md)** — Права доступа, модерация жалоб и процесс маппинга CSV-прайсов.
 * 🗄 **[Архитектура Данных и БД](./features/data-architecture/data-architecture.md)** — ER-модель, сущности (Аптеки, Препараты, Наличие) и их связи.
 * ⚙️ **[Пайплайны Данных](./features/data-pipelines/data-pipelines.md)** — Алгоритмы сбора эталонной базы, парсинг сетей ("Апрель") и обработка CSV.
 * 🔍 **[Поисковый движок и Бизнес-логика](./features/search-engine/search-engine.md)** — Защита от опечаток (fuzzy search), смарт-фильтры малых аптек и алгоритмы аналогов.
+
+### Технические спецификации (`architecture/`)
+
+* 🧱 **[Технологический стек](./architecture/tech-stack.md)** — Next.js, PostgreSQL, Prisma, Vanilla CSS, Vercel.
+* 🎨 **[Дизайн-система](./architecture/design-system.md)** — Токены дизайна, типографика, glassmorphism, микро-анимации.
+* 📡 **[API-спецификация](./architecture/api-spec.md)** — Контракты Server Actions и Route Handlers.
+* 💊 **[API аналогов](./architecture/analogs-api-spec.md)** — Контракт получения аналогов по действующему веществу.
+* 🔒 **[Безопасность и производительность](./architecture/security-performance.md)** — SEO, PWA, Rate Limiting, блокировка соцриска.
+* 🌐 **[SEO-страница продукта](./architecture/seo-page-spec.md)** — Роут `/product/[id]`, динамические мета-теги.
+* 🧩 **[Общие типы](./architecture/shared-types.md)** — Единые TypeScript-типы (`ProductCategory`, `Product`).
+* 📋 **[План реализации](./architecture/implementation-plan.md)** — Пошаговый план от инициализации до деплоя.
 
 ---
 

@@ -1,8 +1,13 @@
 # Спецификация API: Получение аналогов препарата
 
-## Идентификатор
-- **TECH-API-02**
-- **Статус:** Draft
+> **Статус:** Draft
+> **Идентификатор:** TECH-API-02
+> **Название:** Контракт получения аналогов
+> **Тип:** Архитектурный документ
+> **Родитель:** [api-spec.md](./api-spec.md)
+> **Связанные:** [Поисковый движок](../features/search-engine/search-engine.md), [Архитектура Данных](../features/data-architecture/data-architecture.md), [Общие типы](./shared-types.md)
+
+---
 
 ## Назначение
 Определяет Server Action `getAnalogs(productId: string)` для получения списка аналогов выбранного препарата.

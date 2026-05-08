@@ -1,5 +1,14 @@
 # План реализации GotMeds (Phase 0 MVP)
 
+> **Статус:** Draft
+> **Идентификатор:** TECH-PLAN-01
+> **Название:** Пошаговый план реализации MVP
+> **Тип:** Архитектурный документ
+> **Родитель:** [tech-stack.md](./tech-stack.md)
+> **Связанные:** Все спецификации из `architecture/` и `features/`
+
+---
+
 ## 1️⃣ Инициализация проекта
 - `npx -y create-next-app@latest ./` (Next.js 13+ с App Router, TypeScript).
 - Установить зависимости: `prisma`, `@prisma/client`, `next-auth`, `bcryptjs`, `pg`, `pg-trgm`, `next/script`, `next/image`.
