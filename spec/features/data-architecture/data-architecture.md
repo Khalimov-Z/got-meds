@@ -47,9 +47,11 @@
 * `category`: Enum (`medicine`, `equipment`, `vitamins`, `mother_and_baby`)
 * `active_ingredient`: Действующее вещество (только для категории medicine, Nullable)
 * `form`: Форма выпуска (таблетки, сироп, ампулы — Nullable)
+* `dosage`: Дозировка (например, "500мг", "100мл" — Nullable)
 * `is_prescription`: Boolean (Nullable)
 * `is_social_risk`: Boolean (флаг для "Черного списка". Если `true` — товар скрыт из поиска)
 * `price_estimate`: Примерная цена (для определения "базовости" препарата)
+* `description`: Краткое описание продукта (используется на SEO‑странице)
 * `image_url`: Ссылка на фото упаковки
 
 ### 1.5. Наличие (Inventory)
