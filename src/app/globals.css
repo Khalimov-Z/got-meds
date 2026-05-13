@@ -1,11 +1,3 @@
-/* ============================================
-   GotMeds — Глобальные стили (Vanilla CSS)
-   ============================================
-   Дизайн-система будет полностью реализована на Этапе 3.
-   Сейчас — минимальный сброс и базовая типографика.
-   ============================================ */
-
-/* --- Сброс стилей --- */
 *,
 *::before,
 *::after {
@@ -14,26 +6,21 @@
   margin: 0;
 }
 
-/* --- CSS-переменные (дизайн-токены) --- */
 :root {
-  /* Цветовая палитра — будет расширена на Этапе 3 */
-  --color-bg: #0a0a0a;
-  --color-text: #ededed;
-  --color-text-secondary: #888;
-  --color-accent: hsl(160, 70%, 50%);
-
-  /* Типографика */
+  --color-primary: hsl(230, 85%, 50%);
+  --color-primary-hover: hsl(230, 85%, 45%);
+  --color-bg: hsl(220, 20%, 98%);
+  --color-surface: hsl(0, 0%, 100%);
+  --color-text-main: hsl(220, 30%, 15%);
+  --color-text-muted: hsl(220, 20%, 50%);
+  --color-success: hsl(150, 80%, 40%);
+  --color-warning: hsl(40, 95%, 50%);
+  --color-neutral: hsl(220, 15%, 70%);
+  --color-danger: hsl(350, 85%, 55%);
   --font-primary: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
-
-  /* Отступы */
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 32px;
-  --spacing-xl: 64px;
 }
 
-/* --- Базовые стили --- */
 html {
   height: 100%;
 }
@@ -46,57 +33,30 @@ body {
 
 body {
   min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--color-text);
-  background: var(--color-bg);
+  color: var(--color-text-main);
+  background:
+    linear-gradient(180deg, hsl(220 45% 99%) 0%, var(--color-bg) 48%),
+    var(--color-bg);
   font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
 }
 
+button,
+input {
+  font: inherit;
+}
+
+button {
+  letter-spacing: 0;
+}
+
 a {
-  color: var(--color-accent);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
 a:hover {
   text-decoration: underline;
-}
-
-/* --- Страница-заглушка (Этап 1) --- */
-.main {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-lg);
-}
-
-.container {
-  text-align: center;
-}
-
-.title {
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -1.5px;
-  margin-bottom: var(--spacing-sm);
-  color: var(--color-accent);
-}
-
-.subtitle {
-  font-size: 1.25rem;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-lg);
-}
-
-.status {
-  font-size: 0.9rem;
-  color: var(--color-text-secondary);
-  padding: var(--spacing-md);
-  border: 1px solid hsl(0, 0%, 20%);
-  border-radius: 8px;
-  display: inline-block;
 }
