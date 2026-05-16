@@ -238,8 +238,10 @@
   padding: 12px;
   border: 1px solid hsl(220 20% 91%);
   border-radius: 8px;
+  color: inherit;
   background: var(--color-surface);
   box-shadow: 0 10px 30px -5px hsl(220 30% 20% / 0.05);
+  text-decoration: none;
   transition: border-color 0.25s ease-in-out, transform 0.25s ease-in-out,
     box-shadow 0.25s ease-in-out;
 }
@@ -247,7 +249,16 @@
 .resultCard:hover {
   border-color: hsl(230 85% 82%);
   box-shadow: 0 16px 34px -22px hsl(230 55% 34% / 0.45);
+  text-decoration: none;
   transform: scale(1.01);
+}
+
+.resultCard:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 4px hsl(230 85% 50% / 0.12),
+    0 16px 34px -22px hsl(230 55% 34% / 0.45);
+  outline: none;
 }
 
 .productImage {
@@ -496,6 +507,37 @@
   .heroCopy h1 {
     max-width: 13ch;
     font-size: 2.9rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand {
+    max-width: 100%;
+  }
+
+  .logoMark {
+    width: 104px;
+    min-width: 0;
+    height: 34px;
+    font-size: 0.82rem;
+    transform: none;
+  }
+
+  .logoMark::before {
+    top: -5px;
+    height: 44px;
+  }
+
+  .logoMark::after {
+    top: 6px;
+    left: 13px;
+    width: 24px;
+    height: 3px;
+  }
+
+  .logoPartPrimary,
+  .logoPartSecondary {
+    padding: 0 11px;
   }
 }
 

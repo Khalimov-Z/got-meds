@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./search-experience.module.css";
 
@@ -277,34 +278,36 @@ function SearchResults({
       </div>
       <ul className={styles.resultList}>
         {results.map((result) => (
-          <li className={styles.resultCard} key={result.id}>
-            <div
-              className={`${styles.productImage} ${
-                result.image_url ? styles.productImageWithSource : ""
-              }`}
-              style={
-                result.image_url
-                  ? { backgroundImage: `url(${result.image_url})` }
-                  : undefined
-              }
-              aria-hidden="true"
-            >
-              {!result.image_url ? (
-                <span>{getInitials(result.name)}</span>
-              ) : null}
-            </div>
-            <div className={styles.productInfo}>
-              <div className={styles.productTitleRow}>
-                <h3>{result.name}</h3>
-                {result.is_prescription ? (
-                  <span className={styles.prescriptionBadge}>По рецепту</span>
+          <li key={result.id}>
+            <Link className={styles.resultCard} href={`/product/${result.id}`}>
+              <div
+                className={`${styles.productImage} ${
+                  result.image_url ? styles.productImageWithSource : ""
+                }`}
+                style={
+                  result.image_url
+                    ? { backgroundImage: `url(${result.image_url})` }
+                    : undefined
+                }
+                aria-hidden="true"
+              >
+                {!result.image_url ? (
+                  <span>{getInitials(result.name)}</span>
                 ) : null}
               </div>
-              <div className={styles.productMeta}>
-                <span>{CATEGORY_LABELS[result.category]}</span>
-                <span>{formatPrice(result.price_estimate)}</span>
+              <div className={styles.productInfo}>
+                <div className={styles.productTitleRow}>
+                  <h3>{result.name}</h3>
+                  {result.is_prescription ? (
+                    <span className={styles.prescriptionBadge}>По рецепту</span>
+                  ) : null}
+                </div>
+                <div className={styles.productMeta}>
+                  <span>{CATEGORY_LABELS[result.category]}</span>
+                  <span>{formatPrice(result.price_estimate)}</span>
+                </div>
               </div>
-            </div>
+            </Link>
           </li>
         ))}
       </ul>
