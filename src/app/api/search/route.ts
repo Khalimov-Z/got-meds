@@ -7,7 +7,7 @@
 //
 // Пример: GET /api/search?q=нурафен
 //
-// Источник: spec/architecture/api-spec.md
+// Источник: spec/technical/api-spec.md
 // ==============================================
 
 import { NextRequest, NextResponse } from "next/server";

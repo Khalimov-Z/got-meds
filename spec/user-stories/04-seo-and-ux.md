@@ -5,7 +5,7 @@
 > **Название:** SEO и Премиальный дизайн
 > **Тип:** Пользовательские истории (User Stories)
 > **Родитель:** [README.md](./README.md)
-> **Связанные:** [seo-page-spec.md](../architecture/seo-page-spec.md), [design-system.md](../architecture/design-system.md)
+> **Связанные:** [seo-page-spec.md](../technical/seo-page-spec.md), [design-system.md](../technical/design-system.md)
 
 ---
 
