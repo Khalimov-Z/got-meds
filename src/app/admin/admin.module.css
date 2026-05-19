@@ -41,22 +41,82 @@
 }
 
 .logoMark {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0;
-  color: inherit;
-  font-size: 1.05rem;
-  font-weight: 900;
+  justify-content: center;
+  width: 124px;
+  height: 38px;
+  overflow: hidden;
+  border-radius: 9999px;
+  color: hsl(222 36% 13%);
+  background: hsl(0 0% 100%);
+  box-shadow:
+    0 16px 26px -16px hsl(230 74% 35% / 0.6),
+    inset 0 0 0 1px hsl(220 25% 88%),
+    inset 0 2px 0 hsl(0 0% 100% / 0.45);
+  font-size: 0.86rem;
+  font-weight: 850;
   letter-spacing: 0;
+  line-height: 1;
+  text-decoration: none;
+  transform: rotate(-4deg);
+}
+
+.logoMark:hover {
   text-decoration: none;
 }
 
+.logoMark::before {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: -5px;
+  width: 1px;
+  height: 48px;
+  background: hsl(220 24% 86%);
+  content: "";
+  transform: rotate(12deg);
+}
+
+.logoMark::after {
+  position: absolute;
+  z-index: 3;
+  top: 7px;
+  left: 16px;
+  width: 28px;
+  height: 4px;
+  border-radius: 9999px;
+  background: hsl(0 0% 100% / 0.32);
+  content: "";
+}
+
+.logoPartPrimary,
+.logoPartSecondary {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex: 0 0 50%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
 .logoPartPrimary {
-  color: hsl(230 74% 50%);
+  color: hsl(0 0% 100%);
+  background: hsl(230 74% 50%);
 }
 
 .logoPartSecondary {
-  color: hsl(168 76% 32%);
+  color: inherit;
+  background: hsl(0 0% 100%);
+}
+
+.logoMark + h1 {
+  margin-top: 14px;
 }
 
 .adminMeta {
@@ -81,7 +141,11 @@
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .primaryButton {
@@ -110,6 +174,13 @@
   transform: translateY(-1px);
 }
 
+.logoutButton:hover,
+.logoutButton:focus-visible {
+  color: hsl(230 74% 50%);
+  background: hsl(230 85% 96%);
+  box-shadow: 0 12px 24px -18px hsl(230 74% 30%);
+}
+
 .primaryButton:focus-visible,
 .secondaryLink:focus-visible,
 .ghostButton:focus-visible,
@@ -130,7 +201,7 @@
 
 .mainGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px;
 }
 
@@ -261,6 +332,34 @@
   border-bottom: 1px solid hsl(215 24% 90%);
   padding: 10px 0;
   text-align: left;
+}
+
+.tableMeta {
+  display: block;
+  margin-top: 4px;
+  color: hsl(220 14% 42%);
+  font-size: 0.86rem;
+}
+
+.restrictedBadge,
+.allowedBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 9999px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.restrictedBadge {
+  color: hsl(356 72% 34%);
+  background: hsl(356 85% 96%);
+}
+
+.allowedBadge {
+  color: hsl(168 62% 24%);
+  background: hsl(158 58% 96%);
 }
 
 .notice {

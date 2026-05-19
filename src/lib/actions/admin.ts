@@ -120,7 +120,12 @@ async function getMappingDictionaries() {
 export async function getAdminHomeStats() {
   await requireAdmin();
 
-  const [tier2PharmaciesCount, unmappedCount, aliasesCount] = await Promise.all([
+  const [
+    tier2PharmaciesCount,
+    unmappedCount,
+    aliasesCount,
+    restrictedProductsCount,
+  ] = await Promise.all([
     prisma.pharmacy.count({
       where: {
         tier: "TIER_2",
@@ -128,12 +133,18 @@ export async function getAdminHomeStats() {
     }),
     prisma.unmappedString.count(),
     prisma.productAlias.count(),
+    prisma.product.count({
+      where: {
+        isSocialRisk: true,
+      },
+    }),
   ]);
 
   return {
     tier2PharmaciesCount,
     unmappedCount,
     aliasesCount,
+    restrictedProductsCount,
   };
 }
 
@@ -193,6 +204,81 @@ export async function getMappingData() {
   ]);
 
   return { queue, products };
+}
+
+export async function getBlacklistManagementData() {
+  await requireAdmin();
+
+  const products = await prisma.product.findMany({
+    orderBy: {
+      name: "asc",
+    },
+    select: {
+      id: true,
+      name: true,
+      dosage: true,
+      form: true,
+      isSocialRisk: true,
+    },
+  });
+
+  return {
+    products,
+    restrictedCount: products.filter((product) => product.isSocialRisk).length,
+  };
+}
+
+export async function toggleProductSocialRisk(
+  productId: string,
+  isSocialRisk: boolean
+): Promise<AdminActionResponse> {
+  await requireAdmin();
+
+  const normalizedProductId = productId.trim();
+  if (!normalizedProductId) {
+    return { success: false, error: "Товар не найден" };
+  }
+
+  const product = await prisma.product.findUnique({
+    where: {
+      id: normalizedProductId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!product) {
+    return { success: false, error: "Товар не найден" };
+  }
+
+  await prisma.product.update({
+    where: {
+      id: product.id,
+    },
+    data: {
+      isSocialRisk,
+    },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/map");
+  revalidatePath("/admin");
+  revalidatePath("/admin/blacklist");
+
+  return { success: true };
+}
+
+export async function toggleProductSocialRiskForm(formData: FormData) {
+  const productId = String(formData.get("productId") ?? "");
+  const isSocialRisk = String(formData.get("isSocialRisk") ?? "") === "true";
+  const result = await toggleProductSocialRisk(productId, isSocialRisk);
+
+  if (!result.success) {
+    redirect(`/admin/blacklist?error=${encodeURIComponent(result.error ?? "Ошибка черного списка")}`);
+  }
+
+  redirect("/admin/blacklist?updated=1");
 }
 
 export async function uploadPharmacyPrice(

@@ -299,11 +299,13 @@ export function MapExperience({
   initialProduct,
   initialPharmacies,
   initialError,
+  initialRestrictedSearch,
 }: {
   query: string;
   initialProduct: ProductDetails | null;
   initialPharmacies: PharmacyByProductItem[];
   initialError: string;
+  initialRestrictedSearch: boolean;
 }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(query);
@@ -478,6 +480,50 @@ export function MapExperience({
       : geoStatus === "loading"
         ? "Определяем GPS"
         : "Местоположение не указано";
+
+  if (initialRestrictedSearch) {
+    return (
+      <main className={styles.shell}>
+        <header className={styles.searchHeader}>
+          <Link className={styles.logoMark} href="/" aria-label="GotMeds">
+            <span className={styles.logoPartPrimary}>Got</span>
+            <span className={styles.logoPartSecondary}>Meds</span>
+          </Link>
+
+          <form className={styles.searchForm} role="search" onSubmit={handleSearchSubmit}>
+            <label className={styles.searchLabel} htmlFor="map-search">
+              Поиск
+            </label>
+            <input
+              id="map-search"
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Введите препарат"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button className={styles.searchButton} type="submit">
+              Найти
+            </button>
+          </form>
+        </header>
+
+        <section className={styles.restrictedMapState} role="status">
+          <span className={styles.restrictedMapIcon} aria-hidden="true" />
+          <span>
+            Поиск данного препарата ограничен сервисом GotMeds согласно правилам
+            платформы
+          </span>
+        </section>
+
+        <p className={styles.disclaimer}>
+          Сервис носит информационный характер. Имеются противопоказания. Не
+          является публичной офертой
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.shell}>

@@ -20,10 +20,12 @@ interface SearchResultItem {
 interface SearchResponse {
   success: boolean;
   data?: SearchResultItem[];
+  restricted?: boolean;
+  restricted_product_name?: string;
   error?: string;
 }
 
-type SearchStatus = "idle" | "loading" | "success" | "empty" | "error";
+type SearchStatus = "idle" | "loading" | "success" | "empty" | "restricted" | "error";
 
 const CATEGORY_LABELS: Record<SearchCategory, string> = {
   medicine: "Лекарство",
@@ -109,6 +111,12 @@ export function SearchExperience() {
 
         if (!response.ok || !payload.success) {
           throw new Error(payload.error || "Не удалось выполнить поиск.");
+        }
+
+        if (payload.restricted) {
+          setResults([]);
+          setStatus("restricted");
+          return;
         }
 
         const nextResults = payload.data ?? [];
@@ -271,6 +279,15 @@ function SearchResults({
         <span>
           Возможно, он снят с производства или мы еще не добавили его в базу.
         </span>
+      </div>
+    );
+  }
+
+  if (status === "restricted") {
+    return (
+      <div className={`${styles.feedback} ${styles.restrictedFeedback}`} role="status">
+        <span className={styles.restrictedIcon} aria-hidden="true" />
+        <span>Поиск данного препарата ограничен сервисом GotMeds согласно правилам платформы</span>
       </div>
     );
   }
