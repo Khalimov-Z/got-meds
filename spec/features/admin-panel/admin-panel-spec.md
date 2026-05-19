@@ -5,7 +5,7 @@
 > **Название:** Админ-панель платформы
 > **Тип:** Спецификация интерфейса и процессов
 > **Родитель:** [business-context.md](../../business-context.md)
-> **Связанные:** [Пайплайны Данных](../data-pipelines/data-pipelines.md), [Архитектура Данных](../data-architecture/data-architecture.md), [API-спецификация](../../architecture/api-spec.md)
+> **Связанные:** [Пайплайны Данных](../data-pipelines/data-pipelines.md), [Архитектура Данных](../data-architecture/data-architecture.md), [API-спецификация](../../technical/api-spec.md)
 
 ---
 

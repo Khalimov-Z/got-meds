@@ -1,7 +1,7 @@
 # План разработки: Этап 3 (Базовый интерфейс и интеграция поиска)
 
 **Статус:** Завершён (Completed)
-**Основание:** [roadmap.md](../../spec/architecture/roadmap.md), [client-app-spec.md](../../spec/features/client-app/client-app-spec.md), [design-system.md](../../spec/architecture/design-system.md), [search-engine.md](../../spec/features/search-engine/search-engine.md), [api-spec.md](../../spec/architecture/api-spec.md)
+**Основание:** [implementation-plan.md](../../spec/technical/implementation-plan.md), [client-app-spec.md](../../spec/features/client-app/client-app-spec.md), [design-system.md](../../spec/technical/design-system.md), [search-engine.md](../../spec/features/search-engine/search-engine.md), [api-spec.md](../../spec/technical/api-spec.md)
 
 ## Цель
 Реализовать базовый пользовательский интерфейс поиска на главной странице GotMeds и подключить его к уже готовому поисковому API этапа 2. Пользователь должен открыть `/`, ввести название препарата, увидеть подсказки/карточки результатов и получить понятное состояние при пустой выдаче.
@@ -70,11 +70,11 @@
 1. Откройте **http://localhost:3000** в браузере на экране шириной от `900px`.
 2. Убедитесь, что окно браузера не находится в режиме мобильной эмуляции.
 3. ✅ **Ожидаемый результат:** Главная страница использует широкую desktop-компоновку: поисковая зона является главным визуальным элементом, контент не зажат в мобильную колонку, а блок «Как это работает?» разложен в несколько колонок.
-4. ❌ **Если страница выглядит как узкая мобильная колонка:** Проверьте актуальность `spec/features/client-app/client-app-spec.md`, `spec/architecture/design-system.md` и media query в `src/components/search-experience.module.css`.
+4. ❌ **Если страница выглядит как узкая мобильная колонка:** Проверьте актуальность `spec/features/client-app/client-app-spec.md`, `spec/technical/design-system.md` и media query в `src/components/search-experience.module.css`.
 
 ### Итоговый критерий: Этап 3 завершён, если
 - [x] Главная страница `/` заменена с заглушки на поисковый интерфейс.
-- [x] Визуальные стили соответствуют дизайн-системе из `spec/architecture/design-system.md`.
+- [x] Визуальные стили соответствуют дизайн-системе из `spec/technical/design-system.md`.
 - [x] На desktop-экранах главная страница использует широкую адаптивную компоновку, а не узкую мобильную колонку.
 - [x] Поиск вызывает `/api/search` и показывает карточки результатов.
 - [x] Запрос `нурафен` находит «Нурофен».

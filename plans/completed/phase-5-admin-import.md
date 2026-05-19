@@ -1,7 +1,7 @@
 # План разработки: Этап 5 (Админ-панель и импорт прайс-листов)
 
 **Статус:** Завершён (Completed)
-**Основание:** [roadmap.md](../../spec/architecture/roadmap.md), [admin-panel-spec.md](../../spec/features/admin-panel/admin-panel-spec.md), [data-pipelines.md](../../spec/features/data-pipelines/data-pipelines.md), [data-architecture.md](../../spec/features/data-architecture/data-architecture.md), [api-spec.md](../../spec/architecture/api-spec.md), [security-performance.md](../../spec/architecture/security-performance.md), [05-admin-panel.md](../../spec/user-stories/05-admin-panel.md), [tech-stack.md](../../spec/architecture/tech-stack.md)
+**Основание:** [implementation-plan.md](../../spec/technical/implementation-plan.md), [admin-panel-spec.md](../../spec/features/admin-panel/admin-panel-spec.md), [data-pipelines.md](../../spec/features/data-pipelines/data-pipelines.md), [data-architecture.md](../../spec/features/data-architecture/data-architecture.md), [api-spec.md](../../spec/technical/api-spec.md), [security-performance.md](../../spec/technical/security-performance.md), [05-admin-panel.md](../../spec/user-stories/05-admin-panel.md), [tech-stack.md](../../spec/technical/tech-stack.md)
 
 ## Цель
 Реализовать базовую админ-панель Фазы 0 для поддержки актуальности данных: защищённый вход администратора, загрузка CSV-прайса Tier 2 аптеки, полное замещение остатков в `Inventory`, очередь нераспознанных строк и ручное создание/игнорирование алиасов для последующих загрузок.

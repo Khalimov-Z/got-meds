@@ -1,7 +1,7 @@
 # План разработки: Этап 4 (Страница препарата и карта аптек)
 
 **Статус:** Завершён (Completed)
-**Основание:** [roadmap.md](../../spec/architecture/roadmap.md), [client-app-spec.md](../../spec/features/client-app/client-app-spec.md), [seo-page-spec.md](../../spec/architecture/seo-page-spec.md), [api-spec.md](../../spec/architecture/api-spec.md), [data-architecture.md](../../spec/features/data-architecture/data-architecture.md), [02-map-and-pharmacy.md](../../spec/user-stories/02-map-and-pharmacy.md), [design-system.md](../../spec/architecture/design-system.md)
+**Основание:** [implementation-plan.md](../../spec/technical/implementation-plan.md), [client-app-spec.md](../../spec/features/client-app/client-app-spec.md), [seo-page-spec.md](../../spec/technical/seo-page-spec.md), [api-spec.md](../../spec/technical/api-spec.md), [data-architecture.md](../../spec/features/data-architecture/data-architecture.md), [02-map-and-pharmacy.md](../../spec/user-stories/02-map-and-pharmacy.md), [design-system.md](../../spec/technical/design-system.md)
 
 ## Цель
 Реализовать основной пользовательский сценарий этапа 4: пользователь выбирает препарат, открывает SEO-страницу `/product/[id]`, видит данные товара и переходит на карту `/map?q={запрос}`, где отображаются аптеки из `Inventory` с учетом наличия, открытости, Tier-логики и контактных действий.

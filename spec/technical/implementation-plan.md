@@ -5,7 +5,7 @@
 > **Название:** Пошаговый план реализации MVP
 > **Тип:** Архитектурный документ
 > **Родитель:** [tech-stack.md](./tech-stack.md)
-> **Связанные:** Все спецификации из `architecture/` и `features/`
+> **Связанные:** Все спецификации из `technical/` и `features/`
 
 ---
 
@@ -26,7 +26,7 @@
 - Обработка `restricted`‑флага и `is_social_risk`.
 
 ### 3.2 Получение аналогов
-- Server Action `getAnalogs(productId: string)` (см. `spec/architecture/analogs-api-spec.md`).
+- Server Action `getAnalogs(productId: string)` (см. `spec/technical/analogs-api-spec.md`).
 
 ### 3.3 Карта аптек
 - Функция `getPharmaciesByProduct` + lazy‑load Яндекс/2GIS‑скриптов.
@@ -41,10 +41,10 @@
 - Дашборд аналитики (неудовлетворённый спрос, топ‑препаратов).
 
 ## 5️⃣ UI/UX & SEO
-- Дизайн‑система из `spec/architecture/design-system.md` (glassmorphism, HSL‑палитра, микро‑анимации).
-- Страница продукта `/product/[id]` (см. `spec/architecture/seo-page-spec.md`) – SSR, динамические meta‑теги.
-- PWA‑манифест и сервис‑воркер (`spec/architecture/pwa-manifest-spec.md`).
-- Доступность (ARIA, контраст, клавиатурная навигация) – `spec/architecture/accessibility-spec.md`.
+- Дизайн‑система из `spec/technical/design-system.md` (glassmorphism, HSL‑палитра, микро‑анимации).
+- Страница продукта `/product/[id]` (см. `spec/technical/seo-page-spec.md`) – SSR, динамические meta‑теги.
+- PWA‑манифест и сервис‑воркер — согласно требованиям [security-performance.md](./security-performance.md).
+- Доступность (ARIA, контраст, клавиатурная навигация) — проверяется в рамках Lighthouse-аудита и требований [security-performance.md](./security-performance.md).
 
 ## 6️⃣ Тестирование & Полировка
 - Юнит‑тесты для Server Actions (Jest).
@@ -56,4 +56,4 @@
 - CI/CD pipeline (GitHub Actions) – lint, build, test, deploy.
 
 ---
-**Файл:** `spec/architecture/implementation-plan.md`
+**Файл:** `spec/technical/implementation-plan.md`

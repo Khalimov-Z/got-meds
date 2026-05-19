@@ -5,7 +5,7 @@
 > **Название:** Клиентское Web-приложение
 > **Тип:** Спецификация интерфейса (UI/UX / User Stories)
 > **Родитель:** [business-context.md](../../business-context.md)
-> **Связанные:** [Поисковый движок](../search-engine/search-engine.md), [API-спецификация](../../architecture/api-spec.md), [Дизайн-система](../../architecture/design-system.md), [SEO-страница](../../architecture/seo-page-spec.md)
+> **Связанные:** [Поисковый движок](../search-engine/search-engine.md), [API-спецификация](../../technical/api-spec.md), [Дизайн-система](../../technical/design-system.md), [SEO-страница](../../technical/seo-page-spec.md)
 
 ---
 

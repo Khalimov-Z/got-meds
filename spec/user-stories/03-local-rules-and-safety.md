@@ -5,7 +5,7 @@
 > **Название:** Локальные правила и ограничения
 > **Тип:** Пользовательские истории (User Stories)
 > **Родитель:** [README.md](./README.md)
-> **Связанные:** [business-context.md](../../business-context.md)
+> **Связанные:** [business-context.md](../business-context.md)
 
 ---
 

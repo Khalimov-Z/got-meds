@@ -7,7 +7,7 @@
 //
 // Источники:
 // - spec/features/search-engine/search-engine.md
-// - spec/architecture/api-spec.md (контракт searchProducts)
+// - spec/technical/api-spec.md (контракт searchProducts)
 // ==============================================
 
 "use server";

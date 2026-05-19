@@ -19,16 +19,21 @@
 * ⚙️ **[Пайплайны Данных](./features/data-pipelines/data-pipelines.md)** — Алгоритмы сбора эталонной базы, парсинг сетей ("Апрель") и обработка CSV.
 * 🔍 **[Поисковый движок и Бизнес-логика](./features/search-engine/search-engine.md)** — Защита от опечаток (fuzzy search), смарт-фильтры малых аптек и алгоритмы аналогов.
 
-### Технические спецификации (`architecture/`)
+### Технические спецификации (`technical/`)
 
-* 🧱 **[Технологический стек](./architecture/tech-stack.md)** — Next.js, PostgreSQL, Prisma, Vanilla CSS, Vercel.
-* 🎨 **[Дизайн-система](./architecture/design-system.md)** — Токены дизайна, типографика, glassmorphism, микро-анимации.
-* 📡 **[API-спецификация](./architecture/api-spec.md)** — Контракты Server Actions и Route Handlers.
-* 💊 **[API аналогов](./architecture/analogs-api-spec.md)** — Контракт получения аналогов по действующему веществу.
-* 🔒 **[Безопасность и производительность](./architecture/security-performance.md)** — SEO, PWA, Rate Limiting, блокировка соцриска.
-* 🌐 **[SEO-страница продукта](./architecture/seo-page-spec.md)** — Роут `/product/[id]`, динамические мета-теги.
-* 🧩 **[Общие типы](./architecture/shared-types.md)** — Единые TypeScript-типы (`ProductCategory`, `Product`).
-* 📋 **[План реализации](./architecture/implementation-plan.md)** — Пошаговый план от инициализации до деплоя.
+* 🧱 **[Технологический стек](./technical/tech-stack.md)** — Next.js, PostgreSQL, Prisma, Vanilla CSS, Vercel.
+* 🎨 **[Дизайн-система](./technical/design-system.md)** — Токены дизайна, типографика, glassmorphism, микро-анимации.
+* 📡 **[API-спецификация](./technical/api-spec.md)** — Контракты Server Actions и Route Handlers.
+* 💊 **[API аналогов](./technical/analogs-api-spec.md)** — Контракт получения аналогов по действующему веществу.
+* 🔒 **[Безопасность и производительность](./technical/security-performance.md)** — SEO, PWA, Rate Limiting, блокировка соцриска.
+* 🌐 **[SEO-страница продукта](./technical/seo-page-spec.md)** — Роут `/product/[id]`, динамические мета-теги.
+* 🧩 **[Общие типы](./technical/shared-types.md)** — Единые TypeScript-типы (`ProductCategory`, `Product`).
+* 📋 **[План реализации](./technical/implementation-plan.md)** — Пошаговый план от инициализации до деплоя.
+
+### Дорожная карта проекта (`roadmap/`)
+
+* 🗺 **[Хронология завершенных работ](../roadmap/chronology.md)** — Общий список завершенных планов по датам.
+* 📚 **[Области дорожной карты](../roadmap/areas/)** — История изменений по данным, backend, frontend, карте, админ-панели, SEO, инфраструктуре и структуре проекта.
 
 ---
 
