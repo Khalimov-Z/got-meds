@@ -9,8 +9,16 @@
 // - Записи о наличии (Inventory) для Tier 2 и Tier 3 аптек
 // ==============================================
 
-import { PrismaClient, PharmacyTier, PharmacyStatus, ProductCategory, InventoryStatus } from "@prisma/client";
+import {
+  AdminRole,
+  InventoryStatus,
+  PharmacyStatus,
+  PharmacyTier,
+  PrismaClient,
+  ProductCategory,
+} from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 import pg from "pg";
 import "dotenv/config";
 
@@ -23,13 +31,33 @@ async function main() {
   console.log("🌱 Запуск seed-скрипта...");
 
   // --- Очистка старых данных (в правильном порядке из-за FK) ---
+  await prisma.unmappedString.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.productAlias.deleteMany();
   await prisma.product.deleteMany();
   await prisma.pharmacy.deleteMany();
   await prisma.city.deleteMany();
+  await prisma.admin.deleteMany();
 
   console.log("🗑️  Старые данные очищены.");
+
+  // --- 0. Тестовый администратор ---
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@gotmeds.local";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "admin12345";
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+
+  await prisma.admin.create({
+    data: {
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
+      role: AdminRole.SUPERADMIN,
+    },
+  });
+
+  console.log(`👤 Создан тестовый администратор: ${adminEmail}`);
+  if (!process.env.SEED_ADMIN_PASSWORD) {
+    console.log("   Пароль по умолчанию для локальной проверки: admin12345");
+  }
 
   // --- 1. Город ---
   const gudermes = await prisma.city.create({

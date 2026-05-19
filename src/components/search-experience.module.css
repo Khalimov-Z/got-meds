@@ -13,6 +13,14 @@
   padding: 10px 0 28px;
 }
 
+.brandBar {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -88,6 +96,39 @@
 .brandName {
   font-size: 1.02rem;
   font-weight: 800;
+}
+
+.adminEntry {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(220 28% 88%);
+  border-radius: 9999px;
+  padding: 0 13px;
+  color: hsl(220 18% 42%);
+  background: hsl(0 0% 100% / 0.72);
+  box-shadow: 0 10px 24px -20px hsl(220 40% 20% / 0.42);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition: border-color 0.25s ease-in-out, color 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out, transform 0.25s ease-in-out;
+}
+
+.adminEntry:hover {
+  border-color: hsl(230 85% 76%);
+  color: var(--color-primary);
+  box-shadow: 0 14px 24px -20px hsl(230 85% 35% / 0.74);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.adminEntry:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px hsl(230 85% 50% / 0.12);
+  outline: none;
 }
 
 .heroCopy {
@@ -515,6 +556,10 @@
     max-width: 100%;
   }
 
+  .brandBar {
+    gap: 10px;
+  }
+
   .logoMark {
     width: 104px;
     min-width: 0;
@@ -539,6 +584,12 @@
   .logoPartSecondary {
     padding: 0 11px;
   }
+
+  .adminEntry {
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: 0.78rem;
+  }
 }
 
 @media (min-width: 900px) {
@@ -550,7 +601,7 @@
   .hero {
     display: grid;
     grid-template-areas:
-      "brand"
+      "topbar"
       "copy"
       "search";
     gap: 18px;
@@ -575,10 +626,8 @@
     content: "";
   }
 
-  .brand {
-    grid-area: brand;
-    justify-self: start;
-    margin-top: 0;
+  .brandBar {
+    grid-area: topbar;
   }
 
   .heroCopy {
