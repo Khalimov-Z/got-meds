@@ -138,11 +138,16 @@ export function SearchExperience() {
   return (
     <main className={styles.shell}>
       <section className={styles.hero} aria-labelledby="home-title">
-        <div className={styles.brand}>
-          <span className={styles.logoMark} aria-label="GotMeds">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </span>
+        <div className={styles.brandBar}>
+          <div className={styles.brand}>
+            <span className={styles.logoMark} aria-label="GotMeds">
+              <span className={styles.logoPartPrimary}>Got</span>
+              <span className={styles.logoPartSecondary}>Meds</span>
+            </span>
+          </div>
+          <Link className={styles.adminEntry} href="/admin">
+            Администратор
+          </Link>
         </div>
 
         <div className={styles.heroCopy}>

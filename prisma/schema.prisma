@@ -17,11 +17,11 @@ datasource db {
 // Базовая таблица для мультигородского масштабирования.
 // Добавлена как зависимость для Pharmacies (FK city_id).
 model City {
-  id                 String     @id @default(uuid()) @db.Uuid
-  name               String     // Название города (например, "Гудермес")
-  centerLatitude     Float      @map("center_latitude")  // Широта центра города
-  centerLongitude    Float      @map("center_longitude") // Долгота центра города
-  isActive           Boolean    @default(true) @map("is_active") // Открыт ли город для поиска
+  id              String  @id @default(uuid()) @db.Uuid
+  name            String // Название города (например, "Гудермес")
+  centerLatitude  Float   @map("center_latitude") // Широта центра города
+  centerLongitude Float   @map("center_longitude") // Долгота центра города
+  isActive        Boolean @default(true) @map("is_active") // Открыт ли город для поиска
 
   // Связи
   pharmacies Pharmacy[]
@@ -29,41 +29,54 @@ model City {
   @@map("cities")
 }
 
-// --- 2. Аптеки (Pharmacies) ---
+// --- 2. Администраторы (Admins) ---
+// Учетные записи для доступа к админ-панели.
+model Admin {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique // Логин администратора
+  passwordHash String    @map("password_hash") // bcrypt-хэш пароля
+  role         AdminRole @default(CONTENT_MANAGER) // Роль в админке
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+// --- 3. Аптеки (Pharmacies) ---
 model Pharmacy {
-  id            String         @id @default(uuid()) @db.Uuid
-  cityId        String         @map("city_id") @db.Uuid
-  name          String         // Название аптеки
-  address       String         // Адрес
-  latitude      Float          // Координаты — широта
-  longitude     Float          // Координаты — долгота
-  tier          PharmacyTier   // Тип: киоск (TIER_1), крупная частная (TIER_2), сетевая (TIER_3)
-  status        PharmacyStatus @default(ACTIVE) // Статус работы аптеки
-  phone         String?        // Телефон
-  whatsapp      String?        // WhatsApp
-  workingHours  Json?          @map("working_hours") // JSONB — график по дням недели
-  is247         Boolean        @default(false) @map("is_24_7") // Флаг для ночного фильтра
+  id           String         @id @default(uuid()) @db.Uuid
+  cityId       String         @map("city_id") @db.Uuid
+  name         String // Название аптеки
+  address      String // Адрес
+  latitude     Float // Координаты — широта
+  longitude    Float // Координаты — долгота
+  tier         PharmacyTier // Тип: киоск (TIER_1), крупная частная (TIER_2), сетевая (TIER_3)
+  status       PharmacyStatus @default(ACTIVE) // Статус работы аптеки
+  phone        String? // Телефон
+  whatsapp     String? // WhatsApp
+  workingHours Json?          @map("working_hours") // JSONB — график по дням недели
+  is247        Boolean        @default(false) @map("is_24_7") // Флаг для ночного фильтра
 
   // Связи
-  city      City        @relation(fields: [cityId], references: [id])
-  inventory Inventory[]
+  city            City             @relation(fields: [cityId], references: [id])
+  inventory       Inventory[]
+  unmappedStrings UnmappedString[]
 
   @@map("pharmacies")
 }
 
-// --- 3. Справочник товаров (Products) ---
+// --- 4. Справочник товаров (Products) ---
 // Эталонная база: лекарства, медтехника, БАДы.
 model Product {
   id               String          @id @default(uuid()) @db.Uuid
-  name             String          // Полное правильное название
+  name             String // Полное правильное название
   category         ProductCategory // Категория товара
   activeIngredient String?         @map("active_ingredient") // Действующее вещество (только для medicine)
-  form             String?         // Форма выпуска (таблетки, сироп, ампулы)
-  dosage           String?         // Дозировка (например, "500мг", "100мл")
+  form             String? // Форма выпуска (таблетки, сироп, ампулы)
+  dosage           String? // Дозировка (например, "500мг", "100мл")
   isPrescription   Boolean?        @map("is_prescription") // Рецептурный ли препарат
   isSocialRisk     Boolean         @default(false) @map("is_social_risk") // Флаг "Чёрного списка"
   priceEstimate    Float?          @map("price_estimate") // Примерная цена
-  description      String?         // Краткое описание (для SEO-страницы)
+  description      String? // Краткое описание (для SEO-страницы)
   imageUrl         String?         @map("image_url") // Ссылка на фото упаковки
 
   // Связи
@@ -73,7 +86,7 @@ model Product {
   @@map("products")
 }
 
-// --- 4. Наличие (Inventory) ---
+// --- 5. Наличие (Inventory) ---
 // Связующая таблица (Many-to-Many) между аптеками и товарами.
 // Используется ТОЛЬКО для Tier 2 и Tier 3 аптек.
 model Inventory {
@@ -81,7 +94,7 @@ model Inventory {
   productId  String          @map("product_id") @db.Uuid
   status     InventoryStatus // Статус наличия
   updatedAt  DateTime        @default(now()) @updatedAt @map("updated_at")
-  price      Float?          // Точная цена (если сеть отдаёт)
+  price      Float? // Точная цена (если сеть отдаёт)
 
   // Связи
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id])
@@ -92,7 +105,7 @@ model Inventory {
   @@map("inventory")
 }
 
-// --- 5. Алиасы маппинга (Product_Aliases) ---
+// --- 6. Алиасы маппинга (Product_Aliases) ---
 // Словарь синонимов и сокращений из 1С.
 model ProductAlias {
   id             String  @id @default(uuid()) @db.Uuid
@@ -106,9 +119,29 @@ model ProductAlias {
   @@map("product_aliases")
 }
 
+// --- 7. Очередь нераспознанных товаров (Unmapped_Strings) ---
+// Временные строки из CSV, которые администратор должен связать с эталонным товаром.
+model UnmappedString {
+  id         String   @id @default(uuid()) @db.Uuid
+  pharmacyId String   @map("pharmacy_id") @db.Uuid
+  rawString  String   @map("raw_string") // Исходная строка из прайс-листа
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Связи
+  pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id])
+
+  @@map("unmapped_strings")
+}
+
 // ==============================================
 // Перечисления (Enums)
 // ==============================================
+
+// Роль администратора
+enum AdminRole {
+  SUPERADMIN
+  CONTENT_MANAGER
+}
 
 // Тип аптеки (Tier)
 enum PharmacyTier {
@@ -126,14 +159,14 @@ enum PharmacyStatus {
 
 // Категория товара
 enum ProductCategory {
-  MEDICINE       // Лекарство
-  EQUIPMENT      // Медтехника
-  VITAMINS       // БАДы / Витамины
+  MEDICINE // Лекарство
+  EQUIPMENT // Медтехника
+  VITAMINS // БАДы / Витамины
   MOTHER_AND_BABY // Мать и дитя
 }
 
 // Статус наличия товара
 enum InventoryStatus {
-  IN_STOCK        // В наличии
+  IN_STOCK // В наличии
   LIKELY_IN_STOCK // Вероятно в наличии
 }
