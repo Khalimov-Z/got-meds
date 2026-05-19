@@ -17,12 +17,15 @@ export default async function MapPage({ searchParams }: MapPageProps) {
   let product: ProductDetails | null = null;
   let pharmacies: PharmaciesByProductResponse["data"] = [];
   let initialError = "";
+  let initialRestrictedSearch = false;
 
   if (query) {
     const searchResult = await searchProducts(query);
     const foundProduct = searchResult.success ? searchResult.data?.[0] : null;
 
-    if (foundProduct) {
+    if (searchResult.restricted) {
+      initialRestrictedSearch = true;
+    } else if (foundProduct) {
       const productResult = await getProductDetails(foundProduct.id);
 
       if (productResult.success && productResult.data) {
@@ -43,6 +46,7 @@ export default async function MapPage({ searchParams }: MapPageProps) {
       initialProduct={product}
       initialPharmacies={pharmacies ?? []}
       initialError={initialError}
+      initialRestrictedSearch={initialRestrictedSearch}
     />
   );
 }

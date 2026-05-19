@@ -382,6 +382,35 @@
   line-height: 1.45;
 }
 
+.restrictedFeedback {
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  border-color: hsl(350 80% 78%);
+  background: hsl(350 85% 96%);
+}
+
+.restrictedIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 38px;
+  clip-path: polygon(50% 0, 92% 14%, 82% 74%, 50% 100%, 18% 74%, 8% 14%);
+  color: hsl(222 36% 13%);
+  background: var(--color-danger);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.restrictedIcon::before {
+  content: "!";
+}
+
+.restrictedFeedback span:not(.restrictedIcon) {
+  color: var(--color-danger);
+  font-weight: 800;
+}
+
 .skeletonCard {
   position: relative;
   display: grid;

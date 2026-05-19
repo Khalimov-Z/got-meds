@@ -687,6 +687,44 @@
   line-height: 1.5;
 }
 
+.restrictedMapState {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  width: min(100%, 520px);
+  margin: 24px auto 0;
+  border: 1px solid hsl(350 80% 78%);
+  border-radius: 8px;
+  padding: 14px;
+  color: var(--color-text-main);
+  background: hsl(350 85% 96%);
+}
+
+.restrictedMapIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 38px;
+  clip-path: polygon(50% 0, 92% 14%, 82% 74%, 50% 100%, 18% 74%, 8% 14%);
+  color: hsl(222 36% 13%);
+  background: var(--color-danger);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.restrictedMapIcon::before {
+  content: "!";
+}
+
+.restrictedMapState span:not(.restrictedMapIcon) {
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 .sheet {
   z-index: 30;
   display: grid;

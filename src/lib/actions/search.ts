@@ -34,6 +34,8 @@ export interface SearchResultItem {
 export interface SearchResponse {
   success: boolean;
   data?: SearchResultItem[];
+  restricted?: boolean;
+  restricted_product_name?: string;
   error?: string;
 }
 
@@ -79,6 +81,58 @@ export async function searchProducts(query: string): Promise<SearchResponse> {
 
     // Защита от SQL-инъекций: Prisma.$queryRaw использует параметризованные запросы
     const searchTerm = trimmedQuery;
+
+    const [bestMatch] = await prisma.$queryRaw<
+      Array<{
+        id: string;
+        name: string;
+        is_social_risk: boolean;
+        similarity_score: number;
+      }>
+    >(
+      Prisma.sql`
+        WITH search_results AS (
+          SELECT
+            p.id,
+            p.name,
+            p.is_social_risk,
+            SIMILARITY(LOWER(p.name), LOWER(${searchTerm})) AS similarity_score
+          FROM products p
+          WHERE SIMILARITY(LOWER(p.name), LOWER(${searchTerm})) > ${SIMILARITY_THRESHOLD}
+
+          UNION ALL
+
+          SELECT
+            p.id,
+            p.name,
+            p.is_social_risk,
+            SIMILARITY(LOWER(pa.original_string), LOWER(${searchTerm})) AS similarity_score
+          FROM product_aliases pa
+          INNER JOIN products p ON pa.product_id = p.id
+          WHERE pa.is_ignored = false
+            AND pa.product_id IS NOT NULL
+            AND SIMILARITY(LOWER(pa.original_string), LOWER(${searchTerm})) > ${SIMILARITY_THRESHOLD}
+        )
+        SELECT
+          id,
+          name,
+          is_social_risk,
+          MAX(similarity_score) AS similarity_score
+        FROM search_results
+        GROUP BY id, name, is_social_risk
+        ORDER BY similarity_score DESC, is_social_risk DESC
+        LIMIT 1
+      `
+    );
+
+    if (bestMatch?.is_social_risk) {
+      return {
+        success: true,
+        data: [],
+        restricted: true,
+        restricted_product_name: bestMatch.name,
+      };
+    }
 
     // --- SQL-запрос с триграммным поиском ---
     // Объединяем поиск по products.name и product_aliases.original_string

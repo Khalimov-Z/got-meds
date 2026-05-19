@@ -41,6 +41,10 @@ export default async function AdminPage() {
           <span>Алиасов</span>
           <strong>{stats.aliasesCount}</strong>
         </div>
+        <div className={styles.stat}>
+          <span>В черном списке</span>
+          <strong>{stats.restrictedProductsCount}</strong>
+        </div>
       </section>
 
       <section className={styles.navGrid} aria-label="Разделы админки">
@@ -52,6 +56,11 @@ export default async function AdminPage() {
         <Link className={styles.navCard} href="/admin/mapping">
           <h2>Маппинг товаров</h2>
           <p>Связать нераспознанные строки с эталонной базой или игнорировать мусор.</p>
+          <span className={styles.secondaryLink}>Открыть</span>
+        </Link>
+        <Link className={styles.navCard} href="/admin/blacklist">
+          <h2>Черный список</h2>
+          <p>Ограничить поиск товаров социального риска на уровне бэкенда.</p>
           <span className={styles.secondaryLink}>Открыть</span>
         </Link>
       </section>
