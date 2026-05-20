@@ -294,19 +294,31 @@ function isFridayPrayerTime(pharmacies: PharmacyByProductItem[]) {
   return weekday === "Fri" && hour >= 12 && hour < 14;
 }
 
-export function MapExperience({
-  query,
-  initialProduct,
-  initialPharmacies,
-  initialError,
-  initialRestrictedSearch,
-}: {
+type MapExperienceProps = {
   query: string;
   initialProduct: ProductDetails | null;
   initialPharmacies: PharmacyByProductItem[];
   initialError: string;
   initialRestrictedSearch: boolean;
-}) {
+};
+
+export function MapExperience(props: MapExperienceProps) {
+  const mapKey = [
+    props.query,
+    props.initialProduct?.id ?? "no-product",
+    props.initialRestrictedSearch ? "restricted" : "available",
+  ].join(":");
+
+  return <MapExperienceContent key={mapKey} {...props} />;
+}
+
+function MapExperienceContent({
+  query,
+  initialProduct,
+  initialPharmacies,
+  initialError,
+  initialRestrictedSearch,
+}: MapExperienceProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(query);
   const [product] = useState(initialProduct);
