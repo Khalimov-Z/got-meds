@@ -53,6 +53,11 @@ export default async function AdminPage() {
       </section>
 
       <section className={styles.navGrid} aria-label="Разделы админки">
+        <Link className={styles.navCard} href="/admin/pharmacies">
+          <h2>Аптеки</h2>
+          <p>Создание, редактирование, координаты, график работы и статусы на карте.</p>
+          <span className={styles.secondaryLink}>Открыть</span>
+        </Link>
         <Link className={styles.navCard} href="/admin/inventory-upload">
           <h2>Загрузка остатков</h2>
           <p>CSV-прайс Tier 2 аптеки и полное замещение `Inventory`.</p>

@@ -91,3 +91,10 @@
 - Сделано: план этапа 8 переведен в completed, дорожная карта обновлена перед push, изменения проверены линтером, production-сборкой и `git diff --check`.
 - Влияние: завершение этапа оформлено по SDD-процессу и готово к Pull Request.
 - Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check` и пользовательская проверка.
+
+## 2026-05-20 - CRUD аптек и статусы
+
+- План: [plans/completed/phase-9-admin-pharmacy-crud.md](../../plans/completed/phase-9-admin-pharmacy-crud.md)
+- Сделано: план этапа 9 переведен в completed, дорожная карта обновлена перед push, изменения проверены линтером, production-сборкой и `git diff --check`.
+- Влияние: завершение этапа управления аптеками оформлено по SDD-процессу и готово к Pull Request.
+- Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check` и пользовательская проверка.
