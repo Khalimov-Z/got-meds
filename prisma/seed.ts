@@ -31,6 +31,7 @@ async function main() {
   console.log("🌱 Запуск seed-скрипта...");
 
   // --- Очистка старых данных (в правильном порядке из-за FK) ---
+  await prisma.searchLog.deleteMany();
   await prisma.unmappedString.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.productAlias.deleteMany();

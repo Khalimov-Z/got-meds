@@ -39,6 +39,12 @@ export interface SearchResponse {
   error?: string;
 }
 
+/** Стандартизированный ответ логирования нулевой выдачи */
+export interface LogZeroResultSearchResponse {
+  success: boolean;
+  error?: string;
+}
+
 // --- Константы ---
 
 /** Минимальный порог триграммной схожести (ниже — считаем нерелевантным) */
@@ -46,6 +52,9 @@ const SIMILARITY_THRESHOLD = 0.15;
 
 /** Максимальное количество результатов в выдаче */
 const MAX_RESULTS = 20;
+
+/** Минимальная длина запроса, который имеет смысл писать в аналитику */
+const MIN_ZERO_RESULT_SEARCH_LENGTH = 3;
 
 // --- Маппинг категорий из Prisma enum в API-формат ---
 
@@ -55,6 +64,96 @@ const CATEGORY_MAP: Record<string, SearchResultItem["category"]> = {
   VITAMINS: "vitamins",
   MOTHER_AND_BABY: "mother_and_baby",
 };
+
+function isFiniteCoordinate(value: number | undefined) {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+async function getActiveCityId() {
+  const city = await prisma.city.findFirst({
+    where: {
+      isActive: true,
+    },
+    select: {
+      id: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  return city?.id ?? null;
+}
+
+export async function logZeroResultSearch(
+  searchTerm: string,
+  cityId: string,
+  lat?: number,
+  lng?: number
+): Promise<LogZeroResultSearchResponse> {
+  try {
+    const normalizedSearchTerm = searchTerm?.trim();
+    const normalizedCityId = cityId?.trim();
+
+    if (!normalizedSearchTerm) {
+      return { success: false, error: "Поисковый запрос обязателен" };
+    }
+
+    if (normalizedSearchTerm.length < MIN_ZERO_RESULT_SEARCH_LENGTH) {
+      return { success: true };
+    }
+
+    if (!normalizedCityId) {
+      return { success: false, error: "Город обязателен" };
+    }
+
+    const city = await prisma.city.findFirst({
+      where: {
+        id: normalizedCityId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!city) {
+      return { success: false, error: "Город не найден" };
+    }
+
+    await prisma.searchLog.create({
+      data: {
+        searchTerm: normalizedSearchTerm,
+        cityId: city.id,
+        userLatitude: isFiniteCoordinate(lat) ? lat : null,
+        userLongitude: isFiniteCoordinate(lng) ? lng : null,
+        resultsCount: 0,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Ошибка логирования нулевой выдачи:", error);
+    return {
+      success: false,
+      error: "Не удалось записать аналитику поиска.",
+    };
+  }
+}
+
+export async function logZeroResultSearchForActiveCity(
+  searchTerm: string,
+  lat?: number,
+  lng?: number
+): Promise<LogZeroResultSearchResponse> {
+  const activeCityId = await getActiveCityId();
+
+  if (!activeCityId) {
+    return { success: false, error: "Активный город не найден" };
+  }
+
+  return logZeroResultSearch(searchTerm, activeCityId, lat, lng);
+}
 
 // --- Основная функция поиска ---
 
