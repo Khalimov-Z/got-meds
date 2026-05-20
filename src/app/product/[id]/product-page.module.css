@@ -242,6 +242,135 @@
   transform: translateY(0);
 }
 
+.analogs {
+  width: min(100%, 680px);
+}
+
+.secondaryAction {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid hsl(220 26% 82%);
+  border-radius: 8px;
+  padding: 0 18px;
+  color: var(--color-text-main);
+  background: hsl(0 0% 100% / 0.88);
+  box-shadow: 0 14px 28px -24px hsl(220 40% 24% / 0.42);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 850;
+  transition:
+    border-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
+}
+
+.secondaryAction:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.secondaryAction:active {
+  transform: translateY(0);
+}
+
+.analogList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.analogCard {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 92px;
+  border: 1px solid hsl(220 26% 89%);
+  border-radius: 8px;
+  padding: 12px;
+  background: hsl(0 0% 100% / 0.86);
+}
+
+.analogVisual {
+  display: flex;
+  width: 68px;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: hsl(202 90% 96%);
+}
+
+.analogImage {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.analogFallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.analogContent {
+  min-width: 0;
+}
+
+.analogContent h2 {
+  color: var(--color-text-main);
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.analogContent p {
+  margin-top: 4px;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+.analogContent span {
+  display: block;
+  margin-top: 4px;
+  color: hsl(218 24% 36%);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.analogAction {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--color-surface);
+  background: var(--color-primary);
+  font-size: 0.88rem;
+  font-weight: 850;
+  text-align: center;
+  text-decoration: none;
+}
+
+.analogAction:hover {
+  background: var(--color-primary-hover);
+  text-decoration: none;
+}
+
 .disclaimer {
   margin-top: 28px;
   color: var(--color-text-muted);
@@ -307,6 +436,24 @@
   }
 
   .primaryAction {
+    width: 100%;
+  }
+
+  .analogs,
+  .secondaryAction {
+    width: 100%;
+  }
+
+  .analogCard {
+    grid-template-columns: 58px minmax(0, 1fr);
+  }
+
+  .analogVisual {
+    width: 58px;
+  }
+
+  .analogAction {
+    grid-column: 1 / -1;
     width: 100%;
   }
 }

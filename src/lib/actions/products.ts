@@ -20,9 +20,25 @@ export interface ProductDetails {
   description: string;
 }
 
+export interface ProductAnalog {
+  id: string;
+  name: string;
+  category: ProductCategory;
+  active_ingredient?: string;
+  form?: string;
+  dosage?: string;
+  image_url: string;
+}
+
 export interface ProductDetailsResponse {
   success: boolean;
   data?: ProductDetails;
+  error?: string;
+}
+
+export interface ProductAnalogsResponse {
+  success: boolean;
+  data?: ProductAnalog[];
   error?: string;
 }
 
@@ -257,6 +273,114 @@ export async function getProductDetails(
     return {
       success: false,
       error: "Не удалось получить данные препарата. Попробуйте позже.",
+    };
+  }
+}
+
+export async function getAnalogs(
+  productId: string
+): Promise<ProductAnalogsResponse> {
+  try {
+    const normalizedId = productId?.trim();
+    if (!normalizedId) {
+      return { success: false, error: "Препарат не найден" };
+    }
+
+    const product = await prisma.product.findFirst({
+      where: {
+        id: normalizedId,
+        isSocialRisk: false,
+      },
+      select: {
+        id: true,
+        category: true,
+        activeIngredient: true,
+        form: true,
+        dosage: true,
+      },
+    });
+
+    if (!product) {
+      return { success: false, error: "Препарат не найден" };
+    }
+
+    const activeIngredient = product.activeIngredient?.trim();
+    if (!activeIngredient) {
+      return { success: true, data: [] };
+    }
+
+    const analogs = await prisma.product.findMany({
+      where: {
+        id: {
+          not: product.id,
+        },
+        isSocialRisk: false,
+        category: product.category,
+        activeIngredient: {
+          equals: activeIngredient,
+          mode: "insensitive",
+        },
+        form: product.form
+          ? {
+              equals: product.form,
+              mode: "insensitive",
+            }
+          : null,
+        inventory: {
+          some: {
+            status: {
+              in: ["IN_STOCK", "LIKELY_IN_STOCK"],
+            },
+            pharmacy: {
+              status: "ACTIVE",
+              tier: {
+                in: ["TIER_2", "TIER_3"],
+              },
+              city: {
+                isActive: true,
+              },
+            },
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        activeIngredient: true,
+        form: true,
+        dosage: true,
+        imageUrl: true,
+      },
+    });
+
+    const data = analogs
+      .sort((a, b) => {
+        const dosageScore =
+          Number(a.dosage === product.dosage && Boolean(product.dosage)) -
+          Number(b.dosage === product.dosage && Boolean(product.dosage));
+        if (dosageScore !== 0) {
+          return -dosageScore;
+        }
+
+        return a.name.localeCompare(b.name, "ru");
+      })
+      .map<ProductAnalog>((analog) => ({
+        id: analog.id,
+        name: analog.name,
+        category: mapProductCategory(analog.category),
+        active_ingredient: analog.activeIngredient ?? undefined,
+        form: analog.form ?? undefined,
+        dosage: analog.dosage ?? undefined,
+        image_url: analog.imageUrl ?? "",
+      }));
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("Ошибка получения аналогов:", error);
+    return {
+      success: false,
+      error: "Не удалось получить список аналогов. Попробуйте позже.",
     };
   }
 }

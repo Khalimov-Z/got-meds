@@ -4,7 +4,7 @@
 // Создаёт:
 // - 1 город (Гудермес)
 // - 3 аптеки (по одной каждого Tier)
-// - 15 препаратов (разные категории)
+// - 16 препаратов (разные категории)
 // - Алиасы для нескольких препаратов
 // - Записи о наличии (Inventory) для Tier 2 и Tier 3 аптек
 // ==============================================
@@ -148,7 +148,7 @@ async function main() {
 
   console.log(`💊 Создано аптек: ${pharmacies.length}`);
 
-  // --- 3. Препараты (15 штук — разные категории) ---
+  // --- 3. Препараты (16 штук — разные категории) ---
   const products = await Promise.all([
     // Лекарства (medicine)
     prisma.product.create({
@@ -352,6 +352,19 @@ async function main() {
         description: "Средство от колик и вздутия у новорождённых.",
       },
     }),
+    prisma.product.create({
+      data: {
+        name: "Дротаверин",
+        category: ProductCategory.MEDICINE,
+        activeIngredient: "Дротаверин",
+        form: "таблетки",
+        dosage: "40мг",
+        isPrescription: false,
+        isSocialRisk: false,
+        priceEstimate: 95,
+        description: "Спазмолитический препарат с тем же действующим веществом, что и Но-Шпа.",
+      },
+    }),
   ]);
 
   console.log(`💊 Создано препаратов: ${products.length}`);
@@ -442,6 +455,20 @@ async function main() {
     productId: products[14].id, // Эспумизан Бэби
     status: InventoryStatus.LIKELY_IN_STOCK,
     price: 560,
+  });
+
+  inventoryData.push({
+    pharmacyId: tier2Pharmacy.id,
+    productId: products[15].id, // Дротаверин
+    status: InventoryStatus.IN_STOCK,
+    price: 95,
+  });
+
+  inventoryData.push({
+    pharmacyId: tier3Pharmacy.id,
+    productId: products[15].id, // Дротаверин
+    status: InventoryStatus.IN_STOCK,
+    price: 100,
   });
 
   await prisma.inventory.createMany({ data: inventoryData });
