@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Papa from "papaparse";
-import { Prisma } from "@prisma/client";
+import { PharmacyStatus, PharmacyTier, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 
@@ -46,6 +46,33 @@ export type DemandDashboardData = {
   rows: DemandDashboardRow[];
 };
 
+export type AdminPharmacyCity = {
+  id: string;
+  name: string;
+  isActive: boolean;
+};
+
+export type AdminPharmacyRow = {
+  id: string;
+  cityId: string;
+  cityName: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  tier: PharmacyTier;
+  status: PharmacyStatus;
+  phone: string | null;
+  whatsapp: string | null;
+  workingHours: Prisma.JsonValue | null;
+  is247: boolean;
+};
+
+export type AdminPharmacyManagementData = {
+  cities: AdminPharmacyCity[];
+  pharmacies: AdminPharmacyRow[];
+};
+
 const INVALID_FILE_ERROR = "Неверный формат файла, загрузите .csv или .xls";
 
 const NAME_HEADERS = ["название", "наименование", "товар", "name"];
@@ -54,6 +81,15 @@ const PRICE_HEADERS = ["цена", "price"];
 const DEMAND_DASHBOARD_DAYS = 7;
 const DEMAND_DASHBOARD_LIMIT = 50;
 const DEMAND_TERM_SIMILARITY_THRESHOLD = 0.62;
+const WORKING_DAYS = [
+  { key: "mon", label: "понедельника" },
+  { key: "tue", label: "вторника" },
+  { key: "wed", label: "среды" },
+  { key: "thu", label: "четверга" },
+  { key: "fri", label: "пятницы" },
+  { key: "sat", label: "субботы" },
+  { key: "sun", label: "воскресенья" },
+] as const;
 
 function normalizeValue(value: string) {
   return value
@@ -81,6 +117,180 @@ function parseNumericCell(value: string) {
   const parsed = Number(normalized);
 
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseCoordinate(value: FormDataEntryValue | null, fieldName: string) {
+  const parsed = Number(String(value ?? "").replace(",", "."));
+
+  if (!Number.isFinite(parsed)) {
+    return { value: null, error: `${fieldName} должна быть числом` };
+  }
+
+  return { value: parsed, error: "" };
+}
+
+function parsePharmacyTier(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim() as PharmacyTier;
+
+  if ((Object.values(PharmacyTier) as string[]).includes(normalized)) {
+    return normalized;
+  }
+
+  return null;
+}
+
+function parsePharmacyStatus(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim() as PharmacyStatus;
+
+  if ((Object.values(PharmacyStatus) as string[]).includes(normalized)) {
+    return normalized;
+  }
+
+  return null;
+}
+
+function normalizeOptionalText(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim();
+
+  return normalized || null;
+}
+
+function isClosedSchedule(value: string) {
+  return value.toLowerCase().includes("выход");
+}
+
+function isValidScheduleRange(value: string) {
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
+
+  if (!match) {
+    return false;
+  }
+
+  const [, startHourRaw, startMinuteRaw, endHourRaw, endMinuteRaw] = match;
+  const startHour = Number(startHourRaw);
+  const startMinute = Number(startMinuteRaw);
+  const endHour = Number(endHourRaw);
+  const endMinute = Number(endMinuteRaw);
+  const isValidTime = (hour: number, minute: number) =>
+    hour >= 0 && hour <= 24 && minute >= 0 && minute <= 59 && (hour < 24 || minute === 0);
+
+  return isValidTime(startHour, startMinute) && isValidTime(endHour, endMinute);
+}
+
+function parseWorkingHours(formData: FormData, is247: boolean) {
+  if (is247) {
+    return {
+      workingHours: Object.fromEntries(
+        WORKING_DAYS.map((day) => [day.key, "00:00-23:59"])
+      ) as Prisma.InputJsonObject,
+      error: "",
+    };
+  }
+
+  const workingHours = Object.fromEntries(
+    WORKING_DAYS.map((day) => {
+      const value = String(formData.get(`workingHours_${day.key}`) ?? "").trim();
+
+      return [day.key, value || "выходной"];
+    })
+  ) as Record<(typeof WORKING_DAYS)[number]["key"], string>;
+
+  const openDays = Object.values(workingHours).filter((value) => !isClosedSchedule(value));
+  if (openDays.length === 0) {
+    return {
+      workingHours: null,
+      error: "Укажите график хотя бы для одного рабочего дня или включите 24/7",
+    };
+  }
+
+  for (const day of WORKING_DAYS) {
+    const schedule = workingHours[day.key];
+    if (isClosedSchedule(schedule)) {
+      continue;
+    }
+
+    const ranges = schedule.split(/[;,]/).map((range) => range.trim()).filter(Boolean);
+    if (ranges.length === 0 || ranges.some((range) => !isValidScheduleRange(range))) {
+      return {
+        workingHours: null,
+        error: `График для ${day.label} укажите в формате 08:00-20:00 или 08:00-12:00; 13:00-20:00`,
+      };
+    }
+  }
+
+  return {
+    workingHours: workingHours as Prisma.InputJsonObject,
+    error: "",
+  };
+}
+
+function parsePharmacyFormData(formData: FormData) {
+  const cityId = String(formData.get("cityId") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
+  const latitude = parseCoordinate(formData.get("latitude"), "Широта");
+  const longitude = parseCoordinate(formData.get("longitude"), "Долгота");
+  const tier = parsePharmacyTier(formData.get("tier"));
+  const status = parsePharmacyStatus(formData.get("status"));
+  const is247 = String(formData.get("is247") ?? "") === "true";
+  const workingHours = parseWorkingHours(formData, is247);
+
+  if (!cityId) {
+    return { data: null, error: "Выберите город" };
+  }
+
+  if (!name) {
+    return { data: null, error: "Укажите название аптеки" };
+  }
+
+  if (!address) {
+    return { data: null, error: "Укажите адрес аптеки" };
+  }
+
+  if (latitude.error || latitude.value === null) {
+    return { data: null, error: latitude.error };
+  }
+
+  if (latitude.value < -90 || latitude.value > 90) {
+    return { data: null, error: "Широта должна быть в диапазоне от -90 до 90" };
+  }
+
+  if (longitude.error || longitude.value === null) {
+    return { data: null, error: longitude.error };
+  }
+
+  if (longitude.value < -180 || longitude.value > 180) {
+    return { data: null, error: "Долгота должна быть в диапазоне от -180 до 180" };
+  }
+
+  if (!tier) {
+    return { data: null, error: "Выберите тип аптеки" };
+  }
+
+  if (!status) {
+    return { data: null, error: "Выберите статус аптеки" };
+  }
+
+  if (workingHours.error || !workingHours.workingHours) {
+    return { data: null, error: workingHours.error };
+  }
+
+  return {
+    data: {
+      cityId,
+      name,
+      address,
+      latitude: latitude.value,
+      longitude: longitude.value,
+      tier,
+      status,
+      phone: normalizeOptionalText(formData.get("phone")),
+      whatsapp: normalizeOptionalText(formData.get("whatsapp")),
+      workingHours: workingHours.workingHours,
+      is247,
+    },
+    error: "",
+  };
 }
 
 function hasRequiredCsvHeaders(fields: string[] | undefined) {
@@ -184,6 +394,186 @@ export async function getAdminHomeStats() {
     restrictedProductsCount,
     zeroResultLogs7dCount,
   };
+}
+
+export async function getPharmacyManagementData(): Promise<AdminPharmacyManagementData> {
+  await requireAdmin();
+
+  const [cities, pharmacies] = await Promise.all([
+    prisma.city.findMany({
+      orderBy: [
+        {
+          isActive: "desc",
+        },
+        {
+          name: "asc",
+        },
+      ],
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+      },
+    }),
+    prisma.pharmacy.findMany({
+      orderBy: [
+        {
+          city: {
+            name: "asc",
+          },
+        },
+        {
+          name: "asc",
+        },
+      ],
+      select: {
+        id: true,
+        cityId: true,
+        name: true,
+        address: true,
+        latitude: true,
+        longitude: true,
+        tier: true,
+        status: true,
+        phone: true,
+        whatsapp: true,
+        workingHours: true,
+        is247: true,
+        city: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  return {
+    cities,
+    pharmacies: pharmacies.map((pharmacy) => ({
+      id: pharmacy.id,
+      cityId: pharmacy.cityId,
+      cityName: pharmacy.city.name,
+      name: pharmacy.name,
+      address: pharmacy.address,
+      latitude: pharmacy.latitude,
+      longitude: pharmacy.longitude,
+      tier: pharmacy.tier,
+      status: pharmacy.status,
+      phone: pharmacy.phone,
+      whatsapp: pharmacy.whatsapp,
+      workingHours: pharmacy.workingHours,
+      is247: pharmacy.is247,
+    })),
+  };
+}
+
+export async function createPharmacy(formData: FormData): Promise<AdminActionResponse> {
+  await requireAdmin();
+
+  const parsed = parsePharmacyFormData(formData);
+  if (!parsed.data) {
+    return { success: false, error: parsed.error };
+  }
+
+  const city = await prisma.city.findUnique({
+    where: {
+      id: parsed.data.cityId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!city) {
+    return { success: false, error: "Город не найден" };
+  }
+
+  await prisma.pharmacy.create({
+    data: parsed.data,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pharmacies");
+  revalidatePath("/admin/inventory-upload");
+  revalidatePath("/map");
+
+  return { success: true };
+}
+
+export async function updatePharmacy(formData: FormData): Promise<AdminActionResponse> {
+  await requireAdmin();
+
+  const pharmacyId = String(formData.get("pharmacyId") ?? "").trim();
+  if (!pharmacyId) {
+    return { success: false, error: "Аптека не найдена" };
+  }
+
+  const parsed = parsePharmacyFormData(formData);
+  if (!parsed.data) {
+    return { success: false, error: parsed.error };
+  }
+
+  const [pharmacy, city] = await Promise.all([
+    prisma.pharmacy.findUnique({
+      where: {
+        id: pharmacyId,
+      },
+      select: {
+        id: true,
+      },
+    }),
+    prisma.city.findUnique({
+      where: {
+        id: parsed.data.cityId,
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
+
+  if (!pharmacy) {
+    return { success: false, error: "Аптека не найдена" };
+  }
+
+  if (!city) {
+    return { success: false, error: "Город не найден" };
+  }
+
+  await prisma.pharmacy.update({
+    where: {
+      id: pharmacy.id,
+    },
+    data: parsed.data,
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pharmacies");
+  revalidatePath("/admin/inventory-upload");
+  revalidatePath("/map");
+
+  return { success: true };
+}
+
+export async function createPharmacyForm(formData: FormData) {
+  const result = await createPharmacy(formData);
+
+  if (!result.success) {
+    redirect(`/admin/pharmacies?error=${encodeURIComponent(result.error ?? "Ошибка создания аптеки")}`);
+  }
+
+  redirect("/admin/pharmacies?created=1");
+}
+
+export async function updatePharmacyForm(formData: FormData) {
+  const result = await updatePharmacy(formData);
+
+  if (!result.success) {
+    redirect(`/admin/pharmacies?error=${encodeURIComponent(result.error ?? "Ошибка обновления аптеки")}`);
+  }
+
+  redirect("/admin/pharmacies?updated=1");
 }
 
 export async function getDemandDashboardData(

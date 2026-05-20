@@ -191,7 +191,8 @@
 .dangerButton:focus-visible,
 .input:focus-visible,
 .select:focus-visible,
-.fileInput:focus-visible {
+.fileInput:focus-visible,
+.summaryButton:focus-visible {
   outline: 3px solid hsl(230 74% 50% / 0.2);
   outline-offset: 2px;
 }
@@ -277,9 +278,55 @@
   margin-top: 18px;
 }
 
+.pharmacyForm {
+  margin-top: 0;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .field {
   display: grid;
   gap: 7px;
+}
+
+.wideField {
+  grid-column: 1 / -1;
+}
+
+.checkboxField {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: hsl(222 36% 13%);
+  font-weight: 750;
+}
+
+.checkboxField input {
+  width: 18px;
+  height: 18px;
+  accent-color: hsl(230 74% 50%);
+}
+
+.scheduleGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid hsl(215 24% 90%);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.scheduleGrid legend {
+  padding: 0 6px;
+  color: hsl(220 14% 42%);
+  font-size: 0.86rem;
+  font-weight: 750;
 }
 
 .input,
@@ -364,6 +411,44 @@
   text-align: left;
 }
 
+.pharmacyTable th,
+.pharmacyTable td {
+  padding-right: 14px;
+  vertical-align: top;
+}
+
+.pharmacyTable th:last-child,
+.pharmacyTable td:last-child {
+  padding-right: 0;
+}
+
+.detailRow td {
+  padding: 0 0 12px;
+}
+
+.rowDetails {
+  border-bottom: 1px solid hsl(215 24% 90%);
+  padding: 0 0 12px;
+}
+
+.summaryButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: hsl(222 36% 13%);
+  background: hsl(210 30% 96%);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.rowDetails[open] .summaryButton {
+  margin-bottom: 14px;
+  color: hsl(230 74% 38%);
+  background: hsl(230 85% 96%);
+}
+
 .demandTable th:first-child,
 .demandTable td:first-child {
   padding-right: 20px;
@@ -390,7 +475,9 @@
 }
 
 .restrictedBadge,
-.allowedBadge {
+.allowedBadge,
+.statusBadge,
+.tierBadge {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
@@ -398,6 +485,7 @@
   padding: 0 10px;
   font-size: 0.82rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .restrictedBadge {
@@ -408,6 +496,26 @@
 .allowedBadge {
   color: hsl(168 62% 24%);
   background: hsl(158 58% 96%);
+}
+
+.statusActive {
+  color: hsl(168 62% 24%);
+  background: hsl(158 58% 96%);
+}
+
+.statusPaused {
+  color: hsl(36 80% 27%);
+  background: hsl(42 94% 94%);
+}
+
+.statusClosed {
+  color: hsl(356 72% 34%);
+  background: hsl(356 85% 96%);
+}
+
+.tierBadge {
+  color: hsl(230 74% 38%);
+  background: hsl(230 85% 96%);
 }
 
 .notice {
@@ -502,34 +610,46 @@
   }
 
   .demandTable,
+  .pharmacyTable,
   .demandTable tbody,
+  .pharmacyTable tbody,
   .demandTable tr,
+  .pharmacyTable tr,
   .demandTable td {
     display: block;
   }
 
-  .demandTable {
+  .pharmacyTable td {
+    display: block;
+  }
+
+  .demandTable,
+  .pharmacyTable {
     border-collapse: separate;
     border-spacing: 0 10px;
     margin-top: 12px;
   }
 
-  .demandTable thead {
+  .demandTable thead,
+  .pharmacyTable thead {
     display: none;
   }
 
-  .demandTable tr {
+  .demandTable tr,
+  .pharmacyTable tr {
     border: 1px solid hsl(215 24% 90%);
     border-radius: 8px;
     padding: 10px 12px;
     background: hsl(210 30% 98%);
   }
 
-  .demandTable tr + tr {
+  .demandTable tr + tr,
+  .pharmacyTable tr + tr {
     margin-top: 12px;
   }
 
-  .demandTable td {
+  .demandTable td,
+  .pharmacyTable td {
     width: auto;
     border-bottom: 0;
     padding: 8px 0;
@@ -549,11 +669,13 @@
     text-align: left;
   }
 
-  .demandTable td + td {
+  .demandTable td + td,
+  .pharmacyTable td + td {
     border-top: 1px solid hsl(215 24% 90%);
   }
 
-  .demandTable td::before {
+  .demandTable td::before,
+  .pharmacyTable td::before {
     display: block;
     margin-bottom: 3px;
     color: hsl(220 14% 42%);
@@ -562,10 +684,63 @@
     content: attr(data-label);
   }
 
+  .pharmacyTable .pharmacyGroup {
+    display: block;
+    border: 1px solid hsl(215 24% 90%);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: hsl(210 30% 98%);
+  }
+
+  .pharmacyTable .pharmacyGroup + .pharmacyGroup {
+    margin-top: 12px;
+  }
+
+  .pharmacyTable .pharmacyGroup tr {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  .pharmacyTable .pharmacyGroup tr + tr {
+    margin-top: 0;
+  }
+
+  .pharmacyTable .detailRow td {
+    border-top: 1px solid hsl(215 24% 90%);
+    padding: 10px 0 0;
+  }
+
+  .pharmacyTable .rowDetails {
+    border-bottom: 0;
+    padding: 0;
+  }
+
+  .summaryButton {
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 44px;
+    white-space: normal;
+    text-align: left;
+  }
+
   .mainGrid,
   .navGrid,
   .queueItem,
-  .inlineFilter {
+  .inlineFilter,
+  .formGrid,
+  .scheduleGrid {
     grid-template-columns: 1fr;
+  }
+
+  .detailRow {
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  .detailRow td::before {
+    display: none;
   }
 }
