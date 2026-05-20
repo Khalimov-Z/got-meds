@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { logZeroResultSearchForActiveCity } from "@/lib/actions/search";
 import styles from "./search-experience.module.css";
 
 type SearchCategory = "medicine" | "equipment" | "vitamins" | "mother_and_baby";
@@ -35,6 +36,8 @@ const CATEGORY_LABELS: Record<SearchCategory, string> = {
 };
 
 const QUICK_SEARCHES = ["Медтехника", "Витамины", "Мать и дитя"];
+const ZERO_RESULT_LOG_DELAY_MS = 1500;
+const MIN_ZERO_RESULT_LOG_LENGTH = 3;
 
 const HOW_IT_WORKS = [
   {
@@ -73,6 +76,7 @@ export function SearchExperience() {
   const [status, setStatus] = useState<SearchStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const loggedZeroResultQueriesRef = useRef<Set<string>>(new Set());
 
   const trimmedQuery = useMemo(() => query.trim(), [query]);
 
@@ -142,6 +146,30 @@ export function SearchExperience() {
       window.clearTimeout(timeoutId);
     };
   }, [trimmedQuery]);
+
+  useEffect(() => {
+    if (status !== "empty" || trimmedQuery.length < MIN_ZERO_RESULT_LOG_LENGTH) {
+      return;
+    }
+
+    const normalizedQuery = trimmedQuery.toLowerCase();
+    if (loggedZeroResultQueriesRef.current.has(normalizedQuery)) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      loggedZeroResultQueriesRef.current.add(normalizedQuery);
+      void logZeroResultSearchForActiveCity(trimmedQuery).then((result) => {
+        if (!result.success) {
+          loggedZeroResultQueriesRef.current.delete(normalizedQuery);
+        }
+      });
+    }, ZERO_RESULT_LOG_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [status, trimmedQuery]);
 
   return (
     <main className={styles.shell}>

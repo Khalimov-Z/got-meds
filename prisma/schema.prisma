@@ -25,6 +25,7 @@ model City {
 
   // Связи
   pharmacies Pharmacy[]
+  searchLogs SearchLog[]
 
   @@map("cities")
 }
@@ -131,6 +132,25 @@ model UnmappedString {
   pharmacy Pharmacy @relation(fields: [pharmacyId], references: [id])
 
   @@map("unmapped_strings")
+}
+
+// --- 8. Логи поиска и дефицита (Search_Logs) ---
+// Теневой сбор запросов без результата для будущей аналитики спроса.
+model SearchLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  searchTerm    String   @map("search_term") // Введенный пользователем текст
+  cityId        String   @map("city_id") @db.Uuid
+  userLatitude  Float?   @map("user_latitude") // Координаты пользователя, если доступны
+  userLongitude Float?   @map("user_longitude")
+  resultsCount  Int      @default(0) @map("results_count") // 0 = нулевая выдача
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Связи
+  city City @relation(fields: [cityId], references: [id])
+
+  @@index([cityId, createdAt])
+  @@index([searchTerm])
+  @@map("search_logs")
 }
 
 // ==============================================

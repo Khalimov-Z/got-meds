@@ -91,3 +91,11 @@
 - Сделано: поиск через верхнюю строку `/map` теперь пересоздает внутреннее состояние карты при смене query/препарата, сбрасывая старые аптеки, выбранную аптеку и GPS/fallback-состояние.
 - Проверка: пользователь проверил повторный поиск внутри карты, выполнены `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-05-20 - Аналитика нулевой выдачи
+
+- План: [plans/completed/phase-7-zero-result-analytics.md](../plans/completed/phase-7-zero-result-analytics.md)
+- Области: данные, поиск и бизнес-логика, backend и API, frontend и дизайн, админ-панель и безопасность, SEO и аналитика, инфраструктура и качество
+- Сделано: добавлены `SearchLog` и таблица `search_logs`, Server Action `logZeroResultSearch`, антишум-логирование стабильной пустой выдачи на главной странице и уточнения спецификаций по live-search.
+- Проверка: пользователь проверил сценарий, выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push
