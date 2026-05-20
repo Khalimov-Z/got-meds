@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Papa from "papaparse";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
 
@@ -23,11 +24,36 @@ export type UploadPharmacyPriceState = {
   error?: string;
 };
 
+export type DemandDashboardCity = {
+  id: string;
+  name: string;
+};
+
+export type DemandDashboardRow = {
+  searchTerm: string;
+  cityName: string;
+  searchesCount: number;
+  lastSearchedAt: Date;
+  variants: string[];
+};
+
+export type DemandDashboardData = {
+  cities: DemandDashboardCity[];
+  selectedCityId: string | null;
+  periodStart: Date;
+  periodEnd: Date;
+  totalLogsCount: number;
+  rows: DemandDashboardRow[];
+};
+
 const INVALID_FILE_ERROR = "Неверный формат файла, загрузите .csv или .xls";
 
 const NAME_HEADERS = ["название", "наименование", "товар", "name"];
 const STOCK_HEADERS = ["остаток", "количество", "stock", "quantity"];
 const PRICE_HEADERS = ["цена", "price"];
+const DEMAND_DASHBOARD_DAYS = 7;
+const DEMAND_DASHBOARD_LIMIT = 50;
+const DEMAND_TERM_SIMILARITY_THRESHOLD = 0.62;
 
 function normalizeValue(value: string) {
   return value
@@ -119,12 +145,15 @@ async function getMappingDictionaries() {
 
 export async function getAdminHomeStats() {
   await requireAdmin();
+  const demandPeriodStart = new Date();
+  demandPeriodStart.setDate(demandPeriodStart.getDate() - DEMAND_DASHBOARD_DAYS);
 
   const [
     tier2PharmaciesCount,
     unmappedCount,
     aliasesCount,
     restrictedProductsCount,
+    zeroResultLogs7dCount,
   ] = await Promise.all([
     prisma.pharmacy.count({
       where: {
@@ -138,6 +167,14 @@ export async function getAdminHomeStats() {
         isSocialRisk: true,
       },
     }),
+    prisma.searchLog.count({
+      where: {
+        resultsCount: 0,
+        createdAt: {
+          gte: demandPeriodStart,
+        },
+      },
+    }),
   ]);
 
   return {
@@ -145,6 +182,137 @@ export async function getAdminHomeStats() {
     unmappedCount,
     aliasesCount,
     restrictedProductsCount,
+    zeroResultLogs7dCount,
+  };
+}
+
+export async function getDemandDashboardData(
+  cityId?: string
+): Promise<DemandDashboardData> {
+  await requireAdmin();
+
+  const periodEnd = new Date();
+  const periodStart = new Date(periodEnd);
+  periodStart.setDate(periodStart.getDate() - DEMAND_DASHBOARD_DAYS);
+
+  const cities = await prisma.city.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      name: "asc",
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  const normalizedCityId = cityId?.trim();
+  const selectedCity =
+    cities.find((city) => city.id === normalizedCityId) ?? cities[0] ?? null;
+
+  if (!selectedCity) {
+    return {
+      cities,
+      selectedCityId: null,
+      periodStart,
+      periodEnd,
+      totalLogsCount: 0,
+      rows: [],
+    };
+  }
+
+  const [totalLogsCount, rawRows] = await Promise.all([
+    prisma.searchLog.count({
+      where: {
+        cityId: selectedCity.id,
+        resultsCount: 0,
+        createdAt: {
+          gte: periodStart,
+        },
+      },
+    }),
+    prisma.$queryRaw<
+      Array<{
+        search_term: string;
+        city_name: string;
+        searches_count: number | bigint;
+        last_searched_at: Date;
+        variants: string[];
+      }>
+    >(
+      Prisma.sql`
+        WITH term_stats AS (
+          SELECT
+            city_id,
+            LOWER(TRIM(search_term)) AS normalized_term,
+            MIN(search_term) AS display_term,
+            COUNT(*)::int AS searches_count,
+            MAX(created_at) AS last_searched_at
+          FROM search_logs
+          WHERE city_id = ${selectedCity.id}::uuid
+            AND results_count = 0
+            AND created_at >= ${periodStart}
+          GROUP BY city_id, LOWER(TRIM(search_term))
+        ),
+        bucketed_terms AS (
+          SELECT
+            term_stats.*,
+            bucket.normalized_term AS bucket_term
+          FROM term_stats
+          CROSS JOIN LATERAL (
+            SELECT candidate.normalized_term
+            FROM term_stats candidate
+            WHERE candidate.city_id = term_stats.city_id
+              AND SIMILARITY(candidate.normalized_term, term_stats.normalized_term) >= ${DEMAND_TERM_SIMILARITY_THRESHOLD}
+            ORDER BY
+              candidate.searches_count DESC,
+              candidate.last_searched_at DESC,
+              candidate.normalized_term ASC
+            LIMIT 1
+          ) bucket
+        ),
+        grouped_terms AS (
+          SELECT
+            city_id,
+            bucket_term,
+            SUM(searches_count)::int AS searches_count,
+            MAX(last_searched_at) AS last_searched_at,
+            (ARRAY_AGG(display_term ORDER BY searches_count DESC, last_searched_at DESC))[1] AS display_term,
+            ARRAY_AGG(display_term ORDER BY searches_count DESC, last_searched_at DESC) AS variants
+          FROM bucketed_terms
+          GROUP BY city_id, bucket_term
+        )
+        SELECT
+          grouped_terms.display_term AS search_term,
+          cities.name AS city_name,
+          grouped_terms.searches_count,
+          grouped_terms.last_searched_at,
+          grouped_terms.variants
+        FROM grouped_terms
+        INNER JOIN cities ON cities.id = grouped_terms.city_id
+        ORDER BY grouped_terms.searches_count DESC, grouped_terms.last_searched_at DESC
+        LIMIT ${DEMAND_DASHBOARD_LIMIT}
+      `
+    ),
+  ]);
+
+  return {
+    cities,
+    selectedCityId: selectedCity.id,
+    periodStart,
+    periodEnd,
+    totalLogsCount,
+    rows: rawRows.map((row) => ({
+      searchTerm: row.search_term,
+      cityName: row.city_name,
+      searchesCount: Number(row.searches_count),
+      lastSearchedAt: row.last_searched_at,
+      variants: Array.from(new Set(row.variants)).filter(
+        (variant) => variant !== row.search_term
+      ),
+    })),
   };
 }
 

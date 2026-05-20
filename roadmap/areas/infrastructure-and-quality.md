@@ -84,3 +84,10 @@
 - Сделано: план этапа 7 переведен в completed, изменения восстановлены поверх свежего `main` после merge багфикса карты и проверены перед push.
 - Влияние: этап опубликован изолированно от уже слитой ветки `fix-map-search-refresh` и соответствует SDD-процессу проекта.
 - Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check` и пользовательская проверка.
+
+## 2026-05-20 - Дашборд дефицитных позиций
+
+- План: [plans/completed/phase-8-admin-demand-dashboard.md](../../plans/completed/phase-8-admin-demand-dashboard.md)
+- Сделано: план этапа 8 переведен в completed, дорожная карта обновлена перед push, изменения проверены линтером, production-сборкой и `git diff --check`.
+- Влияние: завершение этапа оформлено по SDD-процессу и готово к Pull Request.
+- Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check` и пользовательская проверка.

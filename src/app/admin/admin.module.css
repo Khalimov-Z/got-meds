@@ -133,6 +133,9 @@
 .primaryButton,
 .ghostButton,
 .dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 42px;
   border: 0;
   border-radius: 8px;
@@ -195,6 +198,7 @@
 
 .mainGrid,
 .content {
+  min-width: 0;
   width: min(100%, 1120px);
   margin: 0 auto;
 }
@@ -217,6 +221,7 @@
 }
 
 .stat {
+  min-width: 0;
   padding: 16px;
 }
 
@@ -299,16 +304,27 @@
   gap: 14px;
 }
 
+.mainGrid + .content {
+  margin-top: 14px;
+}
+
 .panel {
+  min-width: 0;
   padding: 18px;
 }
 
 .panelHeader {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
   margin-bottom: 14px;
+}
+
+.panelHeader > div {
+  flex: 1 1 320px;
+  min-width: 0;
 }
 
 .panelHeader h2 {
@@ -319,6 +335,20 @@
 .panelHeader p {
   margin: 6px 0 0;
   color: hsl(220 14% 42%);
+}
+
+.inlineFilter {
+  display: grid;
+  flex: 0 1 360px;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 10px;
+  align-items: end;
+  min-width: 0;
+  width: min(100%, 360px);
+}
+
+.inlineFilter .primaryButton {
+  white-space: nowrap;
 }
 
 .reportTable {
@@ -332,6 +362,24 @@
   border-bottom: 1px solid hsl(215 24% 90%);
   padding: 10px 0;
   text-align: left;
+}
+
+.demandTable th:first-child,
+.demandTable td:first-child {
+  padding-right: 20px;
+}
+
+.demandTable th:nth-child(n + 2),
+.demandTable td:nth-child(n + 2) {
+  width: 1%;
+  padding-left: 20px;
+  white-space: nowrap;
+}
+
+.demandTable th:nth-child(3),
+.demandTable td:nth-child(3) {
+  min-width: 84px;
+  text-align: center;
 }
 
 .tableMeta {
@@ -414,22 +462,110 @@
   background: hsl(210 30% 98%);
 }
 
+@media (max-width: 920px) {
+  .panelHeader {
+    display: grid;
+  }
+
+  .inlineFilter {
+    width: 100%;
+  }
+}
+
 @media (max-width: 760px) {
   .shell {
-    padding: 18px;
+    padding: 16px;
   }
 
   .header {
     display: grid;
+    gap: 14px;
+    margin-bottom: 16px;
   }
 
   .adminMeta {
     justify-content: flex-start;
   }
 
+  .panel {
+    padding: 14px;
+  }
+
+  .panelHeader {
+    display: grid;
+    gap: 12px;
+  }
+
+  .inlineFilter,
+  .primaryButton {
+    width: 100%;
+  }
+
+  .demandTable,
+  .demandTable tbody,
+  .demandTable tr,
+  .demandTable td {
+    display: block;
+  }
+
+  .demandTable {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-top: 12px;
+  }
+
+  .demandTable thead {
+    display: none;
+  }
+
+  .demandTable tr {
+    border: 1px solid hsl(215 24% 90%);
+    border-radius: 8px;
+    padding: 10px 12px;
+    background: hsl(210 30% 98%);
+  }
+
+  .demandTable tr + tr {
+    margin-top: 12px;
+  }
+
+  .demandTable td {
+    width: auto;
+    border-bottom: 0;
+    padding: 8px 0;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .demandTable td:first-child,
+  .demandTable td:nth-child(n + 2) {
+    width: auto;
+    padding-right: 0;
+    padding-left: 0;
+    white-space: normal;
+  }
+
+  .demandTable td:nth-child(3) {
+    text-align: left;
+  }
+
+  .demandTable td + td {
+    border-top: 1px solid hsl(215 24% 90%);
+  }
+
+  .demandTable td::before {
+    display: block;
+    margin-bottom: 3px;
+    color: hsl(220 14% 42%);
+    font-size: 0.78rem;
+    font-weight: 750;
+    content: attr(data-label);
+  }
+
   .mainGrid,
   .navGrid,
-  .queueItem {
+  .queueItem,
+  .inlineFilter {
     grid-template-columns: 1fr;
   }
 }
