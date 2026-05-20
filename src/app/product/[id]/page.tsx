@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductDetails } from "@/lib/actions/products";
+import { getAnalogs, getProductDetails } from "@/lib/actions/products";
+import { ProductAnalogs } from "./product-analogs";
 import styles from "./product-page.module.css";
 
 const CATEGORY_LABELS = {
@@ -55,13 +56,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProductPage({ params }: PageProps) {
   const { id } = await params;
-  const result = await getProductDetails(id);
+  const [result, analogsResult] = await Promise.all([
+    getProductDetails(id),
+    getAnalogs(id),
+  ]);
 
   if (!result.success || !result.data) {
     notFound();
   }
 
   const product = result.data;
+  const analogs = analogsResult.success ? analogsResult.data ?? [] : [];
 
   return (
     <main className={styles.shell}>
@@ -137,6 +142,8 @@ export default async function ProductPage({ params }: PageProps) {
           >
             Найти на карте
           </Link>
+
+          <ProductAnalogs analogs={analogs} />
         </div>
       </section>
 
