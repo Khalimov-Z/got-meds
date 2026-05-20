@@ -99,3 +99,11 @@
 - Сделано: добавлены `SearchLog` и таблица `search_logs`, Server Action `logZeroResultSearch`, антишум-логирование стабильной пустой выдачи на главной странице и уточнения спецификаций по live-search.
 - Проверка: пользователь проверил сценарий, выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-05-20 - Дашборд дефицитных позиций
+
+- План: [plans/completed/phase-8-admin-demand-dashboard.md](../plans/completed/phase-8-admin-demand-dashboard.md)
+- Области: данные, backend и API, frontend и дизайн, админ-панель и безопасность, SEO и аналитика, инфраструктура и качество
+- Сделано: добавлен защищенный раздел `/admin/demand`, серверная агрегация `search_logs` за 7 дней, топ-50 дефицитных запросов по городу, объединение похожих формулировок через `SIMILARITY`, счетчик нулевой выдачи на `/admin` и адаптивная таблица отчета.
+- Проверка: пользователь проверил страницу и адаптивность, выполнены `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push
