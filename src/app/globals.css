@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
 *,
 *::before,
 *::after {
@@ -7,12 +9,12 @@
 }
 
 :root {
-  --color-primary: hsl(230, 85%, 50%);
-  --color-primary-hover: hsl(230, 85%, 45%);
-  --color-bg: hsl(220, 20%, 98%);
+  --color-primary: #316276;
+  --color-primary-hover: #1e4d5f;
+  --color-bg: hsl(225 100% 99%);
   --color-surface: hsl(0, 0%, 100%);
-  --color-text-main: hsl(220, 30%, 15%);
-  --color-text-muted: hsl(220, 20%, 50%);
+  --color-text-main: hsl(211, 52%, 13%);
+  --color-text-muted: hsl(200, 8%, 28%);
   --color-success: hsl(150, 80%, 40%);
   --color-warning: hsl(40, 95%, 50%);
   --color-neutral: hsl(220, 15%, 70%);

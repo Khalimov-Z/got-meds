@@ -115,3 +115,11 @@
 - Сделано: добавлен защищенный раздел `/admin/pharmacies`, серверные действия создания и редактирования аптек, таблица справочника, формы управления координатами, tier, статусами, контактами и графиком работы, переход с `/admin` и мобильная группировка карточек аптек с понятной кнопкой редактирования.
 - Проверка: пользователь проверил создание, редактирование и мобильную верстку раздела аптек, выполнены `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-05-23 - Редизайн главной страницы и графическая карта
+
+- Планы: [plans/completed/homepage-graphic-map.md](../plans/completed/homepage-graphic-map.md), [plans/completed/homepage-production-redesign.md](../plans/completed/homepage-production-redesign.md), [plans/completed/sync-graphic-map-colors-and-layouts.md](../plans/completed/sync-graphic-map-colors-and-layouts.md)
+- Области: frontend и дизайн, поиск и бизнес-логика, SEO и аналитика, инфраструктура и качество
+- Сделано: создана HTML-графическая карта главной страницы, рабочая главная `/` переведена на новый desktop/mobile дизайн с аптечным hero-фоном, glassmorphism-поиском, fixed-header, новым логотипом, анимированной кардиограммой и глобальными бренд-цветами `#316276` / `#1e4d5f`; дублирующий hero-ассет удален.
+- Проверка: пользователь принял desktop и mobile вид главной страницы, выполнены `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push
