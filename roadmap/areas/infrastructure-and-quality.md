@@ -98,3 +98,10 @@
 - Сделано: план этапа 9 переведен в completed, дорожная карта обновлена перед push, изменения проверены линтером, production-сборкой и `git diff --check`.
 - Влияние: завершение этапа управления аптеками оформлено по SDD-процессу и готово к Pull Request.
 - Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check` и пользовательская проверка.
+
+## 2026-05-23 - Редизайн главной страницы и графическая карта
+
+- Планы: [plans/completed/homepage-graphic-map.md](../../plans/completed/homepage-graphic-map.md), [plans/completed/homepage-production-redesign.md](../../plans/completed/homepage-production-redesign.md), [plans/completed/sync-graphic-map-colors-and-layouts.md](../../plans/completed/sync-graphic-map-colors-and-layouts.md)
+- Сделано: планы визуального этапа переведены в completed, дорожная карта обновлена перед push, глобальные бренд-цвета вынесены в `globals.css`, а дублирующая копия hero-изображения из `public/design/assets/` удалена.
+- Влияние: этап оформлен по SDD-процессу, дизайн-ассет хранится в одном месте, а следующие визуальные работы могут опираться на глобальные переменные.
+- Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check` и пользовательская проверка главной страницы.

@@ -70,11 +70,37 @@ function getInitials(name: string) {
   return name.trim().slice(0, 1).toUpperCase() || "G";
 }
 
+/**
+ * Содержимое шапки сайта (логотип и служебная кнопка администратора).
+ * Разметка полностью соответствует структуре предоставленного HTML-макета.
+ */
+function HeaderContent() {
+  return (
+    <>
+      <div className={styles.brand} aria-label="GotMeds">
+        <span className={styles.logoMark} aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" role="img" focusable="false">
+            <g transform="rotate(-42 12 12)">
+              <rect x="4.2" y="9" width="15.6" height="6" rx="3" />
+              <path className={styles.logoDivider} d="M12 9v6" />
+            </g>
+          </svg>
+        </span>
+        <span className={styles.brandName}>Got Meds</span>
+      </div>
+      <Link className={styles.adminEntry} href="/admin">
+        Администратор
+      </Link>
+    </>
+  );
+}
+
 export function SearchExperience() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [status, setStatus] = useState<SearchStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const loggedZeroResultQueriesRef = useRef<Set<string>>(new Set());
 
@@ -94,6 +120,38 @@ export function SearchExperience() {
     if (isDesktopInput) {
       inputRef.current?.focus();
     }
+  }, []);
+
+  useEffect(() => {
+    let animationFrameId = 0;
+
+    const updateHeaderPosition = () => {
+      animationFrameId = 0;
+      const shouldApplyGlass = window.scrollY > 0;
+
+      setIsHeaderScrolled((currentValue) =>
+        currentValue === shouldApplyGlass ? currentValue : shouldApplyGlass
+      );
+    };
+
+    const requestHeaderPositionUpdate = () => {
+      if (animationFrameId === 0) {
+        animationFrameId = window.requestAnimationFrame(updateHeaderPosition);
+      }
+    };
+
+    updateHeaderPosition();
+    window.addEventListener("scroll", requestHeaderPositionUpdate, { passive: true });
+    window.addEventListener("resize", requestHeaderPositionUpdate);
+
+    return () => {
+      if (animationFrameId !== 0) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+
+      window.removeEventListener("scroll", requestHeaderPositionUpdate);
+      window.removeEventListener("resize", requestHeaderPositionUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -173,67 +231,93 @@ export function SearchExperience() {
 
   return (
     <main className={styles.shell}>
+      <header className={`${styles.siteHeader} ${isHeaderScrolled ? styles.siteHeaderScrolled : ""}`}>
+        <div className={styles.headerInner}>
+          <HeaderContent />
+        </div>
+      </header>
+
       <section className={styles.hero} aria-labelledby="home-title">
-        <div className={styles.brandBar}>
-          <div className={styles.brand}>
-            <span className={styles.logoMark} aria-label="GotMeds">
-              <span className={styles.logoPartPrimary}>Got</span>
-              <span className={styles.logoPartSecondary}>Meds</span>
-            </span>
+        <div className={styles.heroFrame}>
+          <div className={styles.heroGrid}>
+            <div className={styles.heroContent}>
+              <div className={styles.heroCopy}>
+                <h1 id="home-title">
+                  Найди лекарство <span>в Гудермесе</span>
+                </h1>
+                <p>
+                  Мгновенный поиск наличия и цен в аптеках города. Заботьтесь о
+                  здоровье без лишних поездок.
+                </p>
+              </div>
+
+              <div className={styles.searchPanel}>
+                <form
+                  className={styles.searchForm}
+                  role="search"
+                  onSubmit={(event) => event.preventDefault()}
+                >
+                  <label className={styles.searchLabel} htmlFor="medicine-search">
+                    Поиск препарата
+                  </label>
+                  <div className={styles.searchField}>
+                    <svg
+                      className={styles.searchIcon}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <circle cx="11" cy="11" r="6.5" />
+                      <path d="m16 16 4 4" />
+                    </svg>
+                    <input
+                      ref={inputRef}
+                      id="medicine-search"
+                      className={styles.searchInput}
+                      value={query}
+                      onChange={(event) => updateQuery(event.target.value)}
+                      placeholder="Введите название препарата..."
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                  </div>
+                </form>
+
+                <div className={styles.quickSearches} aria-label="Популярные категории">
+                  {QUICK_SEARCHES.map((item) => (
+                    <button
+                      key={item}
+                      className={styles.quickButton}
+                      type="button"
+                      onClick={() => updateQuery(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+
+                <SearchResults
+                  status={status}
+                  query={trimmedQuery}
+                  results={results}
+                  errorMessage={errorMessage}
+                />
+              </div>
+            </div>
+
+            <div className={styles.heroArtwork} aria-hidden="true">
+              <svg className={styles.pulseGraphic} viewBox="0 0 420 420" fill="none">
+                <circle className={styles.pulseHalo} cx="210" cy="210" r="118" />
+                <circle className={styles.pulseHaloEcho} cx="210" cy="210" r="118" />
+                <circle className={styles.pulseHaloLate} cx="210" cy="210" r="118" />
+                <path
+                  className={styles.pulseTrace}
+                  d="M58 214h58l15-24 17 48 17-116 23 160 19-68h31l14-24 18 48 18-74 18 50h56"
+                  pathLength="1"
+                />
+              </svg>
+            </div>
           </div>
-          <Link className={styles.adminEntry} href="/admin">
-            Администратор
-          </Link>
-        </div>
-
-        <div className={styles.heroCopy}>
-          <h1 id="home-title">Найди лекарство в Гудермесе</h1>
-          <p>
-            Быстрый поиск по препаратам, витаминам и медтехнике с учетом
-            опечаток.
-          </p>
-        </div>
-
-        <div className={styles.searchPanel}>
-          <form
-            className={styles.searchForm}
-            role="search"
-            onSubmit={(event) => event.preventDefault()}
-          >
-            <label className={styles.searchLabel} htmlFor="medicine-search">
-              Поиск препарата
-            </label>
-            <input
-              ref={inputRef}
-              id="medicine-search"
-              className={styles.searchInput}
-              value={query}
-              onChange={(event) => updateQuery(event.target.value)}
-              placeholder="Введите название препарата"
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </form>
-
-          <div className={styles.quickSearches} aria-label="Популярные категории">
-            {QUICK_SEARCHES.map((item) => (
-              <button
-                key={item}
-                className={styles.quickButton}
-                type="button"
-                onClick={() => updateQuery(item)}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-
-          <SearchResults
-            status={status}
-            query={trimmedQuery}
-            results={results}
-            errorMessage={errorMessage}
-          />
         </div>
       </section>
 

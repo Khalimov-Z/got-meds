@@ -1,0 +1,1654 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GotMeds — графическая карта главной страницы</title>
+    <style>
+      :root {
+        --page-bg: #f5f8fb;
+        --surface: #ffffff;
+        --surface-soft: #f0f6fa;
+        --ink: #102033;
+        --ink-soft: #2c4054;
+        --muted: #718293;
+        --muted-light: #aebbc7;
+        --line: #dce8ef;
+        --line-strong: #78abc0;
+        --teal: #316276;
+        --teal-dark: #1e4d5f;
+        --teal-soft: #dff4fa;
+        --aqua: #aee8fb;
+        --blue: #316276;
+        --warm: #f2d89a;
+        --danger: #cf4b63;
+        --shadow-soft: 0 18px 45px rgba(22, 52, 72, 0.11);
+        --shadow-card: 0 12px 30px rgba(22, 52, 72, 0.08);
+        --radius-sm: 10px;
+        --radius-md: 16px;
+        --radius-lg: 24px;
+        --radius-pill: 999px;
+        --content: min(1280px, calc(100vw - 28px));
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 0%, rgba(174, 232, 251, 0.35), transparent 28rem),
+          radial-gradient(circle at 94% 12%, rgba(242, 216, 154, 0.22), transparent 26rem),
+          var(--page-bg);
+        letter-spacing: 0;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .map-shell {
+        width: var(--content);
+        margin: 0 auto;
+        padding: 32px 0 72px;
+      }
+
+      .map-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: start;
+        padding: 28px;
+        border: 1px solid rgba(120, 171, 192, 0.32);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.78);
+        box-shadow: var(--shadow-soft);
+        backdrop-filter: blur(18px);
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        color: var(--teal);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 740px;
+        margin-bottom: 14px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.4rem, 5vw, 5.3rem);
+        line-height: 0.95;
+      }
+
+      h2 {
+        margin-bottom: 18px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(1.8rem, 3vw, 2.7rem);
+        line-height: 1.05;
+      }
+
+      h3 {
+        margin-bottom: 10px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 1.18rem;
+        line-height: 1.18;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin-bottom: 0;
+        color: var(--ink-soft);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .status-note {
+        display: grid;
+        gap: 10px;
+        min-width: 250px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+
+      .status-note strong {
+        color: var(--teal-dark);
+      }
+
+      .status-note span {
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .toc {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 18px 0 0;
+      }
+
+      .toc a,
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 8px 13px;
+        border: 1px solid rgba(47, 108, 125, 0.18);
+        border-radius: var(--radius-pill);
+        color: var(--teal-dark);
+        background: rgba(255, 255, 255, 0.72);
+        font-size: 0.88rem;
+        font-weight: 750;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .section {
+        margin-top: 42px;
+        padding: 28px;
+        border: 1px solid rgba(120, 171, 192, 0.28);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.72);
+        box-shadow: 0 12px 34px rgba(22, 52, 72, 0.06);
+      }
+
+      .section-intro {
+        max-width: 820px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .grid.four {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .decision-card,
+      .token-card,
+      .component-card,
+      .transfer-card {
+        min-width: 0;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        box-shadow: 0 9px 24px rgba(22, 52, 72, 0.05);
+      }
+
+      .decision-card h3,
+      .token-card h3,
+      .component-card h3,
+      .transfer-card h3 {
+        margin-bottom: 8px;
+      }
+
+      .decision-card p,
+      .token-card p,
+      .component-card p,
+      .transfer-card p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .swatch {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+
+      .swatch-color {
+        height: 76px;
+      }
+
+      .swatch-body {
+        padding: 12px;
+      }
+
+      .swatch-body strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+      }
+
+      .swatch-body span {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .type-samples {
+        display: grid;
+        gap: 14px;
+      }
+
+      .type-sample {
+        display: grid;
+        grid-template-columns: 170px 1fr;
+        gap: 16px;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: var(--surface);
+      }
+
+      .type-sample small {
+        color: var(--teal);
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .sample-hero {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.2rem, 4vw, 4rem);
+        font-weight: 800;
+        line-height: 0.98;
+      }
+
+      .sample-title {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 2rem;
+        font-weight: 800;
+      }
+
+      .sample-body {
+        color: var(--ink-soft);
+        font-size: 1rem;
+        line-height: 1.65;
+      }
+
+      .sample-label {
+        color: var(--blue);
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .preview-stage {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: #eef5f8;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .desktop-preview {
+        min-height: 780px;
+        background: #f7f9fc;
+      }
+
+      .desktop-hero {
+        position: relative;
+        min-height: 560px;
+        overflow: hidden;
+        background-image:
+          linear-gradient(90deg, rgba(236, 246, 250, 0.96) 0%, rgba(236, 246, 250, 0.78) 42%, rgba(236, 246, 250, 0.62) 100%),
+          url("../assets/homepage-hero-pharmacy.png");
+        background-size: cover;
+        background-position: right 30% center;
+      }
+
+      .desktop-hero::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background: radial-gradient(circle at 76% 44%, rgba(95, 145, 169, 0.22), transparent 22rem);
+        pointer-events: none;
+      }
+
+      .preview-nav {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 26px 36px;
+      }
+
+      .brand {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        color: var(--ink);
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .brand-mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background-color: var(--teal);
+        color: #ffffff;
+        transition: transform 0.2s ease;
+      }
+
+      .brand-mark svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .logo-divider {
+        stroke: var(--teal);
+        stroke-width: 2.2;
+      }
+
+      .brand-name {
+        font-family: inherit;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        color: var(--ink);
+      }
+
+      .admin-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        padding: 0 20px;
+        font-family: inherit;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #102033;
+        background-color: #ffffff;
+        border: 1px solid #dce8ef;
+        border-radius: var(--radius-pill);
+        box-shadow: 0 4px 12px rgba(22, 52, 72, 0.04);
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease, color 0.2s ease;
+        cursor: pointer;
+      }
+
+      .admin-button:hover {
+        background-color: #f7f9fb;
+        border-color: #c9dbe6;
+        color: var(--teal);
+      }
+
+      .admin-button:active {
+        transform: scale(0.95);
+      }
+
+      .desktop-hero-grid {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(360px, 510px) 1fr;
+        gap: 64px;
+        align-items: center;
+        max-width: 1280px;
+        margin: 52px auto 0;
+        padding: 0 36px 72px;
+      }
+
+      .hero-title {
+        margin-bottom: 18px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(2.8rem, 5vw, 4.4rem);
+        line-height: 0.96;
+      }
+
+      .hero-title span {
+        color: var(--blue);
+      }
+
+      .hero-copy {
+        max-width: 340px;
+        margin-bottom: 28px;
+        color: var(--ink-soft);
+        line-height: 1.6;
+      }
+
+      .search-panel {
+        width: min(100%, 490px);
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.62);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.43);
+        box-shadow: 0 24px 56px rgba(35, 72, 93, 0.16);
+        backdrop-filter: blur(20px);
+      }
+
+      .search-label {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--blue);
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .search-box {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        min-height: 66px;
+        padding: 0 22px;
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--muted);
+      }
+
+      .search-box svg {
+        flex: 0 0 auto;
+        width: 19px;
+        color: var(--blue);
+      }
+
+      .search-box span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.92rem;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 0 17px;
+        border: 1px solid rgba(120, 171, 192, 0.14);
+        border-radius: var(--radius-pill);
+        color: var(--ink-soft);
+        background: rgba(255, 255, 255, 0.72);
+        font-size: 0.78rem;
+        font-weight: 850;
+      }
+
+      .pulse-art {
+        display: grid;
+        justify-items: center;
+        align-items: center;
+        opacity: 0.95;
+      }
+
+      .pulse-graphic {
+        --pulse-cycle: 5.2s;
+        width: min(420px, 100%);
+        height: auto;
+        overflow: visible;
+        color: var(--blue);
+        filter: drop-shadow(0 18px 32px rgba(49, 98, 118, 0.08));
+      }
+
+      .pulse-halo,
+      .pulse-halo-echo,
+      .pulse-halo-late,
+      .pulse-trace {
+        vector-effect: non-scaling-stroke;
+      }
+
+      .pulse-halo,
+      .pulse-halo-echo,
+      .pulse-halo-late {
+        stroke: currentColor;
+        stroke-width: 4px;
+        opacity: 0;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .pulse-halo {
+        animation: ringPulseFirst var(--pulse-cycle) ease-out infinite;
+      }
+
+      .pulse-halo-echo {
+        animation: ringPulseSecond var(--pulse-cycle) ease-out infinite;
+      }
+
+      .pulse-halo-late {
+        animation: ringPulseThird var(--pulse-cycle) ease-out infinite;
+      }
+
+      .pulse-trace {
+        stroke: currentColor;
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 8px;
+        animation: tracePulse var(--pulse-cycle) ease-in-out infinite;
+      }
+
+      .mobile-hero .pulse-art {
+        display: grid;
+        justify-items: center;
+        align-items: center;
+        order: -1;
+        min-height: 140px;
+        margin-top: -28px;
+        opacity: 0.9;
+        margin-bottom: 12px;
+      }
+
+      .mobile-hero .pulse-graphic {
+        width: min(180px, 50vw);
+      }
+
+      .mobile-hero .pulse-halo,
+      .mobile-hero .pulse-halo-echo,
+      .mobile-hero .pulse-halo-late {
+        stroke-width: 1.8px;
+      }
+
+      .mobile-hero .pulse-trace {
+        stroke-width: 3px;
+      }
+
+      @keyframes ringPulseFirst {
+        0% { opacity: 0; transform: scale(0.88); }
+        70% { opacity: 0; transform: scale(0.88); }
+        76% { opacity: 0.54; transform: scale(0.98); }
+        92% { opacity: 0.1; transform: scale(1.3); }
+        100% { opacity: 0; transform: scale(1.42); }
+      }
+
+      @keyframes ringPulseSecond {
+        0% { opacity: 0; transform: scale(0.88); }
+        76% { opacity: 0; transform: scale(0.88); }
+        82% { opacity: 0.5; transform: scale(0.98); }
+        96% { opacity: 0.1; transform: scale(1.3); }
+        100% { opacity: 0; transform: scale(1.42); }
+      }
+
+      @keyframes ringPulseThird {
+        0% { opacity: 0; transform: scale(0.88); }
+        82% { opacity: 0; transform: scale(0.88); }
+        88% { opacity: 0.46; transform: scale(0.98); }
+        98% { opacity: 0.1; transform: scale(1.28); }
+        100% { opacity: 0; transform: scale(1.38); }
+      }
+
+      @keyframes tracePulse {
+        0% { opacity: 0.24; stroke-dashoffset: 1; }
+        18% { opacity: 1; }
+        70% { opacity: 1; stroke-dashoffset: 0; }
+        82% { opacity: 1; stroke-dashoffset: 0; }
+        100% { opacity: 0.24; stroke-dashoffset: -1; }
+      }
+
+      .desktop-steps {
+        padding: 70px 54px 84px;
+        background: #f7f9fc;
+      }
+
+      .section-title-center {
+        margin-bottom: 42px;
+        text-align: center;
+      }
+
+      .section-title-center h2 {
+        margin-bottom: 12px;
+      }
+
+      .divider {
+        width: 76px;
+        height: 4px;
+        margin: 0 auto;
+        border-radius: var(--radius-pill);
+        background: var(--teal);
+      }
+
+      .step-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 22px;
+        max-width: 980px;
+        margin: 0 auto;
+      }
+
+      .step-card {
+        position: relative;
+        min-height: 210px;
+        overflow: hidden;
+        padding: 32px 28px;
+        border: 1px solid rgba(120, 171, 192, 0.22);
+        border-left: 4px solid var(--teal);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 10px 30px rgba(22, 52, 72, 0.06);
+      }
+
+      .step-card::after {
+        position: absolute;
+        right: -10px;
+        bottom: -18px;
+        color: rgba(95, 145, 169, 0.08);
+        font-size: 6.8rem;
+        font-weight: 900;
+        line-height: 1;
+        content: attr(data-ghost);
+      }
+
+      .step-badge {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        margin-bottom: 24px;
+        place-items: center;
+        border-radius: 10px;
+        color: var(--teal-dark);
+        background: var(--aqua);
+        font-size: 0.86rem;
+        font-weight: 900;
+      }
+
+      .step-card h3 {
+        position: relative;
+        z-index: 1;
+        min-height: 48px;
+        margin-bottom: 12px;
+        font-size: 1.18rem;
+      }
+
+      .step-card p {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 0;
+        color: var(--ink-soft);
+        font-size: 0.86rem;
+        line-height: 1.55;
+      }
+
+      .desktop-footer {
+        padding: 34px 54px 40px;
+        border-top: 1px solid #dce6ef;
+        color: var(--muted);
+        background: #f7f9fc;
+        text-align: center;
+      }
+
+      .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 16px 0 20px;
+        color: var(--ink-soft);
+        font-size: 0.75rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .phone-wrap {
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        border-radius: var(--radius-lg);
+        background:
+          linear-gradient(145deg, rgba(174, 232, 251, 0.26), rgba(255, 255, 255, 0.74)),
+          #edf5f8;
+      }
+
+      .phone {
+        position: relative;
+        width: min(390px, 100%);
+        min-height: 844px;
+        overflow: hidden;
+        border: 1px solid rgba(120, 171, 192, 0.36);
+        border-radius: 30px;
+        background: #f7f9fc;
+        box-shadow: 0 28px 70px rgba(22, 52, 72, 0.22);
+      }
+
+      .mobile-hero {
+        position: relative;
+        min-height: 430px;
+        padding: 12px 14px 32px;
+        overflow: hidden;
+        background-image:
+          linear-gradient(180deg, rgba(236, 246, 250, 0.7) 0%, rgba(236, 246, 250, 0.82) 56%, rgba(236, 246, 250, 0.98) 100%),
+          url("../assets/homepage-hero-pharmacy.png");
+        background-size: cover;
+        background-position: 45% center;
+      }
+
+      .mobile-hero::after {
+        position: absolute;
+        inset: 48px -60px auto 64px;
+        height: 230px;
+        content: "";
+        border: 4px solid rgba(95, 145, 169, 0.19);
+        border-radius: 50%;
+      }
+
+      .mobile-nav {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .mobile-nav .brand {
+        gap: 7px;
+        font-size: 0.96rem;
+      }
+
+      .mobile-nav .brand-mark {
+        width: 29px;
+        height: 29px;
+      }
+
+      .mobile-nav .admin-button {
+        min-width: 112px;
+        min-height: 30px;
+        font-size: 0.7rem;
+      }
+
+      .mobile-hero-content {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        justify-items: center;
+        margin-top: 118px;
+        text-align: center;
+      }
+
+      .mobile-hero-content h2 {
+        max-width: 290px;
+        margin-bottom: 10px;
+        font-size: 2.05rem;
+        line-height: 1.02;
+      }
+
+      .mobile-hero-content h2 span {
+        color: var(--blue);
+      }
+
+      .mobile-hero-content p {
+        max-width: 292px;
+        margin-bottom: 18px;
+        color: var(--ink-soft);
+        font-size: 0.93rem;
+        line-height: 1.45;
+      }
+
+      .mobile-search {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+        box-shadow: 0 16px 34px rgba(22, 52, 72, 0.15);
+        backdrop-filter: blur(18px);
+      }
+
+      .mobile-search .search-box {
+        min-height: 54px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.92);
+      }
+
+      .mobile-cta {
+        display: inline-flex;
+        width: 100%;
+        min-height: 54px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 9px;
+        border: 0;
+        border-radius: 12px;
+        color: white;
+        background: var(--blue);
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .mobile-categories {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+        margin-top: 10px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      .mobile-categories::-webkit-scrollbar {
+        display: none;
+      }
+
+      .mobile-categories .chip {
+        flex: 0 0 auto;
+        min-height: 31px;
+        padding: 0 12px;
+        font-size: 0.72rem;
+      }
+
+      .mobile-steps {
+        padding: 56px 0 28px 16px;
+      }
+
+      .mobile-steps h2 {
+        margin-bottom: 8px;
+        font-size: 1.45rem;
+      }
+
+      .mobile-steps .divider {
+        width: 56px;
+        height: 3px;
+        margin: 0 0 24px;
+      }
+
+      .mobile-step-row {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-right: 16px;
+        scrollbar-width: none;
+      }
+
+      .mobile-step-row::-webkit-scrollbar {
+        display: none;
+      }
+
+      .mobile-step-row .step-card {
+        flex: 0 0 286px;
+        min-height: 176px;
+        padding: 24px;
+        border-left-width: 0;
+      }
+
+      .mobile-step-row .step-card h3 {
+        min-height: auto;
+        font-size: 1rem;
+      }
+
+      .stats-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0;
+        margin: 30px 16px;
+        padding: 18px 0;
+        border-radius: 14px;
+        color: white;
+        background: var(--teal-dark);
+        box-shadow: 0 16px 30px rgba(36, 91, 109, 0.24);
+      }
+
+      .stat {
+        display: grid;
+        place-items: center;
+        min-width: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.22);
+      }
+
+      .stat:last-child {
+        border-right: 0;
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.2rem;
+      }
+
+      .stat span {
+        font-size: 0.68rem;
+      }
+
+      .mobile-footer {
+        padding: 0 18px 96px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.55;
+        text-align: center;
+      }
+
+      .bottom-nav {
+        position: absolute;
+        right: 50%;
+        bottom: 18px;
+        z-index: 4;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 258px;
+        min-height: 62px;
+        padding: 7px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 16px 34px rgba(22, 52, 72, 0.18);
+        transform: translateX(50%);
+        backdrop-filter: blur(20px);
+      }
+
+      .bottom-nav button {
+        display: grid;
+        place-items: center;
+        gap: 3px;
+        border: 0;
+        color: var(--muted);
+        background: transparent;
+        font-size: 0.66rem;
+        font-weight: 800;
+      }
+
+      .bottom-nav button.active {
+        color: var(--teal-dark);
+      }
+
+      .bottom-nav svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      .component-demo {
+        display: grid;
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .mini-search {
+        width: 100%;
+        max-width: 360px;
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.52);
+        box-shadow: var(--shadow-card);
+        backdrop-filter: blur(14px);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        box-shadow: 0 9px 24px rgba(22, 52, 72, 0.05);
+      }
+
+      th,
+      td {
+        padding: 15px 16px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--teal-dark);
+        background: #eef7fa;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+      }
+
+      td {
+        color: var(--ink-soft);
+        line-height: 1.5;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .asset-card {
+        display: grid;
+        grid-template-columns: minmax(220px, 360px) 1fr;
+        gap: 22px;
+        align-items: center;
+      }
+
+      .asset-preview {
+        min-height: 190px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background-image:
+          linear-gradient(90deg, rgba(236, 246, 250, 0.68), rgba(236, 246, 250, 0.24)),
+          url("../assets/homepage-hero-pharmacy.png");
+        background-size: cover;
+        background-position: center;
+        box-shadow: var(--shadow-card);
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 18px 0 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        color: var(--ink-soft);
+        background: var(--surface);
+      }
+
+      @media (max-width: 960px) {
+        .map-header,
+        .grid.two,
+        .grid.three,
+        .grid.four,
+        .desktop-hero-grid,
+        .asset-card {
+          grid-template-columns: 1fr;
+        }
+
+        .swatches {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .step-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        :root {
+          --content: min(100vw - 24px, 560px);
+        }
+
+        .map-shell {
+          padding-top: 16px;
+        }
+
+        .map-header,
+        .section {
+          padding: 18px;
+          border-radius: 18px;
+        }
+
+        .swatches {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .type-sample {
+          grid-template-columns: 1fr;
+        }
+
+        .desktop-hero-grid {
+          margin-top: 20px;
+          padding: 0 20px 40px;
+        }
+
+        .preview-nav {
+          padding: 18px 20px;
+        }
+
+        .step-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .desktop-steps {
+          padding: 40px 20px;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="map-shell">
+      <header class="map-header">
+        <div>
+          <p class="eyebrow">Внутренний дизайн-справочник</p>
+          <h1>Графическая карта главной страницы GotMeds</h1>
+          <p class="lead">
+            Эта страница разбирает дизайнерские desktop и mobile-макеты на токены,
+            элементы, компоненты и правила адаптации. Карта не меняет текущую главную
+            страницу приложения и не является обязательством реализации новых функций MVP.
+          </p>
+          <nav class="toc" aria-label="Навигация по карте">
+            <a href="#decisions">Решения</a>
+            <a href="#tokens">Токены</a>
+            <a href="#components">Компоненты</a>
+            <a href="#desktop">Desktop</a>
+            <a href="#mobile">Mobile</a>
+            <a href="#responsive">Responsive</a>
+            <a href="#transfer">Перенос</a>
+          </nav>
+        </div>
+        <aside class="status-note" aria-label="Статус карты">
+          <strong>Статус: рабочий артефакт</strong>
+          <span>Файл используется для визуального анализа будущего редизайна, без подключения к production-маршрутам.</span>
+          <span>Hero-изображение: новый сгенерированный asset с настроением светлой современной аптеки.</span>
+        </aside>
+      </header>
+
+      <section class="section" id="decisions">
+        <p class="eyebrow">01. Зафиксированные решения</p>
+        <h2>Границы карты</h2>
+        <p class="section-intro">
+          Эти решения отделяют визуальный справочник от продуктовой реализации. Спорные элементы
+          сохраняются как ориентиры, но не становятся функциональными задачами без отдельной спецификации.
+        </p>
+        <div class="grid two">
+          <article class="decision-card">
+            <h3>Bottom navigation</h3>
+            <p>Mobile-only дизайнерский ориентир. Пункты "Главная", "Избранное" и "Справка" не реализуются в MVP без отдельной спецификации.</p>
+          </article>
+          <article class="decision-card">
+            <h3>Stats bar</h3>
+            <p>Mobile-only визуальный блок доверия. Цифры не привязаны к реальным данным и не требуют desktop-версии.</p>
+          </article>
+          <article class="decision-card">
+            <h3>Поведение поиска</h3>
+            <p>В дизайн-карте desktop и mobile показывают поиск на месте. Автоматический переход на карту не закладывается в этот артефакт.</p>
+          </article>
+          <article class="decision-card">
+            <h3>Категории и hero image</h3>
+            <p>На mobile категории показываются компактными горизонтальными chips. Hero использует новое похожее качественное изображение аптеки.</p>
+          </article>
+          <article class="decision-card">
+            <h3>Глобальный бренд-цвет</h3>
+            <p>Новый Teal #316276 и Hover #1e4d5f интегрированы в globals.css (--color-primary). Полная визуальная унификация остальных страниц выполняется отдельным этапом.</p>
+          </article>
+          <article class="decision-card">
+            <h3>Адаптивная кардиограмма</h3>
+            <p>Десктоп использует жирные линии (8px/4px) справа от текста, а мобильный — тонкие (3px/1.8px) и смещает их вверх под шапку (order: -1) для компактности.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="tokens">
+        <p class="eyebrow">02. Визуальный язык</p>
+        <h2>Токены дизайна</h2>
+        <p class="section-intro">
+          Основа макета: холодный светлый фон, темный медицинский navy-текст, teal/blue акценты,
+          стеклянные поверхности, мягкие тени и serif-заголовки для более премиального ощущения.
+        </p>
+
+        <h3>Цветовая система</h3>
+        <div class="swatches">
+          <div class="swatch">
+            <div class="swatch-color" style="background:#102033"></div>
+            <div class="swatch-body"><strong>Ink</strong><span>#102033</span></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background:#316276"></div>
+            <div class="swatch-body"><strong>Teal (Primary)</strong><span>#316276</span></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background:#1e4d5f"></div>
+            <div class="swatch-body"><strong>Primary Hover</strong><span>#1e4d5f</span></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background:#aee8fb"></div>
+            <div class="swatch-body"><strong>Aqua</strong><span>#aee8fb</span></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background:#f5f8fb"></div>
+            <div class="swatch-body"><strong>Page BG</strong><span>#f5f8fb</span></div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background:#f2d89a"></div>
+            <div class="swatch-body"><strong>Warm Note</strong><span>#f2d89a</span></div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px">Типографика</h3>
+        <div class="type-samples">
+          <div class="type-sample">
+            <small>Hero title</small>
+            <div class="sample-hero">Найди лекарство в Гудермесе</div>
+          </div>
+          <div class="type-sample">
+            <small>Section title</small>
+            <div class="sample-title">Как это работает?</div>
+          </div>
+          <div class="type-sample">
+            <small>Body text</small>
+            <div class="sample-body">Быстрый поиск по препаратам, витаминам и медтехнике с учетом аптечных остатков.</div>
+          </div>
+          <div class="type-sample">
+            <small>Micro label</small>
+            <div class="sample-label">Поиск препарата</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:28px">Поверхности и эффекты</h3>
+        <div class="grid three">
+          <article class="token-card">
+            <h3>Glass panel</h3>
+            <p>Полупрозрачная белая поверхность, backdrop blur, светлый бордер и мягкая тень.</p>
+          </article>
+          <article class="token-card">
+            <h3>Step card</h3>
+            <p>Белая карточка с тонким бордером, акцентной линией и бледным декоративным знаком.</p>
+          </article>
+          <article class="token-card">
+            <h3>Floating capsule</h3>
+            <p>Таблеточная форма для admin button, chips и нижней мобильной навигации.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <p class="eyebrow">03. Hero asset</p>
+        <h2>Фоновое изображение</h2>
+        <div class="asset-card">
+          <div class="asset-preview" role="img" aria-label="Новое фоновое изображение светлой аптеки"></div>
+          <div>
+            <h3>Направление изображения</h3>
+            <p class="section-intro">
+              Светлый интерьер аптеки, мягкий фокус, голубовато-белая палитра, чистая медицинская атмосфера.
+              Изображение специально подготовлено как фон для hero и дополнительно осветляется overlay-слоями.
+            </p>
+            <div class="toc" aria-label="Характеристики изображения">
+              <span class="tag">photorealistic</span>
+              <span class="tag">soft focus</span>
+              <span class="tag">no readable brands</span>
+              <span class="tag">hero-safe</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="components">
+        <p class="eyebrow">04. Компоненты</p>
+        <h2>Каталог элементов</h2>
+        <div class="grid three">
+          <article class="component-card">
+            <h3>Logo</h3>
+            <p>Компактный знак в teal-квадрате и текст GotMeds. На mobile знак чуть меньше, но остается первым сигналом бренда.</p>
+            <div class="component-demo">
+              <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M7 12.5 10.5 16 17 8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span>GotMeds</span>
+              </div>
+            </div>
+          </article>
+          <article class="component-card">
+            <h3>Admin button</h3>
+            <p>Служебная capsule-кнопка. Не должна выглядеть как основной пользовательский сценарий.</p>
+            <div class="component-demo"><button class="admin-button" type="button">Администратор</button></div>
+          </article>
+          <article class="component-card">
+            <h3>Category chips</h3>
+            <p>На desktop находятся в поисковой панели, на mobile переходят в горизонтальный scroll.</p>
+            <div class="chip-row">
+              <span class="chip">Медтехника</span>
+              <span class="chip">Витамины</span>
+              <span class="chip">Мать и дитя</span>
+            </div>
+          </article>
+          <article class="component-card">
+            <h3>Desktop search panel</h3>
+            <p>Glass-панель с label, input и chips. Основная CTA-кнопка не требуется в desktop-варианте карты.</p>
+            <div class="mini-search">
+              <span class="search-label">Поиск препарата</span>
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>Введите название препарата...</span>
+              </div>
+            </div>
+          </article>
+          <article class="component-card">
+            <h3>Mobile search panel</h3>
+            <p>Поле и кнопка "Найти сейчас" запускают тот же поиск на месте. Категории остаются доступными ниже.</p>
+            <div class="mobile-search">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>Введите название лекарства...</span>
+              </div>
+              <button class="mobile-cta" type="button">Найти сейчас →</button>
+              <div class="mobile-categories">
+                <span class="chip">Медтехника</span>
+                <span class="chip">Витамины</span>
+                <span class="chip">Мать и дитя</span>
+              </div>
+            </div>
+          </article>
+          <article class="component-card">
+            <h3>Step card</h3>
+            <p>Информационная карточка инструкции. В desktop идет сеткой, в mobile — горизонтальной лентой.</p>
+            <div class="step-card" data-ghost="Q">
+              <span class="step-badge">1</span>
+              <h3>Введи название</h3>
+              <p>Напиши название препарата или аппарата в поиск.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="desktop">
+        <p class="eyebrow">05. Desktop preview</p>
+        <h2>Композиция desktop</h2>
+        <p class="section-intro">
+          На desktop первый экран строится вокруг широкой hero-сцены: контент и поиск слева,
+          декоративная медицинская графика справа, ниже — обучающий блок из четырех карточек.
+        </p>
+        <div class="preview-stage desktop-preview">
+          <section class="desktop-hero" aria-label="Desktop hero preview">
+            <div class="preview-nav">
+              <div class="brand">
+                <span class="brand-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" role="img" focusable="false">
+                    <g transform="rotate(-42 12 12)">
+                      <rect x="4.2" y="9" width="15.6" height="6" rx="3" fill="currentColor" />
+                      <path class="logo-divider" d="M12 9v6" />
+                    </g>
+                  </svg>
+                </span>
+                <span class="brand-name">Got Meds</span>
+              </div>
+              <button class="admin-button" type="button">Администратор</button>
+            </div>
+
+            <div class="desktop-hero-grid">
+              <div>
+                <h2 class="hero-title">Найди лекарство в <span>Гудермесе</span></h2>
+                <p class="hero-copy">Быстрый поиск по препаратам, витаминам и медтехнике с учетом аптечных остатков.</p>
+                <div class="search-panel">
+                  <span class="search-label">Поиск препарата</span>
+                  <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <span>Введите название препарата...</span>
+                  </div>
+                  <div class="chip-row">
+                    <span class="chip">Медтехника</span>
+                    <span class="chip">Витамины</span>
+                    <span class="chip">Мать и дитя</span>
+                  </div>
+                </div>
+              </div>
+              <div class="pulse-art" aria-hidden="true">
+                <svg class="pulse-graphic" viewBox="0 0 420 420" fill="none">
+                  <circle class="pulse-halo" cx="210" cy="210" r="118" />
+                  <circle class="pulse-halo-echo" cx="210" cy="210" r="118" />
+                  <circle class="pulse-halo-late" cx="210" cy="210" r="118" />
+                  <path
+                    class="pulse-trace"
+                    d="M58 214h58l15-24 17 48 17-116 23 160 19-68h31l14-24 18 48 18-74 18 50h56"
+                    pathLength="1"
+                  />
+                </svg>
+              </div>
+            </div>
+          </section>
+
+          <section class="desktop-steps" aria-label="Desktop steps preview">
+            <div class="section-title-center">
+              <h2>Как это работает?</h2>
+              <div class="divider"></div>
+            </div>
+            <div class="step-grid">
+              <article class="step-card" data-ghost="Q">
+                <span class="step-badge">1</span>
+                <h3>Введи название</h3>
+                <p>Напиши название препарата или аппарата в поиск.</p>
+              </article>
+              <article class="step-card" data-ghost="M">
+                <span class="step-badge">2</span>
+                <h3>Выбери на карте</h3>
+                <p>Система покажет ближайшие аптеки, где товар числится в наличии.</p>
+              </article>
+              <article class="step-card" data-ghost="C">
+                <span class="step-badge">3</span>
+                <h3>Свяжись в 1 клик</h3>
+                <p>Напиши WhatsApp или позвони, чтобы уточнить наличие.</p>
+              </article>
+              <article class="step-card" data-ghost="R">
+                <span class="step-badge">4</span>
+                <h3>Забери</h3>
+                <p>Построй маршрут прямо в приложении и отправляйся за заказом.</p>
+              </article>
+            </div>
+          </section>
+          <footer class="desktop-footer">
+            <p>Сервис носит информационный характер. Имеются противопоказания. Не является публичной офертой</p>
+            <div class="footer-links"><span>Помощь</span><span>Контакты</span><span>Аптекам</span></div>
+            <small>© 2024 GotMeds. Все права защищены.</small>
+          </footer>
+        </div>
+      </section>
+
+      <section class="section" id="mobile">
+        <p class="eyebrow">06. Mobile preview</p>
+        <h2>Композиция mobile</h2>
+        <p class="section-intro">
+          Mobile-версия не является сжатым desktop. Hero центрируется, поиск получает CTA-кнопку,
+          категории переходят в горизонтальные chips, карточки шагов становятся лентой.
+        </p>
+        <div class="phone-wrap">
+          <article class="phone" aria-label="Mobile preview">
+            <section class="mobile-hero">
+              <div class="mobile-nav">
+                <div class="brand">
+                  <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" role="img" focusable="false">
+                      <g transform="rotate(-42 12 12)">
+                        <rect x="4.2" y="9" width="15.6" height="6" rx="3" fill="currentColor" />
+                        <path class="logo-divider" d="M12 9v6" />
+                      </g>
+                    </svg>
+                  </span>
+                  <span class="brand-name" style="font-size: 18px;">Got Meds</span>
+                </div>
+                <button class="admin-button" style="height: 32px; padding: 0 14px; font-size: 12px;" type="button">Администратор</button>
+              </div>
+
+              <div class="pulse-art" aria-hidden="true">
+                <svg class="pulse-graphic" viewBox="0 0 420 420" fill="none">
+                  <circle class="pulse-halo" cx="210" cy="210" r="118" />
+                  <circle class="pulse-halo-echo" cx="210" cy="210" r="118" />
+                  <circle class="pulse-halo-late" cx="210" cy="210" r="118" />
+                  <path
+                    class="pulse-trace"
+                    d="M58 214h58l15-24 17 48 17-116 23 160 19-68h31l14-24 18 48 18-74 18 50h56"
+                    pathLength="1"
+                  />
+                </svg>
+              </div>
+              <div class="mobile-hero-content">
+                <h2>Найди лекарство в <span>Гудермесе</span></h2>
+                <p>Мгновенный поиск наличия и цен в аптеках рядом. Заботьтесь о здоровье без лишних поездок.</p>
+                <div class="mobile-search">
+                  <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <span>Введите название лекарства...</span>
+                  </div>
+                  <button class="mobile-cta" type="button">Найти сейчас →</button>
+                  <div class="mobile-categories" aria-label="Категории">
+                    <span class="chip">Медтехника</span>
+                    <span class="chip">Витамины</span>
+                    <span class="chip">Мать и дитя</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="mobile-steps">
+              <h2>Как это работает?</h2>
+              <div class="divider"></div>
+              <div class="mobile-step-row">
+                <article class="step-card" data-ghost="Q">
+                  <span class="step-badge">1</span>
+                  <h3>Поиск</h3>
+                  <p>Введите название препарата в строку поиска на главной странице.</p>
+                </article>
+                <article class="step-card" data-ghost="M">
+                  <span class="step-badge">2</span>
+                  <h3>Выбор аптеки</h3>
+                  <p>Сравните ближайшие аптеки и наличие препарата.</p>
+                </article>
+              </div>
+            </section>
+
+            <section class="stats-bar" aria-label="Визуальный блок доверия">
+              <div class="stat"><strong>42+</strong><span>Аптеки</span></div>
+              <div class="stat"><strong>15k+</strong><span>Товары</span></div>
+              <div class="stat"><strong>24/7</strong><span>Поиск</span></div>
+            </section>
+
+            <footer class="mobile-footer">
+              <p>Сервис носит информационный характер. Имеются противопоказания. Не является публичной офертой.</p>
+              <small>© 2024 GotMeds</small>
+            </footer>
+
+            <nav class="bottom-nav" aria-label="Дизайнерская нижняя навигация">
+              <button class="active" type="button">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-8.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                Главная
+              </button>
+              <button type="button">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20.5 8.8c0 5.5-8.5 10.2-8.5 10.2S3.5 14.3 3.5 8.8A4.5 4.5 0 0 1 12 6.7a4.5 4.5 0 0 1 8.5 2.1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                Избранное
+              </button>
+              <button type="button">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 10v6M12 7h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Справка
+              </button>
+            </nav>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="responsive">
+        <p class="eyebrow">07. Responsive map</p>
+        <h2>Правила перестройки</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Элемент</th>
+              <th>Desktop</th>
+              <th>Mobile</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hero layout</td>
+              <td>Контент и поиск слева, декоративная медицинская графика справа.</td>
+              <td>Контент центрирован, поиск расположен под текстом внутри hero.</td>
+            </tr>
+            <tr>
+              <td>Поиск</td>
+              <td>Glass-панель с input и категориями, без основной CTA-кнопки.</td>
+              <td>Input, кнопка "Найти сейчас" и компактные горизонтальные категории.</td>
+            </tr>
+            <tr>
+              <td>Категории</td>
+              <td>Chips внутри поисковой панели.</td>
+              <td>Горизонтальный scroll chips, чтобы категории не исчезали.</td>
+            </tr>
+            <tr>
+              <td>Медицинская графика (ECG)</td>
+              <td>Жирные анимированные линии (толщина pulseTrace: 8px, pulseHalo: 4px) справа от контента.</td>
+              <td>Тонкие линии (толщина pulseTrace: 3px, pulseHalo: 1.8px), подняты к шапке (order: -1, margin-top: -28px).</td>
+            </tr>
+            <tr>
+              <td>Фон (Pharmacy Image)</td>
+              <td>Сдвинут вправо (right 30% center) для максимальной читаемости заголовка и поиска на десктопе.</td>
+              <td>Центрирован (center center) под легким светлым градиентным overlay.</td>
+            </tr>
+            <tr>
+              <td>Шаги</td>
+              <td>Четыре карточки в ряд (выровнены по общей ширине 1280px).</td>
+              <td>Горизонтальная лента карточек с частично видимым следующим элементом.</td>
+            </tr>
+            <tr>
+              <td>Stats bar</td>
+              <td>Не показан в текущем desktop-макете.</td>
+              <td>Mobile-only визуальный блок доверия, без реальных метрик.</td>
+            </tr>
+            <tr>
+              <td>Bottom navigation</td>
+              <td>Отсутствует.</td>
+              <td>Mobile-only дизайнерский ориентир, не функциональность MVP.</td>
+            </tr>
+            <tr>
+              <td>Глобальные цвета</td>
+              <td colspan="2">Бренд-цвет #316276 и hover-цвет #1e4d5f интегрированы в globals.css (--color-primary). Страницы, уже использующие глобальные переменные, наследуют новую гамму; полная визуальная унификация админки, карты и страницы препарата выполняется отдельным этапом.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="transfer">
+        <p class="eyebrow">08. Карта будущего переноса</p>
+        <h2>Что делать с элементами позже</h2>
+        <div class="grid two">
+          <article class="transfer-card">
+            <h3>Оставить и адаптировать</h3>
+            <p>Бренд, служебная ссылка администратора, hero-сообщение, search panel, category chips, блок "Как это работает?", footer-дисклеймер.</p>
+          </article>
+          <article class="transfer-card">
+            <h3>Переделать визуально</h3>
+            <p>Фоновый hero, glass-поверхности, карточки шагов, desktop/mobile spacing, декоративная медицинская графика.</p>
+          </article>
+          <article class="transfer-card">
+            <h3>Добавить позже</h3>
+            <p>Mobile bottom navigation, если появятся спецификации для избранного, справки и постоянной мобильной навигации.</p>
+          </article>
+          <article class="transfer-card">
+            <h3>Не переносить как функциональность MVP</h3>
+            <p>Stats bar с маркетинговыми цифрами и bottom navigation не должны попадать в рабочий продукт без отдельного решения.</p>
+          </article>
+        </div>
+        <ul class="checklist">
+          <li>Текущая главная страница приложения не изменяется этим файлом.</li>
+          <li>Новая карта может открываться как статический HTML-артефакт.</li>
+          <li>Спорные элементы имеют явные пометки и не трактуются как задача MVP.</li>
+          <li>Перед реальным редизайном нужно сверить каждый пункт со спецификациями.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
