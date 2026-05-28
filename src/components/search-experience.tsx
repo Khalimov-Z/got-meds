@@ -66,9 +66,12 @@ function formatPrice(price: number | null) {
   return `от ${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
 }
 
-function getInitials(name: string) {
-  return name.trim().slice(0, 1).toUpperCase() || "G";
-}
+const CATEGORY_ICONS: Record<SearchCategory, string> = {
+  medicine: "medication",
+  vitamins: "spa",
+  equipment: "devices_other",
+  mother_and_baby: "child_care",
+};
 
 /**
  * Содержимое шапки сайта (логотип и служебная кнопка администратора).
@@ -229,6 +232,13 @@ export function SearchExperience() {
     };
   }, [status, trimmedQuery]);
 
+  const heroSearchStateClass =
+    status === "loading" || status === "success"
+      ? styles.heroWithResults
+      : status === "empty" || status === "restricted" || status === "error"
+        ? styles.heroWithFeedback
+        : "";
+
   return (
     <main className={styles.shell}>
       <header className={`${styles.siteHeader} ${isHeaderScrolled ? styles.siteHeaderScrolled : ""}`}>
@@ -237,7 +247,7 @@ export function SearchExperience() {
         </div>
       </header>
 
-      <section className={styles.hero} aria-labelledby="home-title">
+      <section className={`${styles.hero} ${heroSearchStateClass}`} aria-labelledby="home-title">
         <div className={styles.heroFrame}>
           <div className={styles.heroGrid}>
             <div className={styles.heroContent}>
@@ -426,7 +436,9 @@ function SearchResults({
                 aria-hidden="true"
               >
                 {!result.image_url ? (
-                  <span>{getInitials(result.name)}</span>
+                  <span className="material-symbols-outlined" aria-hidden="true">
+                    {CATEGORY_ICONS[result.category] || "medication"}
+                  </span>
                 ) : null}
               </div>
               <div className={styles.productInfo}>

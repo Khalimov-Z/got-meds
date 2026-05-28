@@ -1,10 +1,20 @@
+.shell,
+.narrowShell {
+  --admin-border: hsl(199 28% 86%);
+  --admin-border-strong: hsl(196 31% 74%);
+  --admin-soft: hsl(196 64% 96%);
+  --admin-panel: hsl(0 0% 100% / 0.9);
+  --admin-shadow: 0 24px 58px -42px hsl(196 41% 22% / 0.5);
+  --admin-glow: hsl(196 41% 50% / 0.16);
+}
+
 .shell {
   min-height: 100vh;
-  padding: 24px;
-  color: hsl(222 36% 13%);
+  padding: 28px;
+  color: var(--color-text-main);
   background:
-    linear-gradient(180deg, hsl(202 45% 97%), hsl(0 0% 100%) 42%),
-    hsl(0 0% 100%);
+    linear-gradient(180deg, hsl(196 70% 97%) 0%, var(--color-bg) 46%, hsl(0 0% 100%) 100%),
+    var(--color-bg);
 }
 
 .narrowShell {
@@ -12,10 +22,115 @@
   min-height: 100vh;
   place-items: center;
   padding: 20px;
-  color: hsl(222 36% 13%);
+  color: var(--color-text-main);
   background:
-    linear-gradient(180deg, hsl(202 45% 97%), hsl(0 0% 100%) 48%),
-    hsl(0 0% 100%);
+    linear-gradient(180deg, hsl(196 70% 97%) 0%, var(--color-bg) 52%, hsl(0 0% 100%) 100%),
+    var(--color-bg);
+}
+
+.loginShell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 96px 24px 84px;
+  background: var(--color-bg);
+}
+
+.loginShell::before {
+  position: absolute;
+  inset: -18px;
+  z-index: -2;
+  background-image:
+    linear-gradient(
+      90deg,
+      hsl(196 45% 92% / 0.2) 0%,
+      hsl(0 0% 100% / 0.18) 46%,
+      hsl(196 45% 94% / 0.38) 100%
+    ),
+    url("/assets/homepage-hero-pharmacy.png");
+  background-position: right 30% center;
+  background-size: cover;
+  content: "";
+  filter: blur(7px);
+  opacity: 0.96;
+  transform: scale(1.03);
+}
+
+.loginShell::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, hsl(0 0% 100% / 0.18), hsl(0 0% 100% / 0.42)),
+    linear-gradient(90deg, hsl(196 41% 32% / 0.2), hsl(0 0% 100% / 0.24));
+  content: "";
+}
+
+.loginTopBar {
+  position: absolute;
+  z-index: 2;
+  top: 22px;
+  left: 50%;
+  display: flex;
+  width: min(1280px, calc(100vw - 56px));
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  transform: translateX(-50%);
+}
+
+.loginHomeLink {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #c0c7cc;
+  border-radius: 9999px;
+  padding: 0 12px;
+  color: #0b1c30;
+  background: #ffffff;
+  font-size: 0.94rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition:
+    border-color 0.25s ease-in-out,
+    background 0.25s ease-in-out,
+    color 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out,
+    transform 0.25s ease-in-out;
+}
+
+.loginHomeLink:hover,
+.loginHomeLink:focus-visible {
+  border-color: var(--color-primary);
+  color: hsl(0 0% 100%);
+  background: var(--color-primary);
+  box-shadow:
+    0 12px 24px hsl(203 42% 25% / 0.11),
+    0 0 20px hsl(196 41% 50% / 0.4);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.loginHomeLink:active {
+  border-color: var(--color-primary);
+  color: hsl(0 0% 100%);
+  background: var(--color-primary);
+  transform: translateY(0);
+}
+
+.loginHomeLink svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loginHomeLink span {
+  font-size: 1.25rem;
 }
 
 .header {
@@ -23,13 +138,18 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 18px;
-  width: min(100%, 1120px);
-  margin: 0 auto 22px;
+  width: min(1280px, calc(100vw - 56px));
+  margin: 0 auto 24px;
 }
 
-.header h1,
+.header h1 {
+  margin: 16px 0 0;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 1.04;
+}
+
 .loginPanel h1 {
-  margin: 0;
+  margin: 18px 0 0;
   font-size: clamp(1.8rem, 4vw, 2.7rem);
   line-height: 1.04;
 }
@@ -37,95 +157,24 @@
 .header p,
 .loginPanel p {
   margin: 8px 0 0;
-  color: hsl(220 14% 42%);
-}
-
-.logoMark {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 124px;
-  height: 38px;
-  overflow: hidden;
-  border-radius: 9999px;
-  color: hsl(222 36% 13%);
-  background: hsl(0 0% 100%);
-  box-shadow:
-    0 16px 26px -16px hsl(230 74% 35% / 0.6),
-    inset 0 0 0 1px hsl(220 25% 88%),
-    inset 0 2px 0 hsl(0 0% 100% / 0.45);
-  font-size: 0.86rem;
-  font-weight: 850;
-  letter-spacing: 0;
-  line-height: 1;
-  text-decoration: none;
-  transform: rotate(-4deg);
-}
-
-.logoMark:hover {
-  text-decoration: none;
-}
-
-.logoMark::before {
-  position: absolute;
-  z-index: 2;
-  left: 50%;
-  top: -5px;
-  width: 1px;
-  height: 48px;
-  background: hsl(220 24% 86%);
-  content: "";
-  transform: rotate(12deg);
-}
-
-.logoMark::after {
-  position: absolute;
-  z-index: 3;
-  top: 7px;
-  left: 16px;
-  width: 28px;
-  height: 4px;
-  border-radius: 9999px;
-  background: hsl(0 0% 100% / 0.32);
-  content: "";
-}
-
-.logoPartPrimary,
-.logoPartSecondary {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  flex: 0 0 50%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  padding: 0 14px;
-  white-space: nowrap;
-}
-
-.logoPartPrimary {
-  color: hsl(0 0% 100%);
-  background: hsl(230 74% 50%);
-}
-
-.logoPartSecondary {
-  color: inherit;
-  background: hsl(0 0% 100%);
-}
-
-.logoMark + h1 {
-  margin-top: 14px;
+  color: var(--color-text-muted);
 }
 
 .adminMeta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  color: hsl(220 14% 42%);
+  color: var(--color-text-muted);
   font-size: 0.92rem;
+}
+
+.adminMeta > span {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  line-height: 1.2;
 }
 
 .logoutButton,
@@ -137,14 +186,15 @@
   align-items: center;
   justify-content: center;
   min-height: 42px;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 9999px;
   padding: 0 16px;
   font: inherit;
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
   transition:
+    border-color 0.2s ease,
     color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -153,15 +203,17 @@
 
 .primaryButton {
   color: white;
-  background: hsl(230 74% 50%);
-  box-shadow: 0 14px 30px -18px hsl(230 74% 30%);
+  background: var(--color-primary);
+  box-shadow: 0 16px 30px -20px hsl(196 41% 28% / 0.72);
 }
 
 .secondaryLink,
 .ghostButton,
 .logoutButton {
-  color: hsl(222 36% 13%);
-  background: hsl(210 30% 96%);
+  border-color: var(--admin-border);
+  color: var(--color-text-main);
+  background: hsl(0 0% 100% / 0.82);
+  box-shadow: 0 10px 22px -20px hsl(196 41% 22% / 0.38);
 }
 
 .dangerButton {
@@ -177,11 +229,23 @@
   transform: translateY(-1px);
 }
 
+.primaryButton:hover,
+.primaryButton:focus-visible {
+  background: var(--color-primary-hover);
+}
+
+.secondaryLink:hover,
+.secondaryLink:focus-visible,
 .logoutButton:hover,
 .logoutButton:focus-visible {
-  color: hsl(230 74% 50%);
-  background: hsl(230 85% 96%);
-  box-shadow: 0 12px 24px -18px hsl(230 74% 30%);
+  border-color: var(--color-primary);
+  color: hsl(0 0% 100%);
+  background: var(--color-primary);
+  box-shadow:
+    0 12px 24px hsl(203 42% 25% / 0.11),
+    0 0 20px hsl(196 41% 50% / 0.4);
+  text-decoration: none;
+  transform: translateY(-2px);
 }
 
 .primaryButton:focus-visible,
@@ -193,14 +257,14 @@
 .select:focus-visible,
 .fileInput:focus-visible,
 .summaryButton:focus-visible {
-  outline: 3px solid hsl(230 74% 50% / 0.2);
+  outline: 3px solid hsl(196 41% 41% / 0.18);
   outline-offset: 2px;
 }
 
 .mainGrid,
 .content {
   min-width: 0;
-  width: min(100%, 1120px);
+  width: min(1280px, calc(100vw - 56px));
   margin: 0 auto;
 }
 
@@ -215,10 +279,12 @@
 .panel,
 .loginPanel,
 .notice {
-  border: 1px solid hsl(215 24% 90%);
+  border: 1px solid var(--admin-border);
   border-radius: 8px;
-  background: hsl(0 0% 100%);
-  box-shadow: 0 18px 45px -34px hsl(220 40% 25%);
+  background: var(--admin-panel);
+  box-shadow: var(--admin-shadow);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }
 
 .stat {
@@ -230,7 +296,7 @@
 .field span,
 .queueMeta,
 .reportTable th {
-  color: hsl(220 14% 42%);
+  color: var(--color-text-muted);
   font-size: 0.86rem;
 }
 
@@ -245,7 +311,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  width: min(100%, 1120px);
+  width: min(1280px, calc(100vw - 56px));
   margin: 14px auto 0;
 }
 
@@ -255,6 +321,44 @@
   padding: 18px;
   color: inherit;
   text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.navCard:hover {
+  border-color: var(--admin-border-strong);
+  box-shadow: 0 24px 58px -38px hsl(196 41% 22% / 0.58);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.navCard .secondaryLink {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 0.88rem;
+  line-height: 1;
+}
+
+.navCard .secondaryLink:hover,
+.navCard .secondaryLink:focus-visible,
+.navCard:focus-visible .secondaryLink {
+  border-color: var(--color-primary);
+  color: hsl(0 0% 100%);
+  background: var(--color-primary);
+  box-shadow:
+    0 12px 24px hsl(203 42% 25% / 0.11),
+    0 0 20px hsl(196 41% 50% / 0.4);
+  transform: translateY(-2px);
+}
+
+.navCard .secondaryLink:active {
+  border-color: var(--color-primary);
+  color: hsl(0 0% 100%);
+  background: var(--color-primary);
+  transform: translateY(0);
 }
 
 .navCard h2 {
@@ -264,12 +368,168 @@
 
 .navCard p {
   margin: 0;
-  color: hsl(220 14% 42%);
+  color: var(--color-text-muted);
 }
 
 .loginPanel {
-  width: min(100%, 420px);
-  padding: 22px;
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 466px);
+  overflow: hidden;
+  border-color: hsl(0 0% 100% / 0.5);
+  border-radius: 18px;
+  padding: 46px 42px 38px;
+  background: hsl(0 0% 100% / 0.34);
+  box-shadow:
+    0 32px 64px hsl(196 41% 32% / 0.15),
+    0 0 0 1px hsl(0 0% 100% / 0.2) inset;
+  text-align: center;
+  -webkit-backdrop-filter: blur(40px) saturate(145%);
+  backdrop-filter: blur(40px) saturate(145%);
+}
+
+.loginPanel::before {
+  position: absolute;
+  inset: -16px;
+  z-index: -1;
+  border-radius: inherit;
+  background: hsl(196 41% 50% / 0.2);
+  content: "";
+  filter: blur(60px);
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.loginPanel:focus-within::before {
+  opacity: 1;
+}
+
+.loginPanel::after {
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  border-radius: inherit;
+  background: linear-gradient(
+      135deg,
+      hsl(0 0% 100% / 0.42),
+      hsl(196 41% 50% / 0.12),
+      hsl(0 0% 100% / 0.34)
+    )
+    border-box;
+  content: "";
+  mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.loginPanel h1 {
+  font-size: clamp(2rem, 5vw, 2.55rem);
+}
+
+.loginForm {
+  gap: 20px;
+  margin-top: 32px;
+  text-align: left;
+}
+
+.loginForm .field {
+  gap: 9px;
+}
+
+.loginInputWrap {
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid hsl(0 0% 100% / 0.6);
+  border-radius: 16px;
+  padding: 0 16px;
+  color: hsl(196 28% 50%);
+  background: hsl(0 0% 100% / 0.52);
+  box-shadow:
+    0 8px 32px hsl(0 0% 0% / 0.03),
+    inset 0 1px 0 hsl(0 0% 100% / 0.72);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  transition:
+    border-color 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out,
+    transform 0.25s ease-in-out,
+    background 0.25s ease-in-out;
+}
+
+.loginInputWrap:hover {
+  border-color: hsl(194 45% 34% / 0.32);
+  background: hsl(0 0% 100% / 0.64);
+}
+
+.loginInputWrap:focus-within {
+  border-color: hsl(194 45% 34% / 0.58);
+  background: hsl(0 0% 100% / 0.84);
+  box-shadow:
+    0 0 0 4px hsl(194 45% 34% / 0.14),
+    0 18px 34px hsl(203 42% 25% / 0.14);
+  transform: translateY(-1px);
+}
+
+.loginInputWrap > svg {
+  width: 22px;
+  height: 22px;
+  color: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.loginInputWrap .input {
+  min-height: auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.loginInputWrap .input:focus,
+.loginInputWrap .input:focus-visible {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.loginForm .primaryButton {
+  width: 100%;
+  min-height: 66px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 850;
+}
+
+.loginFootnote {
+  border-top: 1px solid hsl(196 20% 82% / 0.58);
+  margin: 32px 0 0;
+  padding-top: 28px;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.loginDisclaimer {
+  position: absolute;
+  right: 24px;
+  bottom: 26px;
+  left: 24px;
+  color: hsl(200 8% 28% / 0.78);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .form {
@@ -302,14 +562,14 @@
   align-items: center;
   gap: 10px;
   min-height: 44px;
-  color: hsl(222 36% 13%);
+  color: var(--color-text-main);
   font-weight: 750;
 }
 
 .checkboxField input {
   width: 18px;
   height: 18px;
-  accent-color: hsl(230 74% 50%);
+  accent-color: var(--color-primary);
 }
 
 .scheduleGrid {
@@ -317,14 +577,14 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   min-width: 0;
-  border: 1px solid hsl(215 24% 90%);
+  border: 1px solid var(--admin-border);
   border-radius: 8px;
   padding: 14px;
 }
 
 .scheduleGrid legend {
   padding: 0 6px;
-  color: hsl(220 14% 42%);
+  color: var(--color-text-muted);
   font-size: 0.86rem;
   font-weight: 750;
 }
@@ -334,12 +594,25 @@
 .fileInput {
   width: 100%;
   min-height: 44px;
-  border: 1px solid hsl(215 24% 86%);
+  border: 1px solid var(--admin-border);
   border-radius: 8px;
   padding: 0 12px;
-  color: hsl(222 36% 13%);
-  background: hsl(0 0% 100%);
+  color: var(--color-text-main);
+  background: hsl(0 0% 100% / 0.92);
   font: inherit;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.input:focus,
+.select:focus,
+.fileInput:focus {
+  border-color: var(--color-primary);
+  background: hsl(0 0% 100%);
+  box-shadow: 0 0 0 4px var(--admin-glow);
 }
 
 .fileInput {
@@ -381,7 +654,7 @@
 
 .panelHeader p {
   margin: 6px 0 0;
-  color: hsl(220 14% 42%);
+  color: var(--color-text-muted);
 }
 
 .inlineFilter {
@@ -406,7 +679,7 @@
 
 .reportTable th,
 .reportTable td {
-  border-bottom: 1px solid hsl(215 24% 90%);
+  border-bottom: 1px solid var(--admin-border);
   padding: 10px 0;
   text-align: left;
 }
@@ -427,7 +700,7 @@
 }
 
 .rowDetails {
-  border-bottom: 1px solid hsl(215 24% 90%);
+  border-bottom: 1px solid var(--admin-border);
   padding: 0 0 12px;
 }
 
@@ -437,16 +710,16 @@
   min-height: 38px;
   border-radius: 8px;
   padding: 0 12px;
-  color: hsl(222 36% 13%);
-  background: hsl(210 30% 96%);
+  color: var(--color-text-main);
+  background: var(--admin-soft);
   font-weight: 750;
   cursor: pointer;
 }
 
 .rowDetails[open] .summaryButton {
   margin-bottom: 14px;
-  color: hsl(230 74% 38%);
-  background: hsl(230 85% 96%);
+  color: var(--color-primary);
+  background: hsl(196 64% 94%);
 }
 
 .demandTable th:first-child,
@@ -470,7 +743,7 @@
 .tableMeta {
   display: block;
   margin-top: 4px;
-  color: hsl(220 14% 42%);
+  color: var(--color-text-muted);
   font-size: 0.86rem;
 }
 
@@ -514,8 +787,8 @@
 }
 
 .tierBadge {
-  color: hsl(230 74% 38%);
-  background: hsl(230 85% 96%);
+  color: var(--color-primary);
+  background: var(--admin-soft);
 }
 
 .notice {
@@ -539,10 +812,11 @@
   grid-template-columns: minmax(0, 1.1fr) minmax(260px, 1fr);
   gap: 14px;
   align-items: start;
-  border: 1px solid hsl(215 24% 90%);
+  border: 1px solid var(--admin-border);
   border-radius: 8px;
   padding: 14px;
-  background: hsl(0 0% 100%);
+  background: hsl(0 0% 100% / 0.88);
+  box-shadow: 0 16px 34px -32px hsl(196 41% 22% / 0.42);
 }
 
 .queueTitle {
@@ -563,11 +837,11 @@
 }
 
 .emptyState {
-  border: 1px dashed hsl(215 24% 78%);
+  border: 1px dashed var(--admin-border-strong);
   border-radius: 8px;
   padding: 20px;
-  color: hsl(220 14% 42%);
-  background: hsl(210 30% 98%);
+  color: var(--color-text-muted);
+  background: hsl(196 64% 97%);
 }
 
 @media (max-width: 920px) {
@@ -583,6 +857,13 @@
 @media (max-width: 760px) {
   .shell {
     padding: 16px;
+  }
+
+  .header,
+  .mainGrid,
+  .content,
+  .navGrid {
+    width: min(100%, calc(100vw - 32px));
   }
 
   .header {
@@ -637,10 +918,10 @@
 
   .demandTable tr,
   .pharmacyTable tr {
-    border: 1px solid hsl(215 24% 90%);
+    border: 1px solid var(--admin-border);
     border-radius: 8px;
     padding: 10px 12px;
-    background: hsl(210 30% 98%);
+    background: hsl(0 0% 100% / 0.88);
   }
 
   .demandTable tr + tr,
@@ -671,14 +952,14 @@
 
   .demandTable td + td,
   .pharmacyTable td + td {
-    border-top: 1px solid hsl(215 24% 90%);
+    border-top: 1px solid var(--admin-border);
   }
 
   .demandTable td::before,
   .pharmacyTable td::before {
     display: block;
     margin-bottom: 3px;
-    color: hsl(220 14% 42%);
+    color: var(--color-text-muted);
     font-size: 0.78rem;
     font-weight: 750;
     content: attr(data-label);
@@ -686,10 +967,10 @@
 
   .pharmacyTable .pharmacyGroup {
     display: block;
-    border: 1px solid hsl(215 24% 90%);
+    border: 1px solid var(--admin-border);
     border-radius: 8px;
     padding: 10px 12px;
-    background: hsl(210 30% 98%);
+    background: hsl(0 0% 100% / 0.88);
   }
 
   .pharmacyTable .pharmacyGroup + .pharmacyGroup {
@@ -708,7 +989,7 @@
   }
 
   .pharmacyTable .detailRow td {
-    border-top: 1px solid hsl(215 24% 90%);
+    border-top: 1px solid var(--admin-border);
     padding: 10px 0 0;
   }
 

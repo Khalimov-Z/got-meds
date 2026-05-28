@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import {
   createPharmacyForm,
   getPharmacyManagementData,
@@ -262,10 +263,7 @@ export default async function PharmaciesPage({ searchParams }: PharmaciesPagePro
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.logoMark} href="/admin" aria-label="GotMeds Admin">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </Link>
+          <BrandMark href="/admin" label="GotMeds Admin" />
           <h1>Аптеки</h1>
           <p>Справочник аптек, координаты, график работы и статус на карте.</p>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { getInventoryUploadData } from "@/lib/actions/admin";
 import { logoutAdmin, requireAdmin } from "@/lib/admin/auth";
 import { InventoryUploadForm } from "./inventory-upload-form";
@@ -12,10 +13,7 @@ export default async function InventoryUploadPage() {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.logoMark} href="/admin" aria-label="GotMeds Admin">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </Link>
+          <BrandMark href="/admin" label="GotMeds Admin" />
           <h1>Загрузка остатков</h1>
           <p>CSV должен содержать колонки «Название» и «Остаток».</p>
         </div>

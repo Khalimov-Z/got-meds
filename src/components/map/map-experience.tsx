@@ -1,14 +1,32 @@
 "use client";
 
 import Script from "next/script";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BrandMark } from "@/components/brand-mark";
 import type {
   PharmacyByProductItem,
   ProductDetails,
 } from "@/lib/actions/products";
 import styles from "./map-experience.module.css";
+import {
+  SearchIcon,
+  ClearIcon,
+  MapIcon,
+  ListIcon,
+  LocationIcon,
+  ClockIcon,
+  PhoneIcon,
+  WhatsappIcon,
+  RouteIcon,
+  PrescriptionIcon,
+  PrayerIcon,
+  CategoryMedicineIcon,
+  CategoryEquipmentIcon,
+  CategoryVitaminsIcon,
+  CategoryBabyIcon,
+  AddressIcon,
+} from "./icons";
 
 type ViewMode = "map" | "nearby";
 type GeoStatus = "idle" | "loading" | "allowed" | "denied" | "unsupported";
@@ -75,6 +93,7 @@ declare global {
 const GU_DERMES_CENTER: UserLocation = { lat: 43.3517, lng: 46.1003 };
 const ACTIVE_MAP_BEHAVIORS = ["drag", "scrollZoom", "multiTouch"];
 const PASSIVE_MAP_BEHAVIORS = ["drag", "scrollZoom", "multiTouch"];
+const NEARBY_LIST_INITIAL_LIMIT = 4;
 
 const CATEGORY_LABELS = {
   medicine: "Лекарство",
@@ -90,7 +109,8 @@ const STATUS_LABELS = {
 };
 
 const STATUS_HINTS = {
-  in_stock: "Данные по остатку обновляются из сети аптек.",
+  in_stock:
+    "Данные по остатку обновляются из сети аптек. Перед выездом можно подтвердить наличие в WhatsApp.",
   likely_in_stock: "Данные из выгрузки. Уточните перед выездом.",
   unknown: "У малой аптеки нет онлайн-остатков. Лучше написать или позвонить.",
 };
@@ -112,6 +132,14 @@ function formatPrice(price?: number) {
   }
 
   return `от ${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
+}
+
+function formatCompactPrice(price?: number) {
+  if (typeof price !== "number") {
+    return "Уточнить";
+  }
+
+  return `${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
 }
 
 function formatDistance(distance: number | null) {
@@ -174,6 +202,22 @@ function formatRouteHref(pharmacy: PharmacyByProductItem) {
   return `https://yandex.ru/maps/?${params.toString()}`;
 }
 
+function getCategoryIcon(category: string) {
+  const props = { className: styles.categoryIcon, "aria-hidden": true };
+  switch (category) {
+    case "medicine":
+      return <CategoryMedicineIcon {...props} />;
+    case "equipment":
+      return <CategoryEquipmentIcon {...props} />;
+    case "vitamins":
+      return <CategoryVitaminsIcon {...props} />;
+    case "mother_and_baby":
+      return <CategoryBabyIcon {...props} />;
+    default:
+      return null;
+  }
+}
+
 function getMarkerClass(pharmacy: PharmacyByProductItem, selected: boolean) {
   const classNames = [styles.mapMarker, styles[`marker_${pharmacy.status}`]];
 
@@ -202,6 +246,18 @@ function getYandexPreset(pharmacy: PharmacyByProductItem) {
   }
 
   return "islands#grayDotIcon";
+}
+
+function getCardStatusLabel(pharmacy: PharmacyByProductItem) {
+  if (pharmacy.status === "unknown") {
+    return "Наличие неизвестно";
+  }
+
+  if (pharmacy.status === "likely_in_stock") {
+    return "Вероятно · уточнить";
+  }
+
+  return pharmacy.is_open_now ? "В наличии · открыто" : "В наличии · закрыто";
 }
 
 function getMapBounds(pharmacies: PharmacyByProductItem[], userLocation: UserLocation | null) {
@@ -497,24 +553,34 @@ function MapExperienceContent({
     return (
       <main className={styles.shell}>
         <header className={styles.searchHeader}>
-          <Link className={styles.logoMark} href="/" aria-label="GotMeds">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </Link>
+          <BrandMark />
 
           <form className={styles.searchForm} role="search" onSubmit={handleSearchSubmit}>
-            <label className={styles.searchLabel} htmlFor="map-search">
+            <label className={styles.searchLabel} htmlFor="map-search-restricted">
               Поиск
             </label>
-            <input
-              id="map-search"
-              className={styles.searchInput}
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Введите препарат"
-              autoComplete="off"
-              spellCheck={false}
-            />
+            <div className={styles.searchInputWrapper}>
+              <SearchIcon className={styles.searchFieldIcon} />
+              <input
+                id="map-search-restricted"
+                className={styles.searchInput}
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Введите препарат"
+                autoComplete="off"
+                spellCheck={false}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className={styles.clearSearchButton}
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Очистить поиск"
+                >
+                  <ClearIcon />
+                </button>
+              )}
+            </div>
             <button className={styles.searchButton} type="submit">
               Найти
             </button>
@@ -540,24 +606,34 @@ function MapExperienceContent({
   return (
     <main className={styles.shell}>
       <header className={styles.searchHeader}>
-        <Link className={styles.logoMark} href="/" aria-label="GotMeds">
-          <span className={styles.logoPartPrimary}>Got</span>
-          <span className={styles.logoPartSecondary}>Meds</span>
-        </Link>
+        <BrandMark />
 
         <form className={styles.searchForm} role="search" onSubmit={handleSearchSubmit}>
           <label className={styles.searchLabel} htmlFor="map-search">
             Поиск
           </label>
-          <input
-            id="map-search"
-            className={styles.searchInput}
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Введите препарат"
-            autoComplete="off"
-            spellCheck={false}
-          />
+          <div className={styles.searchInputWrapper}>
+            <SearchIcon className={styles.searchFieldIcon} />
+            <input
+              id="map-search"
+              className={styles.searchInput}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Введите препарат"
+              autoComplete="off"
+              spellCheck={false}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.clearSearchButton}
+                onClick={() => setSearchQuery("")}
+                aria-label="Очистить поиск"
+              >
+                <ClearIcon />
+              </button>
+            )}
+          </div>
           <button className={styles.searchButton} type="submit">
             Найти
           </button>
@@ -568,35 +644,43 @@ function MapExperienceContent({
         <div className={styles.resultTopRow}>
           {product ? (
             <section className={styles.productStrip} aria-label="Выбранный препарат">
-              <div>
-                <span>{CATEGORY_LABELS[product.category]}</span>
+              <div className={styles.productInfoWrapper}>
+                <div className={styles.categoryBadge}>
+                  {getCategoryIcon(product.category)}
+                  <span>{CATEGORY_LABELS[product.category]}</span>
+                </div>
                 <h1>{product.name}</h1>
               </div>
-              <strong>{formatPrice(product.price_estimate)}</strong>
+              <strong className={styles.priceTag}>{formatPrice(product.price_estimate)}</strong>
             </section>
           ) : null}
 
           <label className={styles.openNowToggle}>
-            <input
-              type="checkbox"
-              checked={openNow}
-              onChange={(event) => setOpenNow(event.target.checked)}
-            />
+            <ClockIcon className={styles.toggleClockIcon} />
             <span>Открыто сейчас</span>
+            <span className={styles.switchSlider}>
+              <input
+                type="checkbox"
+                checked={openNow}
+                onChange={(event) => setOpenNow(event.target.checked)}
+              />
+              <span className={styles.switchKnob} />
+            </span>
           </label>
         </div>
 
         <div className={styles.noticeStack}>
           {product?.is_prescription ? (
             <div className={styles.prescriptionAlert} role="note">
-              Отпускается строго по рецепту врача
+              <PrescriptionIcon className={styles.alertIcon} />
+              <span>Отпускается строго по рецепту врача</span>
             </div>
           ) : null}
 
           {isFridayPrayerTime(pharmacies) ? (
             <div className={styles.localWarning} role="note">
-              Внимание! Сейчас время пятничной молитвы. Малые частные аптеки
-              могут быть закрыты. Позвоните перед выездом
+              <PrayerIcon className={styles.alertIcon} />
+              <span>Может быть закрыто на пятничную молитву. Позвоните перед выездом</span>
             </div>
           ) : null}
         </div>
@@ -610,7 +694,8 @@ function MapExperienceContent({
             onClick={() => setMode("map")}
             aria-pressed={mode === "map"}
           >
-            Карта
+            <MapIcon className={styles.segmentIcon} />
+            <span>Карта</span>
           </button>
           <button
             className={mode === "nearby" ? styles.segmentActive : ""}
@@ -618,17 +703,20 @@ function MapExperienceContent({
             onClick={() => setMode("nearby")}
             aria-pressed={mode === "nearby"}
           >
-            Аптеки рядом
+            <ListIcon className={styles.segmentIcon} />
+            <span>Аптеки рядом</span>
           </button>
         </div>
 
         <div className={styles.locationSlot}>
           {shouldShowLocationControl ? (
             <div className={styles.locationControl} role="status">
+              <LocationIcon className={`${styles.locationIcon} ${geoStatus === "loading" ? styles.locationPulse : ""}`} />
               <span>{locationStatusLabel}</span>
               {geoStatus !== "loading" ? (
                 <button
                   type="button"
+                  className={styles.locationButton}
                   onClick={isPickingLocation ? cancelLocationPick : startLocationPick}
                 >
                   {isPickingLocation
@@ -666,6 +754,7 @@ function MapExperienceContent({
             <PharmacySheet
               pharmacy={selectedPharmacy}
               productName={product.name}
+              productPriceEstimate={product.price_estimate}
               placement="inline"
               onClose={closePharmacySheet}
             />
@@ -673,6 +762,7 @@ function MapExperienceContent({
             <PharmacyList
               productName={product?.name ?? query}
               pharmacies={pharmacies}
+              productPriceEstimate={product?.price_estimate}
               isLoading={isLoading && pharmacies.length === 0}
               errorMessage={errorMessage}
               hasProduct={Boolean(product)}
@@ -688,6 +778,7 @@ function MapExperienceContent({
         <PharmacySheet
           pharmacy={selectedPharmacy}
           productName={product.name}
+          productPriceEstimate={product.price_estimate}
           placement="floating"
           onClose={closePharmacySheet}
         />
@@ -741,6 +832,9 @@ function MapCanvas({
     viewMode,
   });
   const isMapLocked = viewMode === "nearby" && !isMapActive && !isPickingLocation;
+  const selectedPharmacy = selectedId
+    ? pharmacies.find((pharmacy) => pharmacy.pharmacy_id === selectedId)
+    : null;
   const center = useMemo(
     () => getMapCenter(pharmacies, userLocation),
     [pharmacies, userLocation]
@@ -1058,6 +1152,7 @@ function MapCanvas({
         onError={() => setScriptFailed(true)}
       />
       <div className={styles.providerMap} ref={mapNodeRef} />
+      <MapLegend />
       {isMapLocked ? (
         <button
           className={styles.mapInteractionOverlay}
@@ -1072,7 +1167,71 @@ function MapCanvas({
       {isPickingLocation ? (
         <div className={styles.mapPickHint}>Нажмите на карту, чтобы выбрать место</div>
       ) : null}
+      {selectedPharmacy ? (
+        <div className={styles.providerSelectedHint} data-pharmacy-trigger="true">
+          <span>{STATUS_LABELS[selectedPharmacy.status]}</span>
+          <strong>{selectedPharmacy.name}</strong>
+          <small>
+            {selectedPharmacy.distance_meters !== null
+              ? `${formatDistance(selectedPharmacy.distance_meters)} от вас`
+              : "Расстояние уточняется"}
+          </small>
+        </div>
+      ) : null}
       {!scriptReady ? <div className={styles.mapLoading}>Загрузка Яндекс.Карт</div> : null}
+    </div>
+  );
+}
+
+function MapLegend() {
+  return (
+    <div className={styles.mapLegend} aria-hidden="true">
+      <span className={styles.mapLegendCity}>Гудермес</span>
+      <div className={styles.mapLegendPill}>
+        <span className={styles.mapLegendItem}>
+          <span className={`${styles.mapLegendDot} ${styles.legendDotInStock}`} />
+          В наличии
+        </span>
+        <span className={styles.mapLegendItem}>
+          <span className={`${styles.mapLegendDot} ${styles.legendDotLikely}`} />
+          Вероятно
+        </span>
+        <span className={styles.mapLegendItem}>
+          <span className={`${styles.mapLegendDot} ${styles.legendDotUnknown}`} />
+          Неизвестно
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MapSelectedPreview({
+  pharmacy,
+  bounds,
+}: {
+  pharmacy: PharmacyByProductItem;
+  bounds: ReturnType<typeof getMapBounds>;
+}) {
+  const position = getPointPosition(pharmacy.coordinates, bounds);
+  const left = Math.min(position.left + 2, 78);
+  const top = Math.max(position.top - 6, 14);
+
+  return (
+    <div
+      className={styles.mapSelectedPreview}
+      style={{
+        left: `${left}%`,
+        top: `${top}%`,
+      }}
+      data-pharmacy-trigger="true"
+    >
+      <span>{STATUS_LABELS[pharmacy.status]}</span>
+      <strong>{pharmacy.name}</strong>
+      <small>
+        {pharmacy.distance_meters !== null
+          ? `${formatDistance(pharmacy.distance_meters)} от вас`
+          : "Расстояние уточняется"}
+      </small>
     </div>
   );
 }
@@ -1123,6 +1282,8 @@ function SchematicMap({
         <div className={styles.mapPickHint}>Нажмите на карту, чтобы выбрать место</div>
       ) : null}
 
+      <MapLegend />
+
       {pharmacies.map((pharmacy) => {
         const position = getPointPosition(pharmacy.coordinates, bounds);
 
@@ -1160,6 +1321,18 @@ function SchematicMap({
           aria-label={locationSource === "manual" ? "Выбранное место" : "Ваше местоположение"}
         />
       ) : null}
+
+      {selectedId ? (
+        pharmacies
+          .filter((pharmacy) => pharmacy.pharmacy_id === selectedId)
+          .map((pharmacy) => (
+            <MapSelectedPreview
+              key={`preview-${pharmacy.pharmacy_id}`}
+              pharmacy={pharmacy}
+              bounds={bounds}
+            />
+          ))
+      ) : null}
     </div>
   );
 }
@@ -1167,6 +1340,7 @@ function SchematicMap({
 function PharmacyList({
   productName,
   pharmacies,
+  productPriceEstimate,
   isLoading,
   errorMessage,
   hasProduct,
@@ -1176,6 +1350,7 @@ function PharmacyList({
 }: {
   productName: string;
   pharmacies: PharmacyByProductItem[];
+  productPriceEstimate?: number;
   isLoading: boolean;
   errorMessage: string;
   hasProduct: boolean;
@@ -1183,48 +1358,87 @@ function PharmacyList({
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const pharmacyListKey = pharmacies
+    .map((pharmacy) => pharmacy.pharmacy_id)
+    .join("|");
+  const [expandedListKey, setExpandedListKey] = useState<string | null>(null);
+  const isListExpanded = expandedListKey === pharmacyListKey;
+  const shouldLimitList = pharmacies.length > NEARBY_LIST_INITIAL_LIMIT;
+  const visiblePharmacies =
+    shouldLimitList && !isListExpanded
+      ? pharmacies.slice(0, NEARBY_LIST_INITIAL_LIMIT)
+      : pharmacies;
+  const hiddenPharmaciesCount = pharmacies.length - visiblePharmacies.length;
+  const visibleNearbyCount = visiblePharmacies.filter(
+    (pharmacy) => pharmacy.distance_meters !== null
+  ).length;
+
+  const listHeader = (
+    <div className={styles.listPanelHeader}>
+      <div>
+        <span>Аптеки рядом</span>
+        <strong>{visibleNearbyCount || visiblePharmacies.length}</strong>
+      </div>
+      <span className={styles.listSortBadge}>По расстоянию</span>
+    </div>
+  );
+
   if (isLoading) {
     return (
-      <div className={styles.listSkeleton} aria-live="polite">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <span key={index} />
-        ))}
-      </div>
+      <section className={styles.pharmacyListPanel} aria-label="Аптеки рядом">
+        {listHeader}
+        <div className={styles.listSkeleton} aria-live="polite">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <span key={index} />
+          ))}
+        </div>
+      </section>
     );
   }
 
   if (!hasProduct) {
     return (
-      <div className={styles.emptyState} role="status">
-        <strong>Препарат не найден</strong>
-        <span>Попробуйте изменить запрос или вернуться к поиску.</span>
-      </div>
+      <section className={styles.pharmacyListPanel} aria-label="Аптеки рядом">
+        {listHeader}
+        <div className={styles.emptyState} role="status">
+          <strong>Препарат не найден</strong>
+          <span>Попробуйте изменить запрос или вернуться к поиску.</span>
+        </div>
+      </section>
     );
   }
 
   if (errorMessage) {
     return (
-      <div className={styles.emptyState} role="status">
-        <strong>Аптеки временно недоступны</strong>
-        <span>{errorMessage}</span>
-      </div>
+      <section className={styles.pharmacyListPanel} aria-label="Аптеки рядом">
+        {listHeader}
+        <div className={styles.emptyState} role="status">
+          <strong>Аптеки временно недоступны</strong>
+          <span>{errorMessage}</span>
+        </div>
+      </section>
     );
   }
 
   if (pharmacies.length === 0) {
     return (
-      <div className={styles.emptyState} role="status">
-        <strong>Сейчас нет в наличии в Гудермесе</strong>
-        <span>
-          Можно связаться с дежурной аптекой и уточнить заказ препарата
-          {productName ? ` ${productName}` : ""}.
-        </span>
-      </div>
+      <section className={styles.pharmacyListPanel} aria-label="Аптеки рядом">
+        {listHeader}
+        <div className={styles.emptyState} role="status">
+          <strong>Сейчас нет в наличии в Гудермесе</strong>
+          <span>
+            Можно связаться с дежурной аптекой и уточнить заказ препарата
+            {productName ? ` ${productName}` : ""}.
+          </span>
+        </div>
+      </section>
     );
   }
 
   return (
-    <>
+    <section className={styles.pharmacyListPanel} aria-label="Аптеки рядом">
+      {listHeader}
+
       {!hasLocation ? (
         <div className={styles.locationListHint} role="note">
           Укажите местоположение, чтобы отсортировать аптеки по расстоянию.
@@ -1232,44 +1446,75 @@ function PharmacyList({
       ) : null}
 
       <ul className={styles.pharmacyList} aria-label="Аптеки">
-        {pharmacies.map((pharmacy) => (
+        {visiblePharmacies.map((pharmacy) => (
           <li key={pharmacy.pharmacy_id}>
             <button
               className={`${styles.pharmacyCard} ${
                 selectedId === pharmacy.pharmacy_id ? styles.pharmacyCardSelected : ""
-              }`}
+              } ${styles[`card_${pharmacy.status}`]}`}
               type="button"
               data-pharmacy-trigger="true"
               onClick={() => onSelect(pharmacy.pharmacy_id)}
             >
               <span className={styles.cardTopLine}>
                 <strong>{pharmacy.name}</strong>
-                <span className={styles.distanceText}>
-                  {formatDistance(pharmacy.distance_meters)}
-                </span>
+                {pharmacy.distance_meters !== null ? (
+                  <span className={styles.distanceText}>
+                    <LocationIcon className={styles.cardDistanceIcon} />
+                    {formatDistance(pharmacy.distance_meters)}
+                  </span>
+                ) : null}
               </span>
-              <span className={styles.addressText}>{pharmacy.address}</span>
+              <span className={styles.addressText}>
+                <AddressIcon className={styles.cardAddressIcon} />
+                <span>{pharmacy.address}</span>
+              </span>
               <span className={styles.statusLine}>
-                <span className={`${styles.statusDot} ${styles[`dot_${pharmacy.status}`]}`} />
-                {STATUS_LABELS[pharmacy.status]}
-                {!pharmacy.is_open_now ? <span>Закрыто</span> : null}
+                <span className={`${styles.cardStatusText} ${styles[`statusText_${pharmacy.status}`]}`}>
+                  {getCardStatusLabel(pharmacy)}
+                </span>
+                <span className={styles.cardPriceText}>
+                  {pharmacy.status === "unknown"
+                    ? "Узнать цену"
+                    : formatPrice(productPriceEstimate)}
+                </span>
               </span>
             </button>
           </li>
         ))}
       </ul>
-    </>
+
+      {shouldLimitList ? (
+        <button
+          type="button"
+          className={styles.showAllPharmaciesButton}
+          aria-expanded={isListExpanded}
+          onClick={() =>
+            setExpandedListKey((currentKey) =>
+              currentKey === pharmacyListKey ? null : pharmacyListKey
+            )
+          }
+        >
+          <span>
+            {isListExpanded ? "Показать 4 ближайшие" : "Показать все аптеки"}
+          </span>
+          {!isListExpanded ? <small>Еще {hiddenPharmaciesCount}</small> : null}
+        </button>
+      ) : null}
+    </section>
   );
 }
 
 function PharmacySheet({
   pharmacy,
   productName,
+  productPriceEstimate,
   placement,
   onClose,
 }: {
   pharmacy: PharmacyByProductItem;
   productName: string;
+  productPriceEstimate?: number;
   placement: "floating" | "inline";
   onClose: () => void;
 }) {
@@ -1307,6 +1552,24 @@ function PharmacySheet({
     };
   }, [onClose]);
 
+  // Делим адрес на две строки для компактной карточки аптеки.
+  const addressParts = pharmacy.address.split(",");
+  const mainAddress = addressParts[0]?.trim() || pharmacy.address;
+  const secondaryAddress = addressParts.slice(1).join(",").trim() || "Чеченская Республика";
+
+  // Подпись зависит от уровня достоверности остатка.
+  const getAvailabilityInfo = () => {
+    switch (pharmacy.status) {
+      case "in_stock":
+        return { label: "В наличии", sub: "остаток обновлен сегодня" };
+      case "likely_in_stock":
+        return { label: "Вероятно в наличии", sub: "уточните перед выездом" };
+      default:
+        return { label: "Наличие неизвестно", sub: "напишите в аптеку" };
+    }
+  };
+  const availability = getAvailabilityInfo();
+
   return (
     <aside
       className={`${styles.sheet} ${
@@ -1316,7 +1579,7 @@ function PharmacySheet({
       aria-label="Карточка аптеки"
     >
       <div className={styles.sheetHeader}>
-        <div>
+        <div className={styles.sheetTierBadge}>
           <span className={styles.sheetTier}>
             {pharmacy.tier === "Chain"
               ? "Сетевая аптека"
@@ -1324,37 +1587,84 @@ function PharmacySheet({
                 ? "Крупная частная аптека"
                 : "Малая аптека"}
           </span>
-          <h2>{pharmacy.name}</h2>
         </div>
-        <span className={styles.distanceBadge}>
+        <span className={styles.sheetHeaderDistance}>
           {formatDistance(pharmacy.distance_meters)}
         </span>
       </div>
 
+      <h2 className={styles.sheetTitle}>{pharmacy.name}</h2>
+
       <div className={styles.sheetFacts}>
-        <span>{pharmacy.address}</span>
-        <span>{pharmacy.is_24_7 ? "Круглосуточно" : getTodaySchedule(pharmacy.working_hours)}</span>
-        <span>{pharmacy.is_open_now ? "Сейчас открыто" : "Сейчас закрыто"}</span>
-        <span>{STATUS_LABELS[pharmacy.status]}</span>
+        <div className={styles.sheetFactItem}>
+          <span className={`${styles.sheetFactIconCircle} ${styles.factCircle_address}`}>
+            <AddressIcon className={styles.sheetFactIcon} />
+          </span>
+          <div className={styles.sheetFactTexts}>
+            <strong>{mainAddress}</strong>
+            <span>{secondaryAddress}</span>
+          </div>
+        </div>
+
+        <div className={styles.sheetFactItem}>
+          <span className={`${styles.sheetFactIconCircle} ${styles.factCircle_time}`}>
+            <ClockIcon className={styles.sheetFactIcon} />
+          </span>
+          <div className={styles.sheetFactTexts}>
+            <strong>{pharmacy.is_24_7 ? "Круглосуточно" : getTodaySchedule(pharmacy.working_hours)}</strong>
+            <span className={pharmacy.is_open_now ? styles.textSuccess : styles.textDanger}>
+              {pharmacy.is_open_now ? "Открыто сейчас" : "Сейчас закрыто"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.availabilityCard}>
+        <div className={styles.availabilityLeft}>
+          <span className={`${styles.availabilityCheckCircle} ${styles[`availCircle_${pharmacy.status}`]}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </span>
+          <span className={styles.availabilityText}>
+            <strong>{availability.label}</strong>
+            <small>{availability.sub}</small>
+          </span>
+        </div>
+        <span className={styles.availabilityRight}>
+          {pharmacy.status === "unknown"
+            ? "Уточнить"
+            : formatCompactPrice(productPriceEstimate)}
+        </span>
       </div>
 
       <p className={styles.statusHint}>{STATUS_HINTS[pharmacy.status]}</p>
 
-      <div className={styles.sheetActions}>
+      <div className={styles.sheetActionsContainer}>
         {whatsappHref ? (
           <a
-            className={styles.whatsappAction}
+            className={styles.sheetWhatsappButton}
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
           >
-            {pharmacy.status === "unknown" ? "Узнать цену" : "Написать в WhatsApp"}
+            <WhatsappIcon className={styles.whatsappBtnIcon} />
+            <span>{pharmacy.status === "unknown" ? "Узнать цену" : "Написать в WhatsApp"}</span>
           </a>
         ) : null}
-        {phoneHref ? <a href={phoneHref}>Позвонить</a> : null}
-        <a href={routeHref} target="_blank" rel="noreferrer">
-          Проложить маршрут
-        </a>
+
+        <div className={styles.sheetActionsBottomRow}>
+          {phoneHref ? (
+            <a href={phoneHref} className={styles.sheetPhoneButton}>
+              <PhoneIcon className={styles.btnIcon} />
+              <span>Позвонить</span>
+            </a>
+          ) : null}
+          <a href={routeHref} target="_blank" rel="noreferrer" className={styles.sheetRouteButton}>
+            <RouteIcon className={styles.btnIcon} />
+            <span>Маршрут</span>
+          </a>
+        </div>
       </div>
     </aside>
   );
