@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { getAdminHomeStats } from "@/lib/actions/admin";
 import { logoutAdmin, requireAdmin } from "@/lib/admin/auth";
 import styles from "./admin.module.css";
@@ -11,10 +12,7 @@ export default async function AdminPage() {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.logoMark} href="/" aria-label="GotMeds">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </Link>
+          <BrandMark />
           <h1>Админ-панель</h1>
           <p>Операции с остатками, алиасами и очередью маппинга.</p>
         </div>

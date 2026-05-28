@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { getDemandDashboardData } from "@/lib/actions/admin";
 import { logoutAdmin, requireAdmin } from "@/lib/admin/auth";
 import styles from "../admin.module.css";
@@ -40,10 +41,7 @@ export default async function DemandPage({ searchParams }: DemandPageProps) {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.logoMark} href="/admin" aria-label="GotMeds Admin">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </Link>
+          <BrandMark href="/admin" label="GotMeds Admin" />
           <h1>Дефицитные позиции</h1>
           <p>Топ-50 поисковых запросов без результата за последнюю неделю.</p>
         </div>

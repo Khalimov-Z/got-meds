@@ -1,0 +1,79 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #0b1c30;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.brand:hover {
+  text-decoration: none;
+}
+
+.icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--color-primary);
+  flex: 0 0 auto;
+}
+
+.icon svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.icon rect {
+  fill: currentColor;
+}
+
+.divider {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.name {
+  overflow: hidden;
+  font-size: var(--brand-name-font-size);
+  font-weight: 600;
+  line-height: var(--brand-name-line-height);
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 900px) {
+  .icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .name {
+    font-size: var(--brand-name-font-size-wide);
+  }
+}
+
+@media (max-width: 420px) {
+  .icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .icon svg {
+    width: 21px;
+    height: 21px;
+  }
+  .name {
+    font-size: var(--brand-name-font-size-compact);
+  }
+}

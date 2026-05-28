@@ -15,17 +15,21 @@ type ProductAnalog = {
 
 type ProductAnalogsProps = {
   analogs: ProductAnalog[];
+  category: "medicine" | "equipment" | "vitamins" | "mother_and_baby";
 };
 
-function getInitials(name: string) {
-  return name.trim().slice(0, 1).toUpperCase() || "G";
-}
+const CATEGORY_ICONS = {
+  medicine: "medication",
+  vitamins: "spa",
+  equipment: "devices_other",
+  mother_and_baby: "child_care",
+};
 
 function getDetails(analog: ProductAnalog) {
   return [analog.form, analog.dosage].filter(Boolean).join(", ");
 }
 
-export function ProductAnalogs({ analogs }: ProductAnalogsProps) {
+export function ProductAnalogs({ analogs, category }: ProductAnalogsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const listId = useId();
 
@@ -60,7 +64,9 @@ export function ProductAnalogs({ analogs }: ProductAnalogsProps) {
                     />
                   ) : (
                     <div className={styles.analogFallback}>
-                      {getInitials(analog.name)}
+                      <span className="material-symbols-outlined" aria-hidden="true">
+                        {CATEGORY_ICONS[category] || "medication"}
+                      </span>
                     </div>
                   )}
                 </div>

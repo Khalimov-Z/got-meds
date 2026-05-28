@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BrandMark } from "@/components/brand-mark";
 import { getAnalogs, getProductDetails } from "@/lib/actions/products";
 import { ProductAnalogs } from "./product-analogs";
 import styles from "./product-page.module.css";
@@ -8,8 +9,15 @@ import styles from "./product-page.module.css";
 const CATEGORY_LABELS = {
   medicine: "Лекарство",
   equipment: "Медтехника",
-  vitamins: "Витамины",
+  vitamins: "Витамины и БАДы",
   mother_and_baby: "Мать и дитя",
+};
+
+const CATEGORY_ICONS = {
+  medicine: "medication",
+  vitamins: "spa",
+  equipment: "devices_other",
+  mother_and_baby: "child_care",
 };
 
 type PageProps = {
@@ -21,13 +29,8 @@ function formatPrice(price?: number) {
     return "Цена уточняется";
   }
 
-  return `от ${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
+  return `${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
 }
-
-function getInitials(name: string) {
-  return name.trim().slice(0, 1).toUpperCase() || "G";
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const result = await getProductDetails(id);
@@ -71,86 +74,127 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <main className={styles.shell}>
       <header className={styles.header}>
-        <Link className={styles.logoMark} href="/" aria-label="GotMeds">
-          <span className={styles.logoPartPrimary}>Got</span>
-          <span className={styles.logoPartSecondary}>Meds</span>
-        </Link>
+        <BrandMark />
         <Link className={styles.backLink} href="/">
-          Назад к поиску
+          <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          <span>Назад к поиску</span>
         </Link>
       </header>
 
       <section className={styles.productHero} aria-labelledby="product-title">
-        <div className={styles.productVisual} aria-hidden="true">
-          {product.image_url ? (
-            <div
-              className={styles.productImage}
-              style={{ backgroundImage: `url(${product.image_url})` }}
-            />
-          ) : (
-            <div className={styles.productFallback}>{getInitials(product.name)}</div>
-          )}
+        {/* Left: Product Image & Spotlight */}
+        <div className={styles.visualWrapper}>
+          <div className={styles.spotlight} aria-hidden="true" />
+          <div className={styles.productVisual}>
+            {product.image_url ? (
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className={styles.productImage}
+              />
+            ) : (
+              <div className={styles.productFallback}>
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  {CATEGORY_ICONS[product.category] || "medication"}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
+        {/* Right: Product Information */}
         <div className={styles.productContent}>
-          <span className={styles.categoryPill}>
-            {CATEGORY_LABELS[product.category]}
-          </span>
-          <h1 id="product-title">{product.name}</h1>
+          <div className={styles.titleSection}>
+            <span className={styles.categoryLabel}>
+              {CATEGORY_LABELS[product.category] || "Препарат"}
+            </span>
+            <h1 id="product-title">{product.name}</h1>
+            <p className={styles.description}>
+              {product.description || "Описание препарата пока уточняется."}
+            </p>
+          </div>
 
-          {product.is_prescription ? (
+          {/* Price & Action Section */}
+          <div className={styles.actionPanel}>
+            <div className={styles.priceRow}>
+              <span className={styles.priceLabel}>Средняя цена в аптеках</span>
+              <div className={styles.priceValue}>
+                {product.price_estimate ? (
+                  <>
+                    <span className={styles.pricePrefix}>от</span>
+                    <span className={styles.priceAmount}>{formatPrice(product.price_estimate)}</span>
+                  </>
+                ) : (
+                  <span className={styles.pricePending}>Цена уточняется</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.actionRow}>
+              <Link
+                className={styles.mapAction}
+                href={{
+                  pathname: "/map",
+                  query: { q: product.name },
+                }}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">map</span>
+                <span>Найти на карте</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Specs Grid (Bento Style) */}
+          <div className={styles.specsGrid}>
+            {product.dosage && (
+              <div className={`${styles.specCard} ${styles.specDosage}`}>
+                <span className="material-symbols-outlined" aria-hidden="true">medication</span>
+                <div className={styles.specText}>
+                  <span className={styles.specLabel}>Дозировка</span>
+                  <span className={styles.specValue}>{product.dosage}</span>
+                </div>
+              </div>
+            )}
+            {product.form && (
+              <div className={`${styles.specCard} ${styles.specForm}`}>
+                <span className="material-symbols-outlined" aria-hidden="true">opacity</span>
+                <div className={styles.specText}>
+                  <span className={styles.specLabel}>Форма выпуска</span>
+                  <span className={styles.specValue}>{product.form}</span>
+                </div>
+              </div>
+            )}
+            {product.active_ingredient && (
+              <div className={`${styles.specCard} ${styles.specIngredient}`}>
+                <span className="material-symbols-outlined" aria-hidden="true">science</span>
+                <div className={styles.specText}>
+                  <span className={styles.specLabel}>Действующее вещество</span>
+                  <span className={styles.specValue}>{product.active_ingredient}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {product.is_prescription && (
             <div className={styles.prescriptionAlert} role="note">
-              Отпускается строго по рецепту врача
+              <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+              <span>Отпускается строго по рецепту врача</span>
             </div>
-          ) : null}
+          )}
 
-          <p className={styles.description}>
-            {product.description || "Описание препарата пока уточняется."}
-          </p>
-
-          <dl className={styles.productFacts}>
-            <div>
-              <dt>Примерная цена</dt>
-              <dd>{formatPrice(product.price_estimate)}</dd>
-            </div>
-            {product.active_ingredient ? (
-              <div>
-                <dt>Действующее вещество</dt>
-                <dd>{product.active_ingredient}</dd>
-              </div>
-            ) : null}
-            {product.form ? (
-              <div>
-                <dt>Форма</dt>
-                <dd>{product.form}</dd>
-              </div>
-            ) : null}
-            {product.dosage ? (
-              <div>
-                <dt>Дозировка</dt>
-                <dd>{product.dosage}</dd>
-              </div>
-            ) : null}
-          </dl>
-
-          <Link
-            className={styles.primaryAction}
-            href={{
-              pathname: "/map",
-              query: { q: product.name },
-            }}
-          >
-            Найти на карте
-          </Link>
-
-          <ProductAnalogs analogs={analogs} />
+          <ProductAnalogs analogs={analogs} category={product.category} />
         </div>
       </section>
 
-      <p className={styles.disclaimer}>
-        Сервис носит информационный характер. Имеются противопоказания. Не
-        является публичной офертой
-      </p>
+      {/* Disclaimer Block */}
+      <div className={styles.disclaimerBlock} role="note">
+        <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+        <p>
+          ИМЕЮТСЯ ПРОТИВОПОКАЗАНИЯ. ПЕРЕД ПРИМЕНЕНИЕМ НЕОБХОДИМО
+          ПРОКОНСУЛЬТИРОВАТЬСЯ СО СПЕЦИАЛИСТОМ. Информация о товаре
+          предоставлена для ознакомления и не является публичной офертой.
+        </p>
+      </div>
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import {
   getBlacklistManagementData,
   toggleProductSocialRiskForm,
@@ -31,10 +32,7 @@ export default async function BlacklistPage({ searchParams }: BlacklistPageProps
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <Link className={styles.logoMark} href="/admin" aria-label="GotMeds Admin">
-            <span className={styles.logoPartPrimary}>Got</span>
-            <span className={styles.logoPartSecondary}>Meds</span>
-          </Link>
+          <BrandMark href="/admin" label="GotMeds Admin" />
           <h1>Черный список</h1>
           <p>Управление ограничением поиска для товаров социального риска.</p>
         </div>
@@ -124,4 +122,3 @@ export default async function BlacklistPage({ searchParams }: BlacklistPageProps
     </main>
   );
 }
-
