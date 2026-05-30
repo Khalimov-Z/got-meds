@@ -139,3 +139,11 @@
 - Сделано: добавлены PWA-манифест, иконки, регистрация service worker, offline-экран с повторной проверкой соединения, `robots.txt`, `sitemap.xml`, базовый Open Graph route для продукта и общие site metadata.
 - Проверка: пользователь проверил PWA-манифест и offline-сценарий в браузере, выполнены `node --check public/sw.js`, `npm run lint` и `npm run build`.
 - Pull request: будет создан после push
+
+## 2026-05-30 - Стратегия миграции на Supabase
+
+- План: [plans/completed/supabase-migration-strategy-spec.md](../plans/completed/supabase-migration-strategy-spec.md)
+- Области: данные, backend и API, админ-панель и безопасность, инфраструктура и качество
+- Сделано: создана техническая стратегия поэтапного перехода с `Next.js -> Prisma -> PostgreSQL` на Supabase Platform, обновлены спецификации стека, данных, API, безопасности и админ-панели; зафиксировано правило, что Prisma удаляется только финальным отдельным планом после проверки функционального паритета.
+- Проверка: пользователь проверил стратегию, выполнен `git diff --check`, код приложения, зависимости, `prisma/` и `.env` не изменялись.
+- Pull request: будет создан после push
