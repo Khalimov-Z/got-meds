@@ -44,15 +44,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = result.data;
   const title = `Купить ${product.name} в Гудермесе — наличие в аптеках, цены | GotMeds`;
   const description = `Поиск препарата ${product.name} в аптеках Гудермеса. Адреса дежурных аптек, цены и наличие на карте города.`;
+  const ogImage = `/og/product?name=${encodeURIComponent(product.name)}`;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `/product/${product.id}`,
+    },
     openGraph: {
       title,
       description,
       url: `/product/${product.id}`,
-      images: product.image_url ? [{ url: product.image_url }] : undefined,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `Наличие ${product.name} в Гудермесе`,
+        },
+      ],
     },
   };
 }
