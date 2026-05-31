@@ -147,3 +147,11 @@
 - Сделано: создана техническая стратегия поэтапного перехода с `Next.js -> Prisma -> PostgreSQL` на Supabase Platform, обновлены спецификации стека, данных, API, безопасности и админ-панели; зафиксировано правило, что Prisma удаляется только финальным отдельным планом после проверки функционального паритета.
 - Проверка: пользователь проверил стратегию, выполнен `git diff --check`, код приложения, зависимости, `prisma/` и `.env` не изменялись.
 - Pull request: будет создан после push
+
+## 2026-05-31 - Supabase PostgreSQL foundation
+
+- План: [plans/completed/supabase-postgresql-foundation.md](../plans/completed/supabase-postgresql-foundation.md)
+- Области: данные, backend и API, инфраструктура и качество
+- Сделано: GotMeds подключен к Supabase PostgreSQL через текущий Prisma-слой без изменения runtime-кода, UI, авторизации и доменной модели; применены текущие Prisma migrations, проверены `pg_trgm`, GIN-индексы, seed и базовые сценарии приложения.
+- Проверка: пользователь проверил Supabase-подключение и SQL-проверки, выполнены `npx prisma migrate deploy`, `npx prisma migrate status`, `npx prisma generate`, двойной `npx prisma db seed`, runtime-проверка Server Actions, `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push

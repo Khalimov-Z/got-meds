@@ -91,3 +91,10 @@
 - Сделано: в API-спецификации закреплен будущий Supabase data layer: Supabase SDK для простых операций, SQL functions/RPC для сложной бизнес-логики и Server Actions как серверная граница безопасности.
 - Влияние: будущий перенос поиска, карты, аналогов, аналитики и админских операций получил единый контракт без немедленного переписывания runtime-кода.
 - Проверка: пользователь проверил стратегию, выполнен `git diff --check`.
+
+## 2026-05-31 - Supabase PostgreSQL foundation
+
+- План: [plans/completed/supabase-postgresql-foundation.md](../../plans/completed/supabase-postgresql-foundation.md)
+- Сделано: существующие Server Actions и route handler поиска проверены на Supabase PostgreSQL через текущий Prisma Client без переписывания серверных контрактов.
+- Влияние: backend продолжает работать через прежний слой `Next.js -> Prisma -> PostgreSQL`, но PostgreSQL теперь размещен в Supabase как целевой managed-хостинг переходного этапа.
+- Проверка: проверены поиск `нурофен`, алиас `Нуроф таб 200мг`, restricted-запрос `диазепам`, `getProductDetails`, `getAnalogs`, `getPharmaciesByProduct`, запись нулевой выдачи и `GET /api/search`.
