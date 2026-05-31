@@ -63,3 +63,10 @@
 - Сделано: в спецификации данных закреплено целевое хранение в Supabase PostgreSQL, будущий перенос схемы на Supabase SQL migrations, требования к RLS и роль SQL functions/RPC для запросов рядом с данными.
 - Влияние: доменная модель данных остается совместимой, а миграция схемы и seed будет выполняться отдельным этапом без немедленного удаления Prisma.
 - Проверка: пользователь проверил стратегию, выполнен `git diff --check`.
+
+## 2026-05-31 - Supabase PostgreSQL foundation
+
+- План: [plans/completed/supabase-postgresql-foundation.md](../../plans/completed/supabase-postgresql-foundation.md)
+- Сделано: текущие Prisma migrations применены к Supabase PostgreSQL, подтверждены расширение `pg_trgm`, GIN-индексы `idx_products_name_trgm` и `idx_product_aliases_original_string_trgm`, а seed выполнен дважды на новой базе.
+- Влияние: Supabase PostgreSQL стал рабочим хранилищем переходного этапа без изменения Prisma-схемы, runtime data layer и доменной модели.
+- Проверка: выполнены `npx prisma migrate deploy`, `npx prisma migrate status`, SQL-проверки расширения/индексов, двойной `npx prisma db seed` и проверка счетчиков seed-данных.

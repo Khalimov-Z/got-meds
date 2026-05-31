@@ -126,3 +126,10 @@
 - Сделано: добавлена техническая стратегия поэтапной Supabase-миграции и обновлены связанные спецификации без изменения кода приложения.
 - Влияние: дальнейшая миграция будет идти маленькими утвержденными планами с rollback-критериями, а Prisma закреплена как переходный слой до финального этапа удаления.
 - Проверка: пользователь проверил стратегию, выполнен `git diff --check`.
+
+## 2026-05-31 - Supabase PostgreSQL foundation
+
+- План: [plans/completed/supabase-postgresql-foundation.md](../../plans/completed/supabase-postgresql-foundation.md)
+- Сделано: завершенный план перенесен в `plans/completed/`, зафиксированы параметры локального Supabase `DATABASE_URL` без коммита секретов и проверен переход на Supabase Session pooler с SSL-параметрами.
+- Влияние: проект получил проверенный foundation-этап Supabase-миграции с rollback-подходом через возврат `DATABASE_URL` без изменений кода.
+- Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, runtime-проверка Server Actions, проверка локального API поиска и `git diff --check`.
