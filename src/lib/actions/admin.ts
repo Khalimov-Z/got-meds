@@ -6,6 +6,7 @@ import Papa from "papaparse";
 import { PharmacyStatus, PharmacyTier, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 type AdminActionResponse<T = undefined> = {
   success: boolean;
@@ -46,6 +47,21 @@ export type DemandDashboardData = {
   rows: DemandDashboardRow[];
 };
 
+type DemandDashboardRpcPayload = {
+  cities?: DemandDashboardCity[];
+  selected_city_id?: string | null;
+  period_start?: string | null;
+  period_end?: string | null;
+  total_logs_count?: number | string | null;
+  rows?: Array<{
+    search_term: string;
+    city_name: string;
+    searches_count: number | string;
+    last_searched_at: string;
+    variants?: string[];
+  }>;
+};
+
 export type AdminPharmacyCity = {
   id: string;
   name: string;
@@ -81,6 +97,8 @@ const PRICE_HEADERS = ["цена", "price"];
 const DEMAND_DASHBOARD_DAYS = 7;
 const DEMAND_DASHBOARD_LIMIT = 50;
 const DEMAND_TERM_SIMILARITY_THRESHOLD = 0.62;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const WORKING_DAYS = [
   { key: "mon", label: "понедельника" },
   { key: "tue", label: "вторника" },
@@ -97,6 +115,20 @@ function normalizeValue(value: string) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
+}
+
+function parseRpcDate(value: string | null | undefined, fallback: Date) {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed;
+}
+
+function normalizeUuid(value: string | undefined) {
+  const normalized = value?.trim();
+  return normalized && UUID_PATTERN.test(normalized) ? normalized : null;
 }
 
 function getCell(row: Record<string, unknown>, headerNames: string[]) {
@@ -584,122 +616,35 @@ export async function getDemandDashboardData(
   const periodEnd = new Date();
   const periodStart = new Date(periodEnd);
   periodStart.setDate(periodStart.getDate() - DEMAND_DASHBOARD_DAYS);
+  const supabase = getSupabaseServerClient();
+  const normalizedCityId = normalizeUuid(cityId);
 
-  const cities = await prisma.city.findMany({
-    where: {
-      isActive: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-    },
+  const { data, error } = await supabase.rpc("gotmeds_get_demand_dashboard", {
+    p_city_id: normalizedCityId,
+    p_days: DEMAND_DASHBOARD_DAYS,
+    p_similarity_threshold: DEMAND_TERM_SIMILARITY_THRESHOLD,
+    p_limit: DEMAND_DASHBOARD_LIMIT,
   });
 
-  const normalizedCityId = cityId?.trim();
-  const selectedCity =
-    cities.find((city) => city.id === normalizedCityId) ?? cities[0] ?? null;
-
-  if (!selectedCity) {
-    return {
-      cities,
-      selectedCityId: null,
-      periodStart,
-      periodEnd,
-      totalLogsCount: 0,
-      rows: [],
-    };
+  if (error) {
+    throw error;
   }
 
-  const [totalLogsCount, rawRows] = await Promise.all([
-    prisma.searchLog.count({
-      where: {
-        cityId: selectedCity.id,
-        resultsCount: 0,
-        createdAt: {
-          gte: periodStart,
-        },
-      },
-    }),
-    prisma.$queryRaw<
-      Array<{
-        search_term: string;
-        city_name: string;
-        searches_count: number | bigint;
-        last_searched_at: Date;
-        variants: string[];
-      }>
-    >(
-      Prisma.sql`
-        WITH term_stats AS (
-          SELECT
-            city_id,
-            LOWER(TRIM(search_term)) AS normalized_term,
-            MIN(search_term) AS display_term,
-            COUNT(*)::int AS searches_count,
-            MAX(created_at) AS last_searched_at
-          FROM search_logs
-          WHERE city_id = ${selectedCity.id}::uuid
-            AND results_count = 0
-            AND created_at >= ${periodStart}
-          GROUP BY city_id, LOWER(TRIM(search_term))
-        ),
-        bucketed_terms AS (
-          SELECT
-            term_stats.*,
-            bucket.normalized_term AS bucket_term
-          FROM term_stats
-          CROSS JOIN LATERAL (
-            SELECT candidate.normalized_term
-            FROM term_stats candidate
-            WHERE candidate.city_id = term_stats.city_id
-              AND SIMILARITY(candidate.normalized_term, term_stats.normalized_term) >= ${DEMAND_TERM_SIMILARITY_THRESHOLD}
-            ORDER BY
-              candidate.searches_count DESC,
-              candidate.last_searched_at DESC,
-              candidate.normalized_term ASC
-            LIMIT 1
-          ) bucket
-        ),
-        grouped_terms AS (
-          SELECT
-            city_id,
-            bucket_term,
-            SUM(searches_count)::int AS searches_count,
-            MAX(last_searched_at) AS last_searched_at,
-            (ARRAY_AGG(display_term ORDER BY searches_count DESC, last_searched_at DESC))[1] AS display_term,
-            ARRAY_AGG(display_term ORDER BY searches_count DESC, last_searched_at DESC) AS variants
-          FROM bucketed_terms
-          GROUP BY city_id, bucket_term
-        )
-        SELECT
-          grouped_terms.display_term AS search_term,
-          cities.name AS city_name,
-          grouped_terms.searches_count,
-          grouped_terms.last_searched_at,
-          grouped_terms.variants
-        FROM grouped_terms
-        INNER JOIN cities ON cities.id = grouped_terms.city_id
-        ORDER BY grouped_terms.searches_count DESC, grouped_terms.last_searched_at DESC
-        LIMIT ${DEMAND_DASHBOARD_LIMIT}
-      `
-    ),
-  ]);
+  const payload = (data ?? {}) as DemandDashboardRpcPayload;
+  const cities = Array.isArray(payload.cities) ? payload.cities : [];
 
   return {
     cities,
-    selectedCityId: selectedCity.id,
-    periodStart,
-    periodEnd,
-    totalLogsCount,
-    rows: rawRows.map((row) => ({
+    selectedCityId: payload.selected_city_id ?? null,
+    periodStart: parseRpcDate(payload.period_start, periodStart),
+    periodEnd: parseRpcDate(payload.period_end, periodEnd),
+    totalLogsCount: Number(payload.total_logs_count ?? 0),
+    rows: (payload.rows ?? []).map((row) => ({
       searchTerm: row.search_term,
       cityName: row.city_name,
       searchesCount: Number(row.searches_count),
-      lastSearchedAt: row.last_searched_at,
-      variants: Array.from(new Set(row.variants)).filter(
+      lastSearchedAt: parseRpcDate(row.last_searched_at, periodEnd),
+      variants: Array.from(new Set(row.variants ?? [])).filter(
         (variant) => variant !== row.search_term
       ),
     })),

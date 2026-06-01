@@ -140,3 +140,10 @@
 - Сделано: добавлена папка `supabase/` с SQL-миграцией, SQL-seed и русскоязычной инструкцией проверки; активный план переведен в `plans/completed/` после пользовательской проверки.
 - Влияние: следующий этап Supabase-миграции можно проверять через Supabase SQL Editor, `psql` или Supabase CLI без коммита секретов и без изменения production-базы.
 - Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручную проверку SQL-артефактов и runtime-проверку приложения.
+
+## 2026-06-01 - Supabase read layer
+
+- План: [plans/completed/supabase-read-layer.md](../../plans/completed/supabase-read-layer.md)
+- Сделано: активный план переведен в `plans/completed/`, добавлена зависимость `@supabase/supabase-js`, обновлена инструкция `supabase/README.md` и дорожная карта перед push.
+- Влияние: этап read layer оформлен по SDD-процессу, секреты остаются только в локальном `.env.local`, а Prisma сохранен для сценариев вне этапа 6.3.
+- Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные проверки Supabase RPC и приложения.

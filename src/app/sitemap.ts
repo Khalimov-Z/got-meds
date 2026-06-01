@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { prisma } from "@/lib/prisma";
 import { getSiteUrl } from "@/lib/site-url";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 export const revalidate = 86400;
 
@@ -23,17 +23,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const products = await prisma.product.findMany({
-      where: {
-        isSocialRisk: false,
-      },
-      select: {
-        id: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.rpc("gotmeds_get_sitemap_product_ids");
+
+    if (error) {
+      throw error;
+    }
+
+    const products = (data as Array<{ id: string }> | null) ?? [];
 
     return [
       ...staticRoutes,
@@ -52,8 +49,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 }
 
 function getSitemapErrorMessage(error: unknown) {
-  if (isPrismaConnectionError(error)) {
-    return "база данных недоступна";
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof (error as { message?: unknown }).message === "string"
+  ) {
+    return (error as { message: string }).message;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string"
+  ) {
+    return `ошибка Supabase ${String((error as { code: string }).code)}`;
   }
 
   if (error instanceof Error) {
@@ -66,13 +77,4 @@ function getSitemapErrorMessage(error: unknown) {
   }
 
   return "неизвестная ошибка";
-}
-
-function isPrismaConnectionError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === "P1001"
-  );
 }

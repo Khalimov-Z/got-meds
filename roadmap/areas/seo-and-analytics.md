@@ -77,3 +77,10 @@
 - Сделано: добавлены `robots.txt`, `sitemap.xml`, canonical URL для страницы продукта, Open Graph-изображение `/og/product` и базовые metadata приложения.
 - Влияние: поисковые системы получают явные правила индексации и список публичных страниц, а ссылки на продукты получили более предсказуемые SEO/OG-данные.
 - Проверка: пользователь проверил SEO-маршруты по чеклисту, выполнены `npm run lint` и `npm run build`.
+
+## 2026-06-01 - Supabase read layer
+
+- План: [plans/completed/supabase-read-layer.md](../../plans/completed/supabase-read-layer.md)
+- Сделано: `sitemap.xml` переведен на Supabase RPC `gotmeds_get_sitemap_product_ids`, а чтение дашборда дефицита перенесено на RPC `gotmeds_get_demand_dashboard`.
+- Влияние: SEO-карта публичных продуктов и аналитика нулевой выдачи используют Supabase read layer, сохраняя fallback sitemap и защищенный доступ к отчету.
+- Проверка: пользователь проверил `/sitemap.xml`, `/admin/demand`, фильтр города, счетчик событий за 7 дней и отсутствие записи restricted-запроса `диазепам` в дефицит.

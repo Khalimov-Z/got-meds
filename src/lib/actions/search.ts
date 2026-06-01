@@ -13,7 +13,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 // --- Типы (согласно api-spec.md, раздел 2.1) ---
 
@@ -63,6 +63,22 @@ const CATEGORY_MAP: Record<string, SearchResultItem["category"]> = {
   EQUIPMENT: "equipment",
   VITAMINS: "vitamins",
   MOTHER_AND_BABY: "mother_and_baby",
+};
+
+type SearchProductsRpcItem = {
+  id: string;
+  name: string;
+  category: string;
+  is_prescription: boolean | null;
+  image_url: string | null;
+  price_estimate: number | null;
+  similarity_score: number | string;
+};
+
+type SearchProductsRpcPayload = {
+  restricted?: boolean;
+  restricted_product_name?: string | null;
+  items?: SearchProductsRpcItem[];
 };
 
 function isFiniteCoordinate(value: number | undefined) {
@@ -178,129 +194,31 @@ export async function searchProducts(query: string): Promise<SearchResponse> {
       return { success: true, data: [] };
     }
 
-    // Защита от SQL-инъекций: Prisma.$queryRaw использует параметризованные запросы
     const searchTerm = trimmedQuery;
+    const supabase = getSupabaseServerClient();
 
-    const [bestMatch] = await prisma.$queryRaw<
-      Array<{
-        id: string;
-        name: string;
-        is_social_risk: boolean;
-        similarity_score: number;
-      }>
-    >(
-      Prisma.sql`
-        WITH search_results AS (
-          SELECT
-            p.id,
-            p.name,
-            p.is_social_risk,
-            SIMILARITY(LOWER(p.name), LOWER(${searchTerm})) AS similarity_score
-          FROM products p
-          WHERE SIMILARITY(LOWER(p.name), LOWER(${searchTerm})) > ${SIMILARITY_THRESHOLD}
+    const { data: payload, error } = await supabase.rpc("gotmeds_search_products", {
+      p_query: searchTerm,
+      p_similarity_threshold: SIMILARITY_THRESHOLD,
+      p_limit: MAX_RESULTS,
+    });
 
-          UNION ALL
+    if (error) {
+      throw error;
+    }
 
-          SELECT
-            p.id,
-            p.name,
-            p.is_social_risk,
-            SIMILARITY(LOWER(pa.original_string), LOWER(${searchTerm})) AS similarity_score
-          FROM product_aliases pa
-          INNER JOIN products p ON pa.product_id = p.id
-          WHERE pa.is_ignored = false
-            AND pa.product_id IS NOT NULL
-            AND SIMILARITY(LOWER(pa.original_string), LOWER(${searchTerm})) > ${SIMILARITY_THRESHOLD}
-        )
-        SELECT
-          id,
-          name,
-          is_social_risk,
-          MAX(similarity_score) AS similarity_score
-        FROM search_results
-        GROUP BY id, name, is_social_risk
-        ORDER BY similarity_score DESC, is_social_risk DESC
-        LIMIT 1
-      `
-    );
+    const searchPayload = payload as SearchProductsRpcPayload | null;
 
-    if (bestMatch?.is_social_risk) {
+    if (searchPayload?.restricted) {
       return {
         success: true,
         data: [],
         restricted: true,
-        restricted_product_name: bestMatch.name,
+        restricted_product_name: searchPayload.restricted_product_name ?? undefined,
       };
     }
 
-    // --- SQL-запрос с триграммным поиском ---
-    // Объединяем поиск по products.name и product_aliases.original_string
-    // через UNION, затем группируем по product_id и берём максимальный score.
-    const results = await prisma.$queryRaw<
-      Array<{
-        id: string;
-        name: string;
-        category: string;
-        is_prescription: boolean | null;
-        image_url: string | null;
-        price_estimate: number | null;
-        is_social_risk: boolean;
-        similarity_score: number;
-      }>
-    >(
-      Prisma.sql`
-        WITH search_results AS (
-          -- Поиск по названию продукта
-          SELECT
-            p.id,
-            p.name,
-            p.category::text,
-            p.is_prescription,
-            p.image_url,
-            p.price_estimate,
-            p.is_social_risk,
-            SIMILARITY(LOWER(p.name), LOWER(${searchTerm})) AS similarity_score
-          FROM products p
-          WHERE SIMILARITY(LOWER(p.name), LOWER(${searchTerm})) > ${SIMILARITY_THRESHOLD}
-
-          UNION ALL
-
-          -- Поиск по алиасам (синонимы из 1С)
-          SELECT
-            p.id,
-            p.name,
-            p.category::text,
-            p.is_prescription,
-            p.image_url,
-            p.price_estimate,
-            p.is_social_risk,
-            SIMILARITY(LOWER(pa.original_string), LOWER(${searchTerm})) AS similarity_score
-          FROM product_aliases pa
-          INNER JOIN products p ON pa.product_id = p.id
-          WHERE pa.is_ignored = false
-            AND pa.product_id IS NOT NULL
-            AND SIMILARITY(LOWER(pa.original_string), LOWER(${searchTerm})) > ${SIMILARITY_THRESHOLD}
-        )
-        -- Группируем по продукту, берём максимальный score
-        SELECT
-          id,
-          name,
-          category,
-          is_prescription,
-          image_url,
-          price_estimate,
-          is_social_risk,
-          MAX(similarity_score) AS similarity_score
-        FROM search_results
-        -- Фильтрация социально-рискованных препаратов (Чёрный список)
-        WHERE is_social_risk = false
-        GROUP BY id, name, category, is_prescription, image_url, price_estimate, is_social_risk
-        ORDER BY similarity_score DESC
-        LIMIT ${MAX_RESULTS}
-      `
-    );
-
-    // --- Маппинг результатов в API-формат ---
+    const results = Array.isArray(searchPayload?.items) ? searchPayload.items : [];
     const data: SearchResultItem[] = results.map((row) => ({
       id: row.id,
       name: row.name,
