@@ -155,3 +155,11 @@
 - Сделано: GotMeds подключен к Supabase PostgreSQL через текущий Prisma-слой без изменения runtime-кода, UI, авторизации и доменной модели; применены текущие Prisma migrations, проверены `pg_trgm`, GIN-индексы, seed и базовые сценарии приложения.
 - Проверка: пользователь проверил Supabase-подключение и SQL-проверки, выполнены `npx prisma migrate deploy`, `npx prisma migrate status`, `npx prisma generate`, двойной `npx prisma db seed`, runtime-проверка Server Actions, `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-01 - Supabase SQL migrations and seed
+
+- План: [plans/completed/supabase-sql-migrations-and-seed.md](../plans/completed/supabase-sql-migrations-and-seed.md)
+- Области: данные, backend и API, инфраструктура и качество
+- Сделано: создана Supabase SQL-миграция начальной схемы GotMeds, SQL-seed с тестовым набором из Prisma seed и инструкция проверки `supabase/README.md`; Prisma migrations и `prisma/seed.ts` сохранены как rollback-слой.
+- Проверка: пользователь проверил миграцию и seed на отдельном тестовом Supabase project, подтвердил `pg_trgm`, таблицы, GIN-индексы, счетчики seed-данных и работу Prisma runtime с SQL-созданной базой; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push

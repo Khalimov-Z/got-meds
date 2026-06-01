@@ -98,3 +98,10 @@
 - Сделано: существующие Server Actions и route handler поиска проверены на Supabase PostgreSQL через текущий Prisma Client без переписывания серверных контрактов.
 - Влияние: backend продолжает работать через прежний слой `Next.js -> Prisma -> PostgreSQL`, но PostgreSQL теперь размещен в Supabase как целевой managed-хостинг переходного этапа.
 - Проверка: проверены поиск `нурофен`, алиас `Нуроф таб 200мг`, restricted-запрос `диазепам`, `getProductDetails`, `getAnalogs`, `getPharmaciesByProduct`, запись нулевой выдачи и `GET /api/search`.
+
+## 2026-06-01 - Supabase SQL migrations and seed
+
+- План: [plans/completed/supabase-sql-migrations-and-seed.md](../../plans/completed/supabase-sql-migrations-and-seed.md)
+- Сделано: runtime-код backend и API не менялся; текущий Prisma Client проверен против тестовой Supabase базы, созданной SQL-миграцией и SQL-seed.
+- Влияние: существующие серверные контракты поиска, restricted-сценария, страницы продукта и карты совместимы с базой, воспроизведенной Supabase SQL-артефактами.
+- Проверка: пользователь проверил поиск `нурофен`, alias `Нуроф таб 200мг`, restricted-запрос `диазепам`, страницу `Но-Шпа` и карту аптек на SQL-созданной тестовой базе.

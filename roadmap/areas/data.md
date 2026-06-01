@@ -70,3 +70,10 @@
 - Сделано: текущие Prisma migrations применены к Supabase PostgreSQL, подтверждены расширение `pg_trgm`, GIN-индексы `idx_products_name_trgm` и `idx_product_aliases_original_string_trgm`, а seed выполнен дважды на новой базе.
 - Влияние: Supabase PostgreSQL стал рабочим хранилищем переходного этапа без изменения Prisma-схемы, runtime data layer и доменной модели.
 - Проверка: выполнены `npx prisma migrate deploy`, `npx prisma migrate status`, SQL-проверки расширения/индексов, двойной `npx prisma db seed` и проверка счетчиков seed-данных.
+
+## 2026-06-01 - Supabase SQL migrations and seed
+
+- План: [plans/completed/supabase-sql-migrations-and-seed.md](../../plans/completed/supabase-sql-migrations-and-seed.md)
+- Сделано: добавлена SQL-миграция `supabase/migrations/20260531120000_initial_schema.sql` с enum, таблицами, foreign keys, unique constraints, GIN-индексами и `pg_trgm`, а также `supabase/seed.sql` с тестовым набором из `prisma/seed.ts`.
+- Влияние: чистая тестовая Supabase PostgreSQL база воспроизводится SQL-артефактами без изменения текущей Prisma-схемы и production-данных.
+- Проверка: пользователь применил SQL-миграцию и seed через Supabase SQL Editor, проверил `pg_trgm`, таблицы, GIN-индексы, счетчики `cities=1`, `pharmacies=3`, `products=16`, `product_aliases=5`, `inventory=24`, `admins=1` и флаг `is_social_risk` для `Диазепам`.
