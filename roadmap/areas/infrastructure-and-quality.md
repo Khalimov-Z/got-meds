@@ -133,3 +133,10 @@
 - Сделано: завершенный план перенесен в `plans/completed/`, зафиксированы параметры локального Supabase `DATABASE_URL` без коммита секретов и проверен переход на Supabase Session pooler с SSL-параметрами.
 - Влияние: проект получил проверенный foundation-этап Supabase-миграции с rollback-подходом через возврат `DATABASE_URL` без изменений кода.
 - Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, runtime-проверка Server Actions, проверка локального API поиска и `git diff --check`.
+
+## 2026-06-01 - Supabase SQL migrations and seed
+
+- План: [plans/completed/supabase-sql-migrations-and-seed.md](../../plans/completed/supabase-sql-migrations-and-seed.md)
+- Сделано: добавлена папка `supabase/` с SQL-миграцией, SQL-seed и русскоязычной инструкцией проверки; активный план переведен в `plans/completed/` после пользовательской проверки.
+- Влияние: следующий этап Supabase-миграции можно проверять через Supabase SQL Editor, `psql` или Supabase CLI без коммита секретов и без изменения production-базы.
+- Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручную проверку SQL-артефактов и runtime-проверку приложения.
