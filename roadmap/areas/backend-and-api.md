@@ -105,3 +105,10 @@
 - Сделано: runtime-код backend и API не менялся; текущий Prisma Client проверен против тестовой Supabase базы, созданной SQL-миграцией и SQL-seed.
 - Влияние: существующие серверные контракты поиска, restricted-сценария, страницы продукта и карты совместимы с базой, воспроизведенной Supabase SQL-артефактами.
 - Проверка: пользователь проверил поиск `нурофен`, alias `Нуроф таб 200мг`, restricted-запрос `диазепам`, страницу `Но-Шпа` и карту аптек на SQL-созданной тестовой базе.
+
+## 2026-06-01 - Supabase read layer
+
+- План: [plans/completed/supabase-read-layer.md](../../plans/completed/supabase-read-layer.md)
+- Сделано: добавлен server-only helper `src/lib/supabase-server.ts`, а серверные read-контракты `searchProducts`, `getProductDetails`, `getAnalogs`, `getPharmaciesByProduct`, `sitemap.xml` и `getDemandDashboardData` переведены на Supabase RPC.
+- Влияние: API-ответы и Server Actions сохраняют прежний контракт для UI, но тяжелые чтения теперь выполняются через Supabase read layer без удаления Prisma.
+- Проверка: пользователь проверил поиск, страницу продукта, карту, sitemap и `/admin/demand`; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.

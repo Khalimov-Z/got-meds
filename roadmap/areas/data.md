@@ -77,3 +77,10 @@
 - Сделано: добавлена SQL-миграция `supabase/migrations/20260531120000_initial_schema.sql` с enum, таблицами, foreign keys, unique constraints, GIN-индексами и `pg_trgm`, а также `supabase/seed.sql` с тестовым набором из `prisma/seed.ts`.
 - Влияние: чистая тестовая Supabase PostgreSQL база воспроизводится SQL-артефактами без изменения текущей Prisma-схемы и production-данных.
 - Проверка: пользователь применил SQL-миграцию и seed через Supabase SQL Editor, проверил `pg_trgm`, таблицы, GIN-индексы, счетчики `cities=1`, `pharmacies=3`, `products=16`, `product_aliases=5`, `inventory=24`, `admins=1` и флаг `is_social_risk` для `Диазепам`.
+
+## 2026-06-01 - Supabase read layer
+
+- План: [plans/completed/supabase-read-layer.md](../../plans/completed/supabase-read-layer.md)
+- Сделано: добавлена SQL-миграция `supabase/migrations/20260601120000_read_layer_functions.sql` с RPC-функциями чтения для существующих таблиц без изменения доменной схемы.
+- Влияние: публичные и аналитические read-сценарии читают данные через Supabase SQL functions/RPC, а Prisma остается переходным rollback-слоем для write/auth/admin-mutation сценариев.
+- Проверка: пользователь применил RPC-миграцию в тестовом Supabase project, подтвердил наличие функций `gotmeds_%` в схеме `public`, работу `gotmeds_search_products` и права выполнения только для `service_role`.

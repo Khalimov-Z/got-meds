@@ -163,3 +163,11 @@
 - Сделано: создана Supabase SQL-миграция начальной схемы GotMeds, SQL-seed с тестовым набором из Prisma seed и инструкция проверки `supabase/README.md`; Prisma migrations и `prisma/seed.ts` сохранены как rollback-слой.
 - Проверка: пользователь проверил миграцию и seed на отдельном тестовом Supabase project, подтвердил `pg_trgm`, таблицы, GIN-индексы, счетчики seed-данных и работу Prisma runtime с SQL-созданной базой; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-01 - Supabase read layer
+
+- План: [plans/completed/supabase-read-layer.md](../plans/completed/supabase-read-layer.md)
+- Области: данные, backend и API, поиск и бизнес-логика, карта и аптеки, админ-панель и безопасность, SEO и аналитика, инфраструктура и качество
+- Сделано: добавлен server-only Supabase helper, RPC-функции чтения для поиска, карточки продукта, аналогов, аптек, sitemap и дашборда дефицита; `searchProducts`, `getProductDetails`, `getAnalogs`, `getPharmaciesByProduct`, `sitemap.xml` и `getDemandDashboardData` переведены на Supabase SDK/RPC без изменения UI-контрактов.
+- Проверка: пользователь применил RPC-миграцию в тестовом Supabase project, подтвердил функции `gotmeds_%` в схеме `public`, права `anon=false`, `authenticated=false`, `service_role=true`, проверил поиск, alias, restricted-сценарий, страницу `Но-Шпа`, аналоги, карту, sitemap и `/admin/demand`; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push

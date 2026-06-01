@@ -1,7 +1,14 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
+import { getSupabaseServerClient } from "@/lib/supabase-server";
+
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 type ProductCategory = "medicine" | "equipment" | "vitamins" | "mother_and_baby";
 type PharmacyTierApi = "1" | "2" | "Chain";
@@ -50,7 +57,7 @@ export interface PharmacyByProductItem {
   tier: PharmacyTierApi;
   distance_meters: number | null;
   status: PharmacyInventoryStatus;
-  working_hours: Prisma.JsonValue | null;
+  working_hours: JsonValue | null;
   is_24_7: boolean;
   is_open_now: boolean;
   phone: string | null;
@@ -63,6 +70,45 @@ export interface PharmaciesByProductResponse {
   error?: string;
 }
 
+type ProductDetailsRpcRow = {
+  id: string;
+  name: string;
+  category: string;
+  active_ingredient: string | null;
+  form: string | null;
+  dosage: string | null;
+  is_prescription: boolean | null;
+  price_estimate: number | null;
+  description: string | null;
+  image_url: string | null;
+};
+
+type ProductAnalogRpcRow = {
+  id: string;
+  name: string;
+  category: string;
+  active_ingredient: string | null;
+  form: string | null;
+  dosage: string | null;
+  image_url: string | null;
+};
+
+type PharmacyByProductRpcRow = {
+  pharmacy_id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  tier: string;
+  distance_meters: number | null;
+  status: string;
+  working_hours: JsonValue | null;
+  is_24_7: boolean;
+  is_open_now: boolean;
+  phone: string | null;
+  whatsapp: string | null;
+};
+
 const CATEGORY_MAP: Record<string, ProductCategory> = {
   MEDICINE: "medicine",
   EQUIPMENT: "equipment",
@@ -70,155 +116,44 @@ const CATEGORY_MAP: Record<string, ProductCategory> = {
   MOTHER_AND_BABY: "mother_and_baby",
 };
 
-const TIER_MAP: Record<string, PharmacyTierApi> = {
-  TIER_1: "1",
-  TIER_2: "2",
-  TIER_3: "Chain",
-};
-
-const INVENTORY_STATUS_MAP: Record<string, PharmacyInventoryStatus> = {
-  IN_STOCK: "in_stock",
-  LIKELY_IN_STOCK: "likely_in_stock",
-};
-
-const BASIC_PRODUCT_PRICE_LIMIT = 1000;
-const GUDERMES_TIMEZONE = "Europe/Moscow";
-const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
-const WEEKDAY_TO_INDEX: Record<string, number> = {
-  Sun: 0,
-  Mon: 1,
-  Tue: 2,
-  Wed: 3,
-  Thu: 4,
-  Fri: 5,
-  Sat: 6,
-};
+const PHARMACY_TIER_VALUES = new Set(["1", "2", "Chain"]);
+const INVENTORY_STATUS_VALUES = new Set(["in_stock", "likely_in_stock", "unknown"]);
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function mapProductCategory(category: string): ProductCategory {
   return CATEGORY_MAP[category] ?? "medicine";
 }
 
-function isBasicProduct(product: {
-  isPrescription: boolean | null;
-  priceEstimate: number | null;
-}) {
-  return (
-    product.isPrescription !== true &&
-    product.priceEstimate !== null &&
-    product.priceEstimate <= BASIC_PRODUCT_PRICE_LIMIT
-  );
+function mapPharmacyTier(tier: string): PharmacyTierApi {
+  return PHARMACY_TIER_VALUES.has(tier) ? (tier as PharmacyTierApi) : "2";
 }
 
-function getGudermesTimeParts(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: GUDERMES_TIMEZONE,
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-
-  const weekday = parts.find((part) => part.type === "weekday")?.value ?? "Mon";
-  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0");
-  const minute = Number(parts.find((part) => part.type === "minute")?.value ?? "0");
-
-  return {
-    dayKey: DAY_KEYS[WEEKDAY_TO_INDEX[weekday] ?? 1],
-    minutes: (hour % 24) * 60 + minute,
-  };
-}
-
-function parseTimeToMinutes(value: string) {
-  const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
-  if (!match) {
-    return null;
-  }
-
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-
-  if (hours > 24 || minutes > 59) {
-    return null;
-  }
-
-  return (hours % 24) * 60 + minutes;
-}
-
-function isTimeInsideRange(nowMinutes: number, range: string) {
-  const [startRaw, endRaw] = range.split("-").map((part) => part.trim());
-  const start = parseTimeToMinutes(startRaw ?? "");
-  const end = parseTimeToMinutes(endRaw ?? "");
-
-  if (start === null || end === null) {
-    return false;
-  }
-
-  if (start <= end) {
-    return nowMinutes >= start && nowMinutes <= end;
-  }
-
-  return nowMinutes >= start || nowMinutes <= end;
-}
-
-function isPharmacyOpenNow(workingHours: Prisma.JsonValue | null, is247: boolean) {
-  if (is247) {
-    return true;
-  }
-
-  if (!workingHours || typeof workingHours !== "object" || Array.isArray(workingHours)) {
-    return false;
-  }
-
-  const { dayKey, minutes } = getGudermesTimeParts(new Date());
-  const daySchedule = (workingHours as Record<string, unknown>)[dayKey];
-
-  if (typeof daySchedule !== "string") {
-    return false;
-  }
-
-  const normalizedSchedule = daySchedule.trim().toLowerCase();
-  if (!normalizedSchedule || normalizedSchedule.includes("выход")) {
-    return false;
-  }
-
-  return normalizedSchedule
-    .split(/[;,]/)
-    .some((range) => isTimeInsideRange(minutes, range));
-}
-
-function calculateDistanceMeters(
-  from: { lat: number; lng: number },
-  to: { lat: number; lng: number }
-) {
-  const earthRadiusMeters = 6371000;
-  const toRadians = (value: number) => (value * Math.PI) / 180;
-  const dLat = toRadians(to.lat - from.lat);
-  const dLng = toRadians(to.lng - from.lng);
-  const lat1 = toRadians(from.lat);
-  const lat2 = toRadians(to.lat);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return Math.round(earthRadiusMeters * c);
+function mapInventoryStatus(status: string): PharmacyInventoryStatus {
+  return INVENTORY_STATUS_VALUES.has(status)
+    ? (status as PharmacyInventoryStatus)
+    : "unknown";
 }
 
 function isFiniteCoordinate(value: number | undefined) {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-function getTierSortWeight(tier: PharmacyTierApi) {
-  if (tier === "Chain") {
-    return 0;
+function isUuid(value: string) {
+  return UUID_PATTERN.test(value);
+}
+
+async function fetchProductDetailsRow(normalizedId: string) {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase.rpc("gotmeds_get_product_details", {
+    p_product_id: normalizedId,
+  });
+
+  if (error) {
+    throw error;
   }
 
-  if (tier === "2") {
-    return 1;
-  }
-
-  return 2;
+  return (data as ProductDetailsRpcRow[] | null)?.[0] ?? null;
 }
 
 export async function getProductDetails(
@@ -226,29 +161,11 @@ export async function getProductDetails(
 ): Promise<ProductDetailsResponse> {
   try {
     const normalizedId = productId?.trim();
-    if (!normalizedId) {
+    if (!normalizedId || !isUuid(normalizedId)) {
       return { success: false, error: "Препарат не найден" };
     }
 
-    const product = await prisma.product.findFirst({
-      where: {
-        id: normalizedId,
-        isSocialRisk: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        activeIngredient: true,
-        form: true,
-        dosage: true,
-        isPrescription: true,
-        priceEstimate: true,
-        description: true,
-        imageUrl: true,
-      },
-    });
-
+    const product = await fetchProductDetailsRow(normalizedId);
     if (!product) {
       return { success: false, error: "Препарат не найден" };
     }
@@ -259,13 +176,13 @@ export async function getProductDetails(
         id: product.id,
         name: product.name,
         category: mapProductCategory(product.category),
-        active_ingredient: product.activeIngredient ?? undefined,
+        active_ingredient: product.active_ingredient ?? undefined,
         form: product.form ?? undefined,
         dosage: product.dosage ?? undefined,
-        is_prescription: product.isPrescription ?? false,
-        price_estimate: product.priceEstimate ?? undefined,
+        is_prescription: product.is_prescription ?? false,
+        price_estimate: product.price_estimate ?? undefined,
         description: product.description ?? "",
-        image_url: product.imageUrl ?? "",
+        image_url: product.image_url ?? "",
       },
     };
   } catch (error) {
@@ -282,100 +199,38 @@ export async function getAnalogs(
 ): Promise<ProductAnalogsResponse> {
   try {
     const normalizedId = productId?.trim();
-    if (!normalizedId) {
+    if (!normalizedId || !isUuid(normalizedId)) {
       return { success: false, error: "Препарат не найден" };
     }
 
-    const product = await prisma.product.findFirst({
-      where: {
-        id: normalizedId,
-        isSocialRisk: false,
-      },
-      select: {
-        id: true,
-        category: true,
-        activeIngredient: true,
-        form: true,
-        dosage: true,
-      },
-    });
-
+    const product = await fetchProductDetailsRow(normalizedId);
     if (!product) {
       return { success: false, error: "Препарат не найден" };
     }
 
-    const activeIngredient = product.activeIngredient?.trim();
-    if (!activeIngredient) {
-      return { success: true, data: [] };
-    }
-
-    const analogs = await prisma.product.findMany({
-      where: {
-        id: {
-          not: product.id,
-        },
-        isSocialRisk: false,
-        category: product.category,
-        activeIngredient: {
-          equals: activeIngredient,
-          mode: "insensitive",
-        },
-        form: product.form
-          ? {
-              equals: product.form,
-              mode: "insensitive",
-            }
-          : null,
-        inventory: {
-          some: {
-            status: {
-              in: ["IN_STOCK", "LIKELY_IN_STOCK"],
-            },
-            pharmacy: {
-              status: "ACTIVE",
-              tier: {
-                in: ["TIER_2", "TIER_3"],
-              },
-              city: {
-                isActive: true,
-              },
-            },
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        activeIngredient: true,
-        form: true,
-        dosage: true,
-        imageUrl: true,
-      },
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.rpc("gotmeds_get_product_analogs", {
+      p_product_id: normalizedId,
     });
 
-    const data = analogs
-      .sort((a, b) => {
-        const dosageScore =
-          Number(a.dosage === product.dosage && Boolean(product.dosage)) -
-          Number(b.dosage === product.dosage && Boolean(product.dosage));
-        if (dosageScore !== 0) {
-          return -dosageScore;
-        }
+    if (error) {
+      throw error;
+    }
 
-        return a.name.localeCompare(b.name, "ru");
-      })
-      .map<ProductAnalog>((analog) => ({
+    const analogs = (data as ProductAnalogRpcRow[] | null) ?? [];
+
+    return {
+      success: true,
+      data: analogs.map((analog) => ({
         id: analog.id,
         name: analog.name,
         category: mapProductCategory(analog.category),
-        active_ingredient: analog.activeIngredient ?? undefined,
+        active_ingredient: analog.active_ingredient ?? undefined,
         form: analog.form ?? undefined,
         dosage: analog.dosage ?? undefined,
-        image_url: analog.imageUrl ?? "",
-      }));
-
-    return { success: true, data };
+        image_url: analog.image_url ?? "",
+      })),
+    };
   } catch (error) {
     console.error("Ошибка получения аналогов:", error);
     return {
@@ -393,136 +248,50 @@ export async function getPharmaciesByProduct(
 ): Promise<PharmaciesByProductResponse> {
   try {
     const normalizedId = productId?.trim();
-    if (!normalizedId) {
+    if (!normalizedId || !isUuid(normalizedId)) {
       return { success: false, error: "Препарат не найден" };
     }
 
-    const product = await prisma.product.findFirst({
-      where: {
-        id: normalizedId,
-        isSocialRisk: false,
-      },
-      select: {
-        id: true,
-        isPrescription: true,
-        priceEstimate: true,
-      },
-    });
-
+    const product = await fetchProductDetailsRow(normalizedId);
     if (!product) {
       return { success: false, error: "Препарат не найден" };
     }
 
-    const includeTierOne = isBasicProduct(product);
     const hasUserCoordinates = isFiniteCoordinate(lat) && isFiniteCoordinate(lng);
-
-    const pharmacies = await prisma.pharmacy.findMany({
-      where: {
-        status: "ACTIVE",
-        city: {
-          isActive: true,
-        },
-        OR: [
-          ...(includeTierOne ? [{ tier: "TIER_1" as const }] : []),
-          {
-            inventory: {
-              some: {
-                productId: product.id,
-                status: {
-                  in: ["IN_STOCK", "LIKELY_IN_STOCK"],
-                },
-              },
-            },
-          },
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        address: true,
-        latitude: true,
-        longitude: true,
-        tier: true,
-        phone: true,
-        whatsapp: true,
-        workingHours: true,
-        is247: true,
-        inventory: {
-          where: {
-            productId: product.id,
-            status: {
-              in: ["IN_STOCK", "LIKELY_IN_STOCK"],
-            },
-          },
-          select: {
-            status: true,
-          },
-          take: 1,
-        },
-      },
+    const supabase = getSupabaseServerClient();
+    const { data, error } = await supabase.rpc("gotmeds_get_pharmacies_by_product", {
+      p_product_id: normalizedId,
+      p_lat: hasUserCoordinates ? lat : null,
+      p_lng: hasUserCoordinates ? lng : null,
+      p_is_open_now: isOpenNow,
     });
 
-    const data = pharmacies
-      .map<PharmacyByProductItem | null>((pharmacy) => {
-        const tier = TIER_MAP[pharmacy.tier];
-        const inventoryItem = pharmacy.inventory[0];
-        const isOpen = isPharmacyOpenNow(pharmacy.workingHours, pharmacy.is247);
+    if (error) {
+      throw error;
+    }
 
-        if (isOpenNow && !isOpen) {
-          return null;
-        }
+    const pharmacies = (data as PharmacyByProductRpcRow[] | null) ?? [];
 
-        if (!tier) {
-          return null;
-        }
-
-        const status: PharmacyInventoryStatus =
-          tier === "1"
-            ? "unknown"
-            : INVENTORY_STATUS_MAP[inventoryItem?.status ?? ""] ?? "unknown";
-
-        if (tier !== "1" && status === "unknown") {
-          return null;
-        }
-
-        return {
-          pharmacy_id: pharmacy.id,
-          name: pharmacy.name,
-          address: pharmacy.address,
-          coordinates: {
-            lat: pharmacy.latitude,
-            lng: pharmacy.longitude,
-          },
-          tier,
-          distance_meters: hasUserCoordinates
-            ? calculateDistanceMeters(
-                { lat: lat as number, lng: lng as number },
-                { lat: pharmacy.latitude, lng: pharmacy.longitude }
-              )
-            : null,
-          status,
-          working_hours: pharmacy.workingHours,
-          is_24_7: pharmacy.is247,
-          is_open_now: isOpen,
-          phone: pharmacy.phone,
-          whatsapp: pharmacy.whatsapp,
-        };
-      })
-      .filter((pharmacy): pharmacy is PharmacyByProductItem => pharmacy !== null)
-      .sort((a, b) => {
-        if (hasUserCoordinates && a.distance_meters !== null && b.distance_meters !== null) {
-          return a.distance_meters - b.distance_meters;
-        }
-
-        const tierDiff = getTierSortWeight(a.tier) - getTierSortWeight(b.tier);
-        if (tierDiff !== 0) {
-          return tierDiff;
-        }
-
-        return a.name.localeCompare(b.name, "ru");
-      });
-
-    return { success: true, data };
+    return {
+      success: true,
+      data: pharmacies.map((pharmacy) => ({
+        pharmacy_id: pharmacy.pharmacy_id,
+        name: pharmacy.name,
+        address: pharmacy.address,
+        coordinates: {
+          lat: pharmacy.latitude,
+          lng: pharmacy.longitude,
+        },
+        tier: mapPharmacyTier(pharmacy.tier),
+        distance_meters: pharmacy.distance_meters,
+        status: mapInventoryStatus(pharmacy.status),
+        working_hours: pharmacy.working_hours,
+        is_24_7: pharmacy.is_24_7,
+        is_open_now: pharmacy.is_open_now,
+        phone: pharmacy.phone,
+        whatsapp: pharmacy.whatsapp,
+      })),
+    };
   } catch (error) {
     console.error("Ошибка получения аптек:", error);
     return {
