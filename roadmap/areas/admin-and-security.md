@@ -91,3 +91,10 @@
 - Сделано: защищенные операции `/admin/pharmacies`, `/admin/inventory-upload`, `/admin/mapping`, `/admin/blacklist` и запись нулевой выдачи переведены на Supabase SDK/RPC; чувствительные RPC закрыты для `anon` и требуют доменную роль администратора.
 - Влияние: администратор сохраняет прежний рабочий интерфейс, но мутации данных проходят через Supabase Auth/RLS helper-функции и серверную проверку `requireAdmin()`.
 - Проверка: пользователь подтвердил отказ неадминскому `authenticated`, успешный вызов под администратором, CRUD аптек, CSV-импорт, маппинг, черный список и дашборд дефицита; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Legacy database decommission
+
+- План: [plans/completed/legacy-database-decommission.md](../../plans/completed/legacy-database-decommission.md)
+- Сделано: текущие спецификации безопасности и Supabase-инструкции приведены к состоянию, где админская авторизация и защищенные операции работают через Supabase Auth/RLS/RPC без legacy Prisma/bcrypt fallback.
+- Влияние: операционный контур админки больше не зависит от старого DB-клиента и seed-слоя, а `service_role` остается server-only механизмом контролируемых операций.
+- Проверка: пользователь подтвердил ручную проверку админских Supabase-сценариев; выполнены `npm run lint`, `npm run build` и `git diff --check`.

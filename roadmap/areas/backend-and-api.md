@@ -126,3 +126,10 @@
 - Сделано: `src/lib/actions/admin.ts` переведен с Prisma на Supabase Auth client/RPC для админских чтений, CRUD аптек, CSV full sync, маппинга alias и черного списка; `src/lib/actions/search.ts` переведен на Supabase server client для активного города и записи `search_logs`.
 - Влияние: Server Actions сохраняют прежние UI-контракты, но админские мутации и запись аналитики выполняются через Supabase-слой с `requireAdmin()` и RPC-проверками роли.
 - Проверка: пользователь проверил все админские сценарии плана; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Legacy database decommission
+
+- План: [plans/completed/legacy-database-decommission.md](../../plans/completed/legacy-database-decommission.md)
+- Сделано: удалены `src/lib/prisma.ts`, `prisma.config.ts`, Prisma/`pg` зависимости и legacy seed-конфигурация; текущие backend/API-спецификации описывают Supabase SDK/RPC как рабочий серверный data layer.
+- Влияние: серверные контракты GotMeds больше не имеют Prisma runtime fallback и опираются на Supabase helper, SQL functions/RPC и серверную границу Next.js.
+- Проверка: пользователь подтвердил ручную проверку Supabase-сценариев; выполнены `npm run lint`, `npm run build` и `git diff --check`.

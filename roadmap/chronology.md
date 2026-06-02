@@ -187,3 +187,11 @@
 - Сделано: админские операции CRUD аптек, CSV full sync, маппинг alias, игнорирование строк, черный список и запись аналитики нулевой выдачи переведены с Prisma runtime-запросов на Supabase SDK/RPC; добавлена SQL-миграция админских RPC и сохранен Prisma rollback/seed-слой.
 - Проверка: пользователь проверил Supabase migration/RPC-права, CRUD аптек, CSV full sync, маппинг alias, черный список, аналитику нулевой выдачи; выполнены `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-02 - Legacy database decommission
+
+- План: [plans/completed/legacy-database-decommission.md](../plans/completed/legacy-database-decommission.md)
+- Области: данные, backend и API, админ-панель и безопасность, инфраструктура и качество
+- Сделано: удалены Prisma runtime-слой, `prisma/`, `prisma.config.ts`, `src/lib/prisma.ts`, legacy DB-зависимости и seed-конфигурация; текущие спецификации и Supabase-инструкции синхронизированы с состоянием без legacy database fallback.
+- Проверка: пользователь подтвердил ручную проверку ключевых Supabase-сценариев; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push

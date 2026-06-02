@@ -98,3 +98,10 @@
 - Сделано: добавлена SQL-миграция `20260602120000_admin_mutations.sql` с RPC для атомарного CSV full sync, маппинга alias, игнорирования строк и переключения `products.is_social_risk`; UUID-первичные ключи SQL-схемы приведены к Prisma `@default(uuid())`.
 - Влияние: админские изменения данных выполняются через Supabase SDK/RPC рядом с данными, а Prisma остается rollback/seed-слоем до отдельного этапа.
 - Проверка: пользователь проверил применение миграции, RPC-права, создание аптек, замену `inventory`/`unmapped_strings`, записи `product_aliases`, флаг `is_social_risk` и `search_logs`; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Legacy database decommission
+
+- План: [plans/completed/legacy-database-decommission.md](../../plans/completed/legacy-database-decommission.md)
+- Сделано: удалены Prisma-схема, Prisma migrations и Prisma seed; текущие источники схемы и тестовых данных закреплены за Supabase SQL migrations и `supabase/seed.sql`.
+- Влияние: данные GotMeds больше не имеют отдельного legacy seed/rollback-слоя в `prisma/`; рабочим слоем остается Supabase PostgreSQL с SQL-артефактами проекта.
+- Проверка: пользователь подтвердил ручную Supabase-проверку; выполнены `npm run lint`, `npm run build` и `git diff --check`.
