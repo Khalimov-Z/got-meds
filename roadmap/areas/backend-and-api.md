@@ -119,3 +119,10 @@
 - Сделано: добавлены `src/lib/supabase-auth-config.ts` и `src/lib/supabase-auth-server.ts`, middleware переведен на проверку Supabase Auth claims, а `loginAdmin`, `logoutAdmin`, `getCurrentAdmin` и `requireAdmin` работают через Supabase Auth и доменную запись `admins`.
 - Влияние: серверный контракт админской авторизации сохранил текущий UI-формат, но источник сессии теперь Supabase Auth, без переноса админских мутаций на Supabase RPC.
 - Проверка: пользователь подтвердил вход, выход, защиту `/admin/*` и регрессию публичных сценариев; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Supabase admin mutations
+
+- План: [plans/completed/supabase-admin-mutations.md](../../plans/completed/supabase-admin-mutations.md)
+- Сделано: `src/lib/actions/admin.ts` переведен с Prisma на Supabase Auth client/RPC для админских чтений, CRUD аптек, CSV full sync, маппинга alias и черного списка; `src/lib/actions/search.ts` переведен на Supabase server client для активного города и записи `search_logs`.
+- Влияние: Server Actions сохраняют прежние UI-контракты, но админские мутации и запись аналитики выполняются через Supabase-слой с `requireAdmin()` и RPC-проверками роли.
+- Проверка: пользователь проверил все админские сценарии плана; выполнены `npm run lint`, `npm run build` и `git diff --check`.

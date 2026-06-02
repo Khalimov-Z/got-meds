@@ -91,3 +91,10 @@
 - Сделано: добавлено поле `admins.auth_user_id` в Prisma-схему и Supabase SQL-миграцию, создана связь с `auth.users`, helper-функции проверки доменной роли администратора и RLS-политики для таблиц GotMeds.
 - Влияние: доменная модель администраторов связана с Supabase Auth, публичное чтение ограничено безопасными данными, а чувствительные таблицы закрыты от `anon` и обычных `authenticated` пользователей.
 - Проверка: пользователь подтвердил проверку связки Supabase Auth user с администратором и RLS-политик; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Supabase admin mutations
+
+- План: [plans/completed/supabase-admin-mutations.md](../../plans/completed/supabase-admin-mutations.md)
+- Сделано: добавлена SQL-миграция `20260602120000_admin_mutations.sql` с RPC для атомарного CSV full sync, маппинга alias, игнорирования строк и переключения `products.is_social_risk`; UUID-первичные ключи SQL-схемы приведены к Prisma `@default(uuid())`.
+- Влияние: админские изменения данных выполняются через Supabase SDK/RPC рядом с данными, а Prisma остается rollback/seed-слоем до отдельного этапа.
+- Проверка: пользователь проверил применение миграции, RPC-права, создание аптек, замену `inventory`/`unmapped_strings`, записи `product_aliases`, флаг `is_social_risk` и `search_logs`; выполнены `npm run lint`, `npm run build` и `git diff --check`.

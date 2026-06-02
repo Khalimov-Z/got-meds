@@ -179,3 +179,11 @@
 - Сделано: админская авторизация переведена на Supabase Auth, добавлен cookie-based server auth layer, `requireAdmin()` проверяет Supabase-сессию и доменную роль администратора, а SQL-миграция связывает `admins.auth_user_id` с `auth.users` и включает RLS-политики для публичных и чувствительных таблиц.
 - Проверка: пользователь подтвердил ручную проверку Supabase Auth, RLS-политик и админских сценариев; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-02 - Supabase admin mutations
+
+- План: [plans/completed/supabase-admin-mutations.md](../plans/completed/supabase-admin-mutations.md)
+- Области: данные, backend и API, поиск и бизнес-логика, карта и аптеки, админ-панель и безопасность, SEO и аналитика, инфраструктура и качество
+- Сделано: админские операции CRUD аптек, CSV full sync, маппинг alias, игнорирование строк, черный список и запись аналитики нулевой выдачи переведены с Prisma runtime-запросов на Supabase SDK/RPC; добавлена SQL-миграция админских RPC и сохранен Prisma rollback/seed-слой.
+- Проверка: пользователь проверил Supabase migration/RPC-права, CRUD аптек, CSV full sync, маппинг alias, черный список, аналитику нулевой выдачи; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push

@@ -7,6 +7,7 @@
 -- ==============================================
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ==============================================
 -- Перечисления
@@ -23,7 +24,7 @@ CREATE TYPE "AdminRole" AS ENUM ('SUPERADMIN', 'CONTENT_MANAGER');
 -- ==============================================
 
 CREATE TABLE "cities" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "center_latitude" DOUBLE PRECISION NOT NULL,
     "center_longitude" DOUBLE PRECISION NOT NULL,
@@ -33,7 +34,7 @@ CREATE TABLE "cities" (
 );
 
 CREATE TABLE "admins" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "email" TEXT NOT NULL,
     "password_hash" TEXT NOT NULL,
     "role" "AdminRole" NOT NULL DEFAULT 'CONTENT_MANAGER',
@@ -43,7 +44,7 @@ CREATE TABLE "admins" (
 );
 
 CREATE TABLE "pharmacies" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "city_id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
@@ -60,7 +61,7 @@ CREATE TABLE "pharmacies" (
 );
 
 CREATE TABLE "products" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "category" "ProductCategory" NOT NULL,
     "active_ingredient" TEXT,
@@ -86,7 +87,7 @@ CREATE TABLE "inventory" (
 );
 
 CREATE TABLE "product_aliases" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "original_string" TEXT NOT NULL,
     "product_id" UUID,
     "is_ignored" BOOLEAN NOT NULL DEFAULT false,
@@ -95,7 +96,7 @@ CREATE TABLE "product_aliases" (
 );
 
 CREATE TABLE "unmapped_strings" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "pharmacy_id" UUID NOT NULL,
     "raw_string" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -104,7 +105,7 @@ CREATE TABLE "unmapped_strings" (
 );
 
 CREATE TABLE "search_logs" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "search_term" TEXT NOT NULL,
     "city_id" UUID NOT NULL,
     "user_latitude" DOUBLE PRECISION,
