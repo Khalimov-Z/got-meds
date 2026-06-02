@@ -171,3 +171,11 @@
 - Сделано: добавлен server-only Supabase helper, RPC-функции чтения для поиска, карточки продукта, аналогов, аптек, sitemap и дашборда дефицита; `searchProducts`, `getProductDetails`, `getAnalogs`, `getPharmaciesByProduct`, `sitemap.xml` и `getDemandDashboardData` переведены на Supabase SDK/RPC без изменения UI-контрактов.
 - Проверка: пользователь применил RPC-миграцию в тестовом Supabase project, подтвердил функции `gotmeds_%` в схеме `public`, права `anon=false`, `authenticated=false`, `service_role=true`, проверил поиск, alias, restricted-сценарий, страницу `Но-Шпа`, аналоги, карту, sitemap и `/admin/demand`; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-02 - Supabase Auth and RLS
+
+- План: [plans/completed/supabase-auth-rls.md](../plans/completed/supabase-auth-rls.md)
+- Области: данные, backend и API, админ-панель и безопасность, инфраструктура и качество
+- Сделано: админская авторизация переведена на Supabase Auth, добавлен cookie-based server auth layer, `requireAdmin()` проверяет Supabase-сессию и доменную роль администратора, а SQL-миграция связывает `admins.auth_user_id` с `auth.users` и включает RLS-политики для публичных и чувствительных таблиц.
+- Проверка: пользователь подтвердил ручную проверку Supabase Auth, RLS-политик и админских сценариев; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+- Pull request: будет создан после push

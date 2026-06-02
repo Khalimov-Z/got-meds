@@ -147,3 +147,10 @@
 - Сделано: активный план переведен в `plans/completed/`, добавлена зависимость `@supabase/supabase-js`, обновлена инструкция `supabase/README.md` и дорожная карта перед push.
 - Влияние: этап read layer оформлен по SDD-процессу, секреты остаются только в локальном `.env.local`, а Prisma сохранен для сценариев вне этапа 6.3.
 - Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные проверки Supabase RPC и приложения.
+
+## 2026-06-02 - Supabase Auth and RLS
+
+- План: [plans/completed/supabase-auth-rls.md](../../plans/completed/supabase-auth-rls.md)
+- Сделано: активный план переведен в `plans/completed/`, добавлена зависимость `@supabase/ssr`, обновлена инструкция `supabase/README.md` по Auth/RLS и дорожная карта перед push.
+- Влияние: этап Auth/RLS оформлен по SDD-процессу, env-переменные описаны без коммита секретов, Prisma сохранен для runtime/rollback-сценариев вне этапа 6.4.
+- Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные проверки Supabase Auth, RLS и приложения.

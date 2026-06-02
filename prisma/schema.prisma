@@ -36,6 +36,7 @@ model Admin {
   id           String    @id @default(uuid()) @db.Uuid
   email        String    @unique // Логин администратора
   passwordHash String    @map("password_hash") // bcrypt-хэш пароля
+  authUserId   String?   @unique @map("auth_user_id") @db.Uuid // Связь с Supabase Auth user
   role         AdminRole @default(CONTENT_MANAGER) // Роль в админке
   createdAt    DateTime  @default(now()) @map("created_at")
 
