@@ -84,3 +84,10 @@
 - Сделано: добавлена SQL-миграция `supabase/migrations/20260601120000_read_layer_functions.sql` с RPC-функциями чтения для существующих таблиц без изменения доменной схемы.
 - Влияние: публичные и аналитические read-сценарии читают данные через Supabase SQL functions/RPC, а Prisma остается переходным rollback-слоем для write/auth/admin-mutation сценариев.
 - Проверка: пользователь применил RPC-миграцию в тестовом Supabase project, подтвердил наличие функций `gotmeds_%` в схеме `public`, работу `gotmeds_search_products` и права выполнения только для `service_role`.
+
+## 2026-06-02 - Supabase Auth and RLS
+
+- План: [plans/completed/supabase-auth-rls.md](../../plans/completed/supabase-auth-rls.md)
+- Сделано: добавлено поле `admins.auth_user_id` в Prisma-схему и Supabase SQL-миграцию, создана связь с `auth.users`, helper-функции проверки доменной роли администратора и RLS-политики для таблиц GotMeds.
+- Влияние: доменная модель администраторов связана с Supabase Auth, публичное чтение ограничено безопасными данными, а чувствительные таблицы закрыты от `anon` и обычных `authenticated` пользователей.
+- Проверка: пользователь подтвердил проверку связки Supabase Auth user с администратором и RLS-политик; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.

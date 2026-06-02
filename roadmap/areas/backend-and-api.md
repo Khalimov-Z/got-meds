@@ -112,3 +112,10 @@
 - Сделано: добавлен server-only helper `src/lib/supabase-server.ts`, а серверные read-контракты `searchProducts`, `getProductDetails`, `getAnalogs`, `getPharmaciesByProduct`, `sitemap.xml` и `getDemandDashboardData` переведены на Supabase RPC.
 - Влияние: API-ответы и Server Actions сохраняют прежний контракт для UI, но тяжелые чтения теперь выполняются через Supabase read layer без удаления Prisma.
 - Проверка: пользователь проверил поиск, страницу продукта, карту, sitemap и `/admin/demand`; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Supabase Auth and RLS
+
+- План: [plans/completed/supabase-auth-rls.md](../../plans/completed/supabase-auth-rls.md)
+- Сделано: добавлены `src/lib/supabase-auth-config.ts` и `src/lib/supabase-auth-server.ts`, middleware переведен на проверку Supabase Auth claims, а `loginAdmin`, `logoutAdmin`, `getCurrentAdmin` и `requireAdmin` работают через Supabase Auth и доменную запись `admins`.
+- Влияние: серверный контракт админской авторизации сохранил текущий UI-формат, но источник сессии теперь Supabase Auth, без переноса админских мутаций на Supabase RPC.
+- Проверка: пользователь подтвердил вход, выход, защиту `/admin/*` и регрессию публичных сценариев; выполнены `npx prisma generate`, `npm run lint`, `npm run build` и `git diff --check`.

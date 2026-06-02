@@ -1,23 +1,69 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_SESSION_COOKIE } from "@/lib/admin/constants";
+import { createServerClient } from "@supabase/ssr";
+import { getSupabaseAuthConfig } from "@/lib/supabase-auth-config";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (!pathname.startsWith("/admin") || pathname === "/admin/login") {
+  if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
-  const hasAdminSession = Boolean(request.cookies.get(ADMIN_SESSION_COOKIE)?.value);
+  const config = getSupabaseAuthConfig();
+  if (!config) {
+    if (pathname === "/admin/login") {
+      return NextResponse.next();
+    }
 
-  if (!hasAdminSession) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/admin/login";
     loginUrl.search = "";
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  let response = NextResponse.next({
+    request,
+  });
+
+  const supabase = createServerClient(config.url, config.publishableKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+
+        response = NextResponse.next({
+          request,
+        });
+
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options);
+        });
+      },
+    },
+  });
+
+  const {
+    data: claimsData,
+    error: claimsError,
+  } = await supabase.auth.getClaims();
+  const hasSupabaseSession = Boolean(claimsData?.claims?.sub && !claimsError);
+
+  if (pathname === "/admin/login") {
+    return response;
+  }
+
+  if (!hasSupabaseSession) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/admin/login";
+    loginUrl.search = "";
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return response;
 }
 
 export const config = {

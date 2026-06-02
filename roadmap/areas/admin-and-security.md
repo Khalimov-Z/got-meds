@@ -77,3 +77,10 @@
 - Сделано: `service_role` используется только в server-only helper, RPC-функции закрыты для `PUBLIC`, `anon` и `authenticated`, а `/admin/demand` сохранил проверку `requireAdmin()`.
 - Влияние: read layer работает через серверную границу Next.js, клиентские компоненты не получают секретный Supabase-ключ и не вызывают чувствительные RPC напрямую.
 - Проверка: пользователь подтвердил права `anon=false`, `authenticated=false`, `service_role=true`, проверил защиту `/admin/demand` через выход из админки и повторный вход.
+
+## 2026-06-02 - Supabase Auth and RLS
+
+- План: [plans/completed/supabase-auth-rls.md](../../plans/completed/supabase-auth-rls.md)
+- Сделано: админский вход переведен с legacy cookie/bcrypt-сессии на Supabase Auth email/password, доменные роли `SUPERADMIN` и `CONTENT_MANAGER` проверяются через запись администратора, а RLS-политики закрывают `admins`, `product_aliases`, `unmapped_strings` и `search_logs` от публичного доступа.
+- Влияние: пользователь Supabase Auth без доменной роли администратора не получает доступ к админке, а `service_role` остается server-only для контролируемых серверных операций.
+- Проверка: пользователь подтвердил проверку входа, выхода, отказа для неадминского Auth user и RLS-границ; выполнены `npm run lint`, `npm run build` и `git diff --check`.
