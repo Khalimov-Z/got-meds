@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { useId, useState } from "react";
+import {
+  CategoryBabyIcon,
+  CategoryEquipmentIcon,
+  CategoryMedicineIcon,
+  CategoryVitaminsIcon,
+} from "@/components/map/icons";
 import styles from "./product-page.module.css";
 
 type ProductAnalog = {
@@ -19,10 +25,10 @@ type ProductAnalogsProps = {
 };
 
 const CATEGORY_ICONS = {
-  medicine: "medication",
-  vitamins: "spa",
-  equipment: "devices_other",
-  mother_and_baby: "child_care",
+  medicine: CategoryMedicineIcon,
+  vitamins: CategoryVitaminsIcon,
+  equipment: CategoryEquipmentIcon,
+  mother_and_baby: CategoryBabyIcon,
 };
 
 function getDetails(analog: ProductAnalog) {
@@ -53,6 +59,7 @@ export function ProductAnalogs({ analogs, category }: ProductAnalogsProps) {
         <div className={styles.analogList} id={listId}>
           {analogs.map((analog) => {
             const details = getDetails(analog);
+            const CategoryIcon = CATEGORY_ICONS[category] ?? CategoryMedicineIcon;
 
             return (
               <article className={styles.analogCard} key={analog.id}>
@@ -64,9 +71,7 @@ export function ProductAnalogs({ analogs, category }: ProductAnalogsProps) {
                     />
                   ) : (
                     <div className={styles.analogFallback}>
-                      <span className="material-symbols-outlined" aria-hidden="true">
-                        {CATEGORY_ICONS[category] || "medication"}
-                      </span>
+                      <CategoryIcon aria-hidden="true" />
                     </div>
                   )}
                 </div>

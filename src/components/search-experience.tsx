@@ -2,6 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  CategoryBabyIcon,
+  CategoryEquipmentIcon,
+  CategoryMedicineIcon,
+  CategoryVitaminsIcon,
+} from "@/components/map/icons";
 import { logZeroResultSearchForActiveCity } from "@/lib/actions/search";
 import styles from "./search-experience.module.css";
 
@@ -66,12 +72,12 @@ function formatPrice(price: number | null) {
   return `от ${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
 }
 
-const CATEGORY_ICONS: Record<SearchCategory, string> = {
-  medicine: "medication",
-  vitamins: "spa",
-  equipment: "devices_other",
-  mother_and_baby: "child_care",
-};
+const CATEGORY_ICONS = {
+  medicine: CategoryMedicineIcon,
+  vitamins: CategoryVitaminsIcon,
+  equipment: CategoryEquipmentIcon,
+  mother_and_baby: CategoryBabyIcon,
+} satisfies Record<SearchCategory, typeof CategoryMedicineIcon>;
 
 /**
  * Содержимое шапки сайта (логотип и служебная кнопка администратора).
@@ -421,41 +427,41 @@ function SearchResults({
         <strong>{query}</strong>
       </div>
       <ul className={styles.resultList}>
-        {results.map((result) => (
-          <li key={result.id}>
-            <Link className={styles.resultCard} href={`/product/${result.id}`}>
-              <div
-                className={`${styles.productImage} ${
-                  result.image_url ? styles.productImageWithSource : ""
-                }`}
-                style={
-                  result.image_url
-                    ? { backgroundImage: `url(${result.image_url})` }
-                    : undefined
-                }
-                aria-hidden="true"
-              >
-                {!result.image_url ? (
-                  <span className="material-symbols-outlined" aria-hidden="true">
-                    {CATEGORY_ICONS[result.category] || "medication"}
-                  </span>
-                ) : null}
-              </div>
-              <div className={styles.productInfo}>
-                <div className={styles.productTitleRow}>
-                  <h3>{result.name}</h3>
-                  {result.is_prescription ? (
-                    <span className={styles.prescriptionBadge}>По рецепту</span>
-                  ) : null}
+        {results.map((result) => {
+          const CategoryIcon = CATEGORY_ICONS[result.category] ?? CategoryMedicineIcon;
+
+          return (
+            <li key={result.id}>
+              <Link className={styles.resultCard} href={`/product/${result.id}`}>
+                <div
+                  className={`${styles.productImage} ${
+                    result.image_url ? styles.productImageWithSource : ""
+                  }`}
+                  style={
+                    result.image_url
+                      ? { backgroundImage: `url(${result.image_url})` }
+                      : undefined
+                  }
+                  aria-hidden="true"
+                >
+                  {!result.image_url ? <CategoryIcon aria-hidden="true" /> : null}
                 </div>
-                <div className={styles.productMeta}>
-                  <span>{CATEGORY_LABELS[result.category]}</span>
-                  <span>{formatPrice(result.price_estimate)}</span>
+                <div className={styles.productInfo}>
+                  <div className={styles.productTitleRow}>
+                    <h3>{result.name}</h3>
+                    {result.is_prescription ? (
+                      <span className={styles.prescriptionBadge}>По рецепту</span>
+                    ) : null}
+                  </div>
+                  <div className={styles.productMeta}>
+                    <span>{CATEGORY_LABELS[result.category]}</span>
+                    <span>{formatPrice(result.price_estimate)}</span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </li>
-        ))}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

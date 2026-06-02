@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:unit": "jest --runInBand",
+    "test:e2e": "cypress run",
+    "test:lighthouse": "lhci autorun",
+    "test:quality": "npm run lint && npm run build && npm run test:unit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -17,12 +21,17 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@lhci/cli": "^0.15.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cypress": "^15.16.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "jest": "^30.4.2",
+    "jest-environment-node": "^30.4.1",
     "typescript": "^5"
   }
 }

@@ -2,6 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
+import {
+  ArrowBackIcon,
+  CategoryBabyIcon,
+  CategoryEquipmentIcon,
+  CategoryMedicineIcon,
+  CategoryVitaminsIcon,
+  DropletIcon,
+  MapIcon,
+  ScienceIcon,
+  WarningIcon,
+} from "@/components/map/icons";
 import { getAnalogs, getProductDetails } from "@/lib/actions/products";
 import { ProductAnalogs } from "./product-analogs";
 import styles from "./product-page.module.css";
@@ -14,10 +25,10 @@ const CATEGORY_LABELS = {
 };
 
 const CATEGORY_ICONS = {
-  medicine: "medication",
-  vitamins: "spa",
-  equipment: "devices_other",
-  mother_and_baby: "child_care",
+  medicine: CategoryMedicineIcon,
+  vitamins: CategoryVitaminsIcon,
+  equipment: CategoryEquipmentIcon,
+  mother_and_baby: CategoryBabyIcon,
 };
 
 type PageProps = {
@@ -81,13 +92,14 @@ export default async function ProductPage({ params }: PageProps) {
 
   const product = result.data;
   const analogs = analogsResult.success ? analogsResult.data ?? [] : [];
+  const ProductCategoryIcon = CATEGORY_ICONS[product.category] ?? CategoryMedicineIcon;
 
   return (
     <main className={styles.shell}>
       <header className={styles.header}>
         <BrandMark />
         <Link className={styles.backLink} href="/">
-          <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+          <ArrowBackIcon aria-hidden="true" />
           <span>Назад к поиску</span>
         </Link>
       </header>
@@ -105,9 +117,7 @@ export default async function ProductPage({ params }: PageProps) {
               />
             ) : (
               <div className={styles.productFallback}>
-                <span className="material-symbols-outlined" aria-hidden="true">
-                  {CATEGORY_ICONS[product.category] || "medication"}
-                </span>
+                <ProductCategoryIcon aria-hidden="true" />
               </div>
             )}
           </div>
@@ -149,7 +159,7 @@ export default async function ProductPage({ params }: PageProps) {
                   query: { q: product.name },
                 }}
               >
-                <span className="material-symbols-outlined" aria-hidden="true">map</span>
+                <MapIcon aria-hidden="true" />
                 <span>Найти на карте</span>
               </Link>
             </div>
@@ -159,7 +169,7 @@ export default async function ProductPage({ params }: PageProps) {
           <div className={styles.specsGrid}>
             {product.dosage && (
               <div className={`${styles.specCard} ${styles.specDosage}`}>
-                <span className="material-symbols-outlined" aria-hidden="true">medication</span>
+                <CategoryMedicineIcon aria-hidden="true" />
                 <div className={styles.specText}>
                   <span className={styles.specLabel}>Дозировка</span>
                   <span className={styles.specValue}>{product.dosage}</span>
@@ -168,7 +178,7 @@ export default async function ProductPage({ params }: PageProps) {
             )}
             {product.form && (
               <div className={`${styles.specCard} ${styles.specForm}`}>
-                <span className="material-symbols-outlined" aria-hidden="true">opacity</span>
+                <DropletIcon aria-hidden="true" />
                 <div className={styles.specText}>
                   <span className={styles.specLabel}>Форма выпуска</span>
                   <span className={styles.specValue}>{product.form}</span>
@@ -177,7 +187,7 @@ export default async function ProductPage({ params }: PageProps) {
             )}
             {product.active_ingredient && (
               <div className={`${styles.specCard} ${styles.specIngredient}`}>
-                <span className="material-symbols-outlined" aria-hidden="true">science</span>
+                <ScienceIcon aria-hidden="true" />
                 <div className={styles.specText}>
                   <span className={styles.specLabel}>Действующее вещество</span>
                   <span className={styles.specValue}>{product.active_ingredient}</span>
@@ -188,7 +198,7 @@ export default async function ProductPage({ params }: PageProps) {
 
           {product.is_prescription && (
             <div className={styles.prescriptionAlert} role="note">
-              <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+              <WarningIcon aria-hidden="true" />
               <span>Отпускается строго по рецепту врача</span>
             </div>
           )}
@@ -199,7 +209,7 @@ export default async function ProductPage({ params }: PageProps) {
 
       {/* Disclaimer Block */}
       <div className={styles.disclaimerBlock} role="note">
-        <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+        <WarningIcon aria-hidden="true" />
         <p>
           ИМЕЮТСЯ ПРОТИВОПОКАЗАНИЯ. ПЕРЕД ПРИМЕНЕНИЕМ НЕОБХОДИМО
           ПРОКОНСУЛЬТИРОВАТЬСЯ СО СПЕЦИАЛИСТОМ. Информация о товаре

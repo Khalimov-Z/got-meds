@@ -195,3 +195,11 @@
 - Сделано: удалены Prisma runtime-слой, `prisma/`, `prisma.config.ts`, `src/lib/prisma.ts`, legacy DB-зависимости и seed-конфигурация; текущие спецификации и Supabase-инструкции синхронизированы с состоянием без legacy database fallback.
 - Проверка: пользователь подтвердил ручную проверку ключевых Supabase-сценариев; выполнены `npm run lint`, `npm run build` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-02 - Phase 10 Testing & Quality Foundation
+
+- План: [plans/completed/phase-10-testing-quality.md](../plans/completed/phase-10-testing-quality.md)
+- Области: инфраструктура и качество, frontend и дизайн, backend и API, поиск и бизнес-логика, карта и аптеки, админ-панель и безопасность, SEO и аналитика
+- Сделано: добавлены Jest unit-тесты Server Actions, Cypress E2E-сценарии MVP, LHCI-конфигурация с порогами качества, npm-скрипты `test:unit`, `test:e2e`, `test:lighthouse`, `test:quality`, fixture CSV для E2E, а также точечные UI-фиксы иконок и предупреждения ошибки входа администратора.
+- Проверка: пользователь проверил исправления интерфейса; выполнены `npm run lint`, `npm run build`, `npm run test:unit` и `git diff --check`.
+- Pull request: будет создан после push

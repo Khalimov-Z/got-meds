@@ -1,5 +1,6 @@
 "use client";
 
+import { RefreshIcon } from "@/components/map/icons";
 import styles from "./offline.module.css";
 
 export function RetryButton() {
@@ -9,9 +10,7 @@ export function RetryButton() {
       type="button"
       onClick={() => window.location.reload()}
     >
-      <span className="material-symbols-outlined" aria-hidden="true">
-        refresh
-      </span>
+      <RefreshIcon aria-hidden="true" />
       <span>Попробовать снова</span>
     </button>
   );

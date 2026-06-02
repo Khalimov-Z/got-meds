@@ -179,7 +179,7 @@
       hsl(205 60% 97% / 0.3) 46%,
       hsl(205 60% 97% / 0.14) 100%
     ),
-    url("/assets/homepage-hero-pharmacy.png");
+    url("/assets/homepage-hero-pharmacy-960.jpg");
   background-position: right 30% center;
   background-size: cover;
   content: "";
@@ -575,8 +575,9 @@
   font-weight: 850;
 }
 
-.productImage span {
-  font-size: 24px;
+.productImage svg {
+  width: 24px;
+  height: 24px;
 }
 
 .productImageWithSource {
@@ -1004,7 +1005,7 @@
         hsl(205 60% 97% / 0.28) 42%,
         hsl(205 60% 97% / 0.12) 100%
       ),
-      url("/assets/homepage-hero-pharmacy.png");
+      url("/assets/homepage-hero-pharmacy-1440.jpg");
     background-position: right 30% center;
   }
 

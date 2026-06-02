@@ -133,3 +133,10 @@
 - Сделано: удалены `src/lib/prisma.ts`, `prisma.config.ts`, Prisma/`pg` зависимости и legacy seed-конфигурация; текущие backend/API-спецификации описывают Supabase SDK/RPC как рабочий серверный data layer.
 - Влияние: серверные контракты GotMeds больше не имеют Prisma runtime fallback и опираются на Supabase helper, SQL functions/RPC и серверную границу Next.js.
 - Проверка: пользователь подтвердил ручную проверку Supabase-сценариев; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Phase 10 Testing & Quality Foundation
+
+- План: [plans/completed/phase-10-testing-quality.md](../../plans/completed/phase-10-testing-quality.md)
+- Сделано: добавлены Jest unit-тесты для `searchProducts`, `getAnalogs`, `getPharmaciesByProduct` и `logZeroResultSearch` через мок Supabase server client.
+- Влияние: серверные контракты поиска, аналогов, аптек и аналитики нулевой выдачи получили быстрые регрессионные проверки без обращения к production-данным.
+- Проверка: выполнены `npm run test:unit`, `npm run lint`, `npm run build` и `git diff --check`.
