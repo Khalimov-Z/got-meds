@@ -3,8 +3,7 @@
 -- ==============================================
 -- Источник: spec/technical/supabase-platform-migration.md, раздел 6.5
 -- Этап: Supabase admin mutations
--- Эта миграция добавляет RPC для атомарных админских операций
--- без удаления Prisma rollback-слоя.
+-- Эта миграция добавляет RPC для атомарных админских операций.
 -- ==============================================
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;

@@ -21,7 +21,7 @@
 
 ### Технические спецификации (`technical/`)
 
-* 🧱 **[Технологический стек](./technical/tech-stack.md)** — Next.js, PostgreSQL, Prisma, Vanilla CSS, Vercel.
+* 🧱 **[Технологический стек](./technical/tech-stack.md)** — Next.js, Supabase PostgreSQL/Auth/RPC, Vanilla CSS, Vercel.
 * 🎨 **[Дизайн-система](./technical/design-system.md)** — Токены дизайна, типографика, glassmorphism, микро-анимации.
 * 📡 **[API-спецификация](./technical/api-spec.md)** — Контракты Server Actions и Route Handlers.
 * 💊 **[API аналогов](./technical/analogs-api-spec.md)** — Контракт получения аналогов по действующему веществу.

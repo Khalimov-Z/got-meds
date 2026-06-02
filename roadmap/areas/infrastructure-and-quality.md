@@ -161,3 +161,10 @@
 - Сделано: активный план переведен в `plans/completed/`, обновлены `supabase/README.md` и дорожная карта перед push; Prisma сохранен как rollback/seed-слой до отдельного Prisma decommission.
 - Влияние: этап admin mutations оформлен по SDD-процессу, а проверочные SQL-сценарии Supabase и ручная приемка зафиксированы в проектной документации.
 - Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные проверки миграции, админских операций и аналитики.
+
+## 2026-06-02 - Legacy database decommission
+
+- План: [plans/completed/legacy-database-decommission.md](../../plans/completed/legacy-database-decommission.md)
+- Сделано: активный план переведен в `plans/completed/`, удалены Prisma-конфигурация, Prisma-папка, Prisma/legacy DB-зависимости и Prisma-блок `.gitignore`; `package-lock.json` обновлен штатным npm-механизмом.
+- Влияние: проектный toolchain стал меньше и больше не требует Prisma generate/migrate/seed для текущей разработки, сборки и запуска Supabase-версии.
+- Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные Supabase-сценарии и готовность к push.

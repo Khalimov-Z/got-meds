@@ -11,14 +11,14 @@
 
 ## 1️⃣ Инициализация проекта
 - `npx -y create-next-app@latest ./` (Next.js 13+ с App Router, TypeScript).
-- Установить зависимости: `prisma`, `@prisma/client`, `next-auth`, `bcryptjs`, `pg`, `pg-trgm`, `next/script`, `next/image`.
-- Добавить `.env` с `DATABASE_URL` (PostgreSQL) и `NEXTAUTH_SECRET`.
+- Установить зависимости текущего MVP: `@supabase/ssr`, `@supabase/supabase-js`, `papaparse`, `next`, `react`, `react-dom`.
+- Добавить локальные Supabase env-переменные: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Для локальных SQL-проверок допускается `DATABASE_URL`, указывающий на Supabase PostgreSQL.
 
 ## 2️⃣ Настройка базы данных
-- Создать `schema.prisma` согласно `spec/features/data-architecture/data-architecture.md` (таблицы **Products**, **Product_Aliases**, **Pharmacies**, **Inventory**, **Search_Logs**).  
+- Создать Supabase SQL migrations согласно `spec/features/data-architecture/data-architecture.md` (таблицы **Products**, **Product_Aliases**, **Pharmacies**, **Inventory**, **Search_Logs**).
 - Добавить поля `dosage`, `active_ingredient`, `price_estimate`, `is_social_risk` и enum‑значение `mother_and_baby`.
-- Выполнить миграции `npx prisma migrate dev --name init`.
-- Сгенерировать seed‑скрипт с тестовыми данными (аптеки Tier 1‑3, несколько препаратов).
+- Применить SQL-миграции из `supabase/migrations/` на чистой тестовой Supabase PostgreSQL базе.
+- Подготовить `supabase/seed.sql` с тестовыми данными (аптеки Tier 1‑3, несколько препаратов).
 
 ## 3️⃣ Реализация ядра функций
 ### 3.1 Поиск препаратов
@@ -36,7 +36,7 @@
 - `logZeroResultSearch` → записывает в `Search_Logs`.
 
 ## 4️⃣ Админ‑панель
-- Защищённые роуты (`/admin/*`) с NextAuth middleware.
+- Защищённые роуты (`/admin/*`) через Supabase Auth session cookie, `requireAdmin()` и доменные роли администратора.
 - CSV‑импорт `uploadPharmacyPrice` + маппинг алиасов (`createAlias`, `ignoreAlias`).
 - Дашборд аналитики (неудовлетворённый спрос, топ‑препаратов).
 
