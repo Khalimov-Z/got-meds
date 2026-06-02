@@ -84,3 +84,10 @@
 - Сделано: админский вход переведен с legacy cookie/bcrypt-сессии на Supabase Auth email/password, доменные роли `SUPERADMIN` и `CONTENT_MANAGER` проверяются через запись администратора, а RLS-политики закрывают `admins`, `product_aliases`, `unmapped_strings` и `search_logs` от публичного доступа.
 - Влияние: пользователь Supabase Auth без доменной роли администратора не получает доступ к админке, а `service_role` остается server-only для контролируемых серверных операций.
 - Проверка: пользователь подтвердил проверку входа, выхода, отказа для неадминского Auth user и RLS-границ; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-02 - Supabase admin mutations
+
+- План: [plans/completed/supabase-admin-mutations.md](../../plans/completed/supabase-admin-mutations.md)
+- Сделано: защищенные операции `/admin/pharmacies`, `/admin/inventory-upload`, `/admin/mapping`, `/admin/blacklist` и запись нулевой выдачи переведены на Supabase SDK/RPC; чувствительные RPC закрыты для `anon` и требуют доменную роль администратора.
+- Влияние: администратор сохраняет прежний рабочий интерфейс, но мутации данных проходят через Supabase Auth/RLS helper-функции и серверную проверку `requireAdmin()`.
+- Проверка: пользователь подтвердил отказ неадминскому `authenticated`, успешный вызов под администратором, CRUD аптек, CSV-импорт, маппинг, черный список и дашборд дефицита; выполнены `npm run lint`, `npm run build` и `git diff --check`.

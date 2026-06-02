@@ -12,7 +12,6 @@
 
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 // --- Типы (согласно api-spec.md, раздел 2.1) ---
@@ -56,7 +55,7 @@ const MAX_RESULTS = 20;
 /** Минимальная длина запроса, который имеет смысл писать в аналитику */
 const MIN_ZERO_RESULT_SEARCH_LENGTH = 3;
 
-// --- Маппинг категорий из Prisma enum в API-формат ---
+// --- Маппинг категорий из БД enum в API-формат ---
 
 const CATEGORY_MAP: Record<string, SearchResultItem["category"]> = {
   MEDICINE: "medicine",
@@ -86,19 +85,20 @@ function isFiniteCoordinate(value: number | undefined) {
 }
 
 async function getActiveCityId() {
-  const city = await prisma.city.findFirst({
-    where: {
-      isActive: true,
-    },
-    select: {
-      id: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cities")
+    .select("id")
+    .eq("is_active", true)
+    .order("name", { ascending: true })
+    .limit(1)
+    .maybeSingle<{ id: string }>();
 
-  return city?.id ?? null;
+  if (error) {
+    throw error;
+  }
+
+  return data?.id ?? null;
 }
 
 export async function logZeroResultSearch(
@@ -123,29 +123,31 @@ export async function logZeroResultSearch(
       return { success: false, error: "Город обязателен" };
     }
 
-    const city = await prisma.city.findFirst({
-      where: {
-        id: normalizedCityId,
-        isActive: true,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const supabase = getSupabaseServerClient();
+    const { data: city, error: cityError } = await supabase
+      .from("cities")
+      .select("id")
+      .eq("id", normalizedCityId)
+      .eq("is_active", true)
+      .maybeSingle<{ id: string }>();
 
-    if (!city) {
+    if (cityError || !city) {
       return { success: false, error: "Город не найден" };
     }
 
-    await prisma.searchLog.create({
-      data: {
-        searchTerm: normalizedSearchTerm,
-        cityId: city.id,
-        userLatitude: isFiniteCoordinate(lat) ? lat : null,
-        userLongitude: isFiniteCoordinate(lng) ? lng : null,
-        resultsCount: 0,
-      },
-    });
+    const { error: insertError } = await supabase
+      .from("search_logs")
+      .insert({
+        search_term: normalizedSearchTerm,
+        city_id: city.id,
+        user_latitude: isFiniteCoordinate(lat) ? lat : null,
+        user_longitude: isFiniteCoordinate(lng) ? lng : null,
+        results_count: 0,
+      });
+
+    if (insertError) {
+      throw insertError;
+    }
 
     return { success: true };
   } catch (error) {

@@ -84,3 +84,10 @@
 - Сделано: `sitemap.xml` переведен на Supabase RPC `gotmeds_get_sitemap_product_ids`, а чтение дашборда дефицита перенесено на RPC `gotmeds_get_demand_dashboard`.
 - Влияние: SEO-карта публичных продуктов и аналитика нулевой выдачи используют Supabase read layer, сохраняя fallback sitemap и защищенный доступ к отчету.
 - Проверка: пользователь проверил `/sitemap.xml`, `/admin/demand`, фильтр города, счетчик событий за 7 дней и отсутствие записи restricted-запроса `диазепам` в дефицит.
+
+## 2026-06-02 - Supabase admin mutations
+
+- План: [plans/completed/supabase-admin-mutations.md](../../plans/completed/supabase-admin-mutations.md)
+- Сделано: запись `search_logs` для стабильной нулевой выдачи переведена с Prisma на server-only Supabase client с сохранением антишум-ограничений.
+- Влияние: аналитика дефицита продолжает собирать обычные нулевые запросы и не записывает restricted-запросы, а `/admin/demand` агрегирует события за последние 7 дней через Supabase RPC.
+- Проверка: пользователь проверил запись уникального нулевого запроса, отсутствие restricted-запроса в `search_logs` и отображение результата в `/admin/demand`.

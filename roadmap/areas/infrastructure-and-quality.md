@@ -154,3 +154,10 @@
 - Сделано: активный план переведен в `plans/completed/`, добавлена зависимость `@supabase/ssr`, обновлена инструкция `supabase/README.md` по Auth/RLS и дорожная карта перед push.
 - Влияние: этап Auth/RLS оформлен по SDD-процессу, env-переменные описаны без коммита секретов, Prisma сохранен для runtime/rollback-сценариев вне этапа 6.4.
 - Проверка: выполнены `npx prisma generate`, `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные проверки Supabase Auth, RLS и приложения.
+
+## 2026-06-02 - Supabase admin mutations
+
+- План: [plans/completed/supabase-admin-mutations.md](../../plans/completed/supabase-admin-mutations.md)
+- Сделано: активный план переведен в `plans/completed/`, обновлены `supabase/README.md` и дорожная карта перед push; Prisma сохранен как rollback/seed-слой до отдельного Prisma decommission.
+- Влияние: этап admin mutations оформлен по SDD-процессу, а проверочные SQL-сценарии Supabase и ручная приемка зафиксированы в проектной документации.
+- Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные проверки миграции, админских операций и аналитики.

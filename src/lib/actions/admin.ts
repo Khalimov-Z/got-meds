@@ -3,9 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Papa from "papaparse";
-import { PharmacyStatus, PharmacyTier, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin/auth";
+import { createSupabaseAuthServerClient } from "@/lib/supabase-auth-server";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 type AdminActionResponse<T = undefined> = {
@@ -13,6 +12,22 @@ type AdminActionResponse<T = undefined> = {
   data?: T;
   error?: string;
 };
+
+type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: JsonValue }
+  | JsonValue[];
+
+type JsonObject = { [key: string]: JsonValue };
+
+const PHARMACY_TIERS = ["TIER_1", "TIER_2", "TIER_3"] as const;
+const PHARMACY_STATUSES = ["ACTIVE", "PAUSED", "CLOSED"] as const;
+
+export type PharmacyTier = (typeof PHARMACY_TIERS)[number];
+export type PharmacyStatus = (typeof PHARMACY_STATUSES)[number];
 
 export type UploadPharmacyPriceReport = {
   totalRows: number;
@@ -80,13 +95,77 @@ export type AdminPharmacyRow = {
   status: PharmacyStatus;
   phone: string | null;
   whatsapp: string | null;
-  workingHours: Prisma.JsonValue | null;
+  workingHours: JsonValue | null;
   is247: boolean;
 };
 
 export type AdminPharmacyManagementData = {
   cities: AdminPharmacyCity[];
   pharmacies: AdminPharmacyRow[];
+};
+
+type ProductAliasDictionaryRow = {
+  original_string: string;
+  product_id: string | null;
+  is_ignored: boolean;
+};
+
+type ProductDictionaryRow = {
+  id: string;
+  name: string;
+};
+
+type SupabaseCityRow = {
+  id: string;
+  name: string;
+  is_active: boolean;
+};
+
+type SupabasePharmacyRow = {
+  id: string;
+  city_id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  tier: PharmacyTier;
+  status: PharmacyStatus;
+  phone: string | null;
+  whatsapp: string | null;
+  working_hours: JsonValue | null;
+  is_24_7: boolean;
+  cities: { name: string } | { name: string }[] | null;
+};
+
+type SupabaseMappingQueueRow = {
+  id: string;
+  raw_string: string;
+  pharmacies: { name: string; address: string } | { name: string; address: string }[] | null;
+};
+
+type SupabaseMappingProductRow = {
+  id: string;
+  name: string;
+  dosage: string | null;
+  form: string | null;
+};
+
+type SupabaseBlacklistProductRow = SupabaseMappingProductRow & {
+  is_social_risk: boolean;
+};
+
+type PharmacyFormPayload = {
+  cityId: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  tier: PharmacyTier;
+  status: PharmacyStatus;
+  phone: string | null;
+  whatsapp: string | null;
+  workingHours: JsonObject;
+  is247: boolean;
 };
 
 const INVALID_FILE_ERROR = "Неверный формат файла, загрузите .csv или .xls";
@@ -131,6 +210,40 @@ function normalizeUuid(value: string | undefined) {
   return normalized && UUID_PATTERN.test(normalized) ? normalized : null;
 }
 
+function getSingleRelation<T>(value: T | T[] | null | undefined) {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+
+  return value ?? null;
+}
+
+function getFirstError(
+  responses: Array<{ error: { message: string } | null }>
+) {
+  return responses.find((response) => response.error)?.error ?? null;
+}
+
+function mapPharmacyFormPayload(data: PharmacyFormPayload) {
+  return {
+    city_id: data.cityId,
+    name: data.name,
+    address: data.address,
+    latitude: data.latitude,
+    longitude: data.longitude,
+    tier: data.tier,
+    status: data.status,
+    phone: data.phone,
+    whatsapp: data.whatsapp,
+    working_hours: data.workingHours,
+    is_24_7: data.is247,
+  };
+}
+
+function getActionErrorMessage(error: { message?: string } | null, fallback: string) {
+  return error?.message || fallback;
+}
+
 function getCell(row: Record<string, unknown>, headerNames: string[]) {
   const normalizedHeaderNames = new Set(headerNames.map(normalizeValue));
   const entry = Object.entries(row).find(([key]) =>
@@ -162,20 +275,20 @@ function parseCoordinate(value: FormDataEntryValue | null, fieldName: string) {
 }
 
 function parsePharmacyTier(value: FormDataEntryValue | null) {
-  const normalized = String(value ?? "").trim() as PharmacyTier;
+  const normalized = String(value ?? "").trim();
 
-  if ((Object.values(PharmacyTier) as string[]).includes(normalized)) {
-    return normalized;
+  if ((PHARMACY_TIERS as readonly string[]).includes(normalized)) {
+    return normalized as PharmacyTier;
   }
 
   return null;
 }
 
 function parsePharmacyStatus(value: FormDataEntryValue | null) {
-  const normalized = String(value ?? "").trim() as PharmacyStatus;
+  const normalized = String(value ?? "").trim();
 
-  if ((Object.values(PharmacyStatus) as string[]).includes(normalized)) {
-    return normalized;
+  if ((PHARMACY_STATUSES as readonly string[]).includes(normalized)) {
+    return normalized as PharmacyStatus;
   }
 
   return null;
@@ -214,7 +327,7 @@ function parseWorkingHours(formData: FormData, is247: boolean) {
     return {
       workingHours: Object.fromEntries(
         WORKING_DAYS.map((day) => [day.key, "00:00-23:59"])
-      ) as Prisma.InputJsonObject,
+      ) as JsonObject,
       error: "",
     };
   }
@@ -251,7 +364,7 @@ function parseWorkingHours(formData: FormData, is247: boolean) {
   }
 
   return {
-    workingHours: workingHours as Prisma.InputJsonObject,
+    workingHours: workingHours as JsonObject,
     error: "",
   };
 }
@@ -358,28 +471,35 @@ async function parseCsvPrice(fileData: Blob) {
 }
 
 async function getMappingDictionaries() {
-  const [aliases, products] = await Promise.all([
-    prisma.productAlias.findMany({
-      select: {
-        originalString: true,
-        productId: true,
-        isIgnored: true,
-      },
-    }),
-    prisma.product.findMany({
-      where: {
-        isSocialRisk: false,
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
+  const supabase = await createSupabaseAuthServerClient();
+  const [aliasesResponse, productsResponse] = await Promise.all([
+    supabase
+      .from("product_aliases")
+      .select("original_string,product_id,is_ignored"),
+    supabase
+      .from("products")
+      .select("id,name")
+      .eq("is_social_risk", false),
   ]);
+
+  const firstError = getFirstError([aliasesResponse, productsResponse]);
+  if (firstError) {
+    throw firstError;
+  }
+
+  const aliases = (aliasesResponse.data ?? []) as ProductAliasDictionaryRow[];
+  const products = (productsResponse.data ?? []) as ProductDictionaryRow[];
 
   return {
     aliasByOriginalString: new Map(
-      aliases.map((alias) => [normalizeValue(alias.originalString), alias])
+      aliases.map((alias) => [
+        normalizeValue(alias.original_string),
+        {
+          originalString: alias.original_string,
+          productId: alias.product_id,
+          isIgnored: alias.is_ignored,
+        },
+      ])
     ),
     productByName: new Map(products.map((product) => [normalizeValue(product.name), product])),
   };
@@ -389,141 +509,149 @@ export async function getAdminHomeStats() {
   await requireAdmin();
   const demandPeriodStart = new Date();
   demandPeriodStart.setDate(demandPeriodStart.getDate() - DEMAND_DASHBOARD_DAYS);
+  const supabase = await createSupabaseAuthServerClient();
 
   const [
-    tier2PharmaciesCount,
-    unmappedCount,
-    aliasesCount,
-    restrictedProductsCount,
-    zeroResultLogs7dCount,
+    tier2PharmaciesResponse,
+    unmappedResponse,
+    aliasesResponse,
+    restrictedProductsResponse,
+    zeroResultLogs7dResponse,
   ] = await Promise.all([
-    prisma.pharmacy.count({
-      where: {
-        tier: "TIER_2",
-      },
-    }),
-    prisma.unmappedString.count(),
-    prisma.productAlias.count(),
-    prisma.product.count({
-      where: {
-        isSocialRisk: true,
-      },
-    }),
-    prisma.searchLog.count({
-      where: {
-        resultsCount: 0,
-        createdAt: {
-          gte: demandPeriodStart,
-        },
-      },
-    }),
+    supabase
+      .from("pharmacies")
+      .select("id", { count: "exact", head: true })
+      .eq("tier", "TIER_2"),
+    supabase
+      .from("unmapped_strings")
+      .select("id", { count: "exact", head: true }),
+    supabase
+      .from("product_aliases")
+      .select("id", { count: "exact", head: true }),
+    supabase
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("is_social_risk", true),
+    supabase
+      .from("search_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("results_count", 0)
+      .gte("created_at", demandPeriodStart.toISOString()),
   ]);
 
+  const firstError = getFirstError([
+    tier2PharmaciesResponse,
+    unmappedResponse,
+    aliasesResponse,
+    restrictedProductsResponse,
+    zeroResultLogs7dResponse,
+  ]);
+  if (firstError) {
+    throw firstError;
+  }
+
   return {
-    tier2PharmaciesCount,
-    unmappedCount,
-    aliasesCount,
-    restrictedProductsCount,
-    zeroResultLogs7dCount,
+    tier2PharmaciesCount: tier2PharmaciesResponse.count ?? 0,
+    unmappedCount: unmappedResponse.count ?? 0,
+    aliasesCount: aliasesResponse.count ?? 0,
+    restrictedProductsCount: restrictedProductsResponse.count ?? 0,
+    zeroResultLogs7dCount: zeroResultLogs7dResponse.count ?? 0,
   };
 }
 
 export async function getPharmacyManagementData(): Promise<AdminPharmacyManagementData> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
-  const [cities, pharmacies] = await Promise.all([
-    prisma.city.findMany({
-      orderBy: [
-        {
-          isActive: "desc",
-        },
-        {
-          name: "asc",
-        },
-      ],
-      select: {
-        id: true,
-        name: true,
-        isActive: true,
-      },
-    }),
-    prisma.pharmacy.findMany({
-      orderBy: [
-        {
-          city: {
-            name: "asc",
-          },
-        },
-        {
-          name: "asc",
-        },
-      ],
-      select: {
-        id: true,
-        cityId: true,
-        name: true,
-        address: true,
-        latitude: true,
-        longitude: true,
-        tier: true,
-        status: true,
-        phone: true,
-        whatsapp: true,
-        workingHours: true,
-        is247: true,
-        city: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    }),
+  const [citiesResponse, pharmaciesResponse] = await Promise.all([
+    supabase
+      .from("cities")
+      .select("id,name,is_active")
+      .order("is_active", { ascending: false })
+      .order("name", { ascending: true }),
+    supabase
+      .from("pharmacies")
+      .select(
+        "id,city_id,name,address,latitude,longitude,tier,status,phone,whatsapp,working_hours,is_24_7,cities(name)"
+      ),
   ]);
 
+  const firstError = getFirstError([citiesResponse, pharmaciesResponse]);
+  if (firstError) {
+    throw firstError;
+  }
+
+  const cities = (citiesResponse.data ?? []) as SupabaseCityRow[];
+  const pharmacies = (pharmaciesResponse.data ?? []) as SupabasePharmacyRow[];
+  const mappedPharmacies = pharmacies
+    .map((pharmacy) => {
+      const city = getSingleRelation(pharmacy.cities);
+
+      return {
+        id: pharmacy.id,
+        cityId: pharmacy.city_id,
+        cityName: city?.name ?? "Город не найден",
+        name: pharmacy.name,
+        address: pharmacy.address,
+        latitude: pharmacy.latitude,
+        longitude: pharmacy.longitude,
+        tier: pharmacy.tier,
+        status: pharmacy.status,
+        phone: pharmacy.phone,
+        whatsapp: pharmacy.whatsapp,
+        workingHours: pharmacy.working_hours,
+        is247: pharmacy.is_24_7,
+      };
+    })
+    .sort((left, right) => {
+      const cityCompare = left.cityName.localeCompare(right.cityName, "ru");
+
+      return cityCompare || left.name.localeCompare(right.name, "ru");
+    });
+
   return {
-    cities,
-    pharmacies: pharmacies.map((pharmacy) => ({
-      id: pharmacy.id,
-      cityId: pharmacy.cityId,
-      cityName: pharmacy.city.name,
-      name: pharmacy.name,
-      address: pharmacy.address,
-      latitude: pharmacy.latitude,
-      longitude: pharmacy.longitude,
-      tier: pharmacy.tier,
-      status: pharmacy.status,
-      phone: pharmacy.phone,
-      whatsapp: pharmacy.whatsapp,
-      workingHours: pharmacy.workingHours,
-      is247: pharmacy.is247,
+    cities: cities.map((city) => ({
+      id: city.id,
+      name: city.name,
+      isActive: city.is_active,
     })),
+    pharmacies: mappedPharmacies,
   };
 }
 
 export async function createPharmacy(formData: FormData): Promise<AdminActionResponse> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
   const parsed = parsePharmacyFormData(formData);
   if (!parsed.data) {
     return { success: false, error: parsed.error };
   }
 
-  const city = await prisma.city.findUnique({
-    where: {
-      id: parsed.data.cityId,
-    },
-    select: {
-      id: true,
-    },
-  });
+  const { data: city, error: cityError } = await supabase
+    .from("cities")
+    .select("id")
+    .eq("id", parsed.data.cityId)
+    .maybeSingle<{ id: string }>();
+
+  if (cityError) {
+    return { success: false, error: "Город не найден" };
+  }
 
   if (!city) {
     return { success: false, error: "Город не найден" };
   }
 
-  await prisma.pharmacy.create({
-    data: parsed.data,
-  });
+  const { error } = await supabase
+    .from("pharmacies")
+    .insert(mapPharmacyFormPayload(parsed.data));
+
+  if (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Не удалось создать аптеку"),
+    };
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/pharmacies");
@@ -535,6 +663,7 @@ export async function createPharmacy(formData: FormData): Promise<AdminActionRes
 
 export async function updatePharmacy(formData: FormData): Promise<AdminActionResponse> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
   const pharmacyId = String(formData.get("pharmacyId") ?? "").trim();
   if (!pharmacyId) {
@@ -547,38 +676,37 @@ export async function updatePharmacy(formData: FormData): Promise<AdminActionRes
   }
 
   const [pharmacy, city] = await Promise.all([
-    prisma.pharmacy.findUnique({
-      where: {
-        id: pharmacyId,
-      },
-      select: {
-        id: true,
-      },
-    }),
-    prisma.city.findUnique({
-      where: {
-        id: parsed.data.cityId,
-      },
-      select: {
-        id: true,
-      },
-    }),
+    supabase
+      .from("pharmacies")
+      .select("id")
+      .eq("id", pharmacyId)
+      .maybeSingle<{ id: string }>(),
+    supabase
+      .from("cities")
+      .select("id")
+      .eq("id", parsed.data.cityId)
+      .maybeSingle<{ id: string }>(),
   ]);
 
-  if (!pharmacy) {
+  if (pharmacy.error || !pharmacy.data) {
     return { success: false, error: "Аптека не найдена" };
   }
 
-  if (!city) {
+  if (city.error || !city.data) {
     return { success: false, error: "Город не найден" };
   }
 
-  await prisma.pharmacy.update({
-    where: {
-      id: pharmacy.id,
-    },
-    data: parsed.data,
-  });
+  const { error } = await supabase
+    .from("pharmacies")
+    .update(mapPharmacyFormPayload(parsed.data))
+    .eq("id", pharmacy.data.id);
+
+  if (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Не удалось обновить аптеку"),
+    };
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/pharmacies");
@@ -653,77 +781,81 @@ export async function getDemandDashboardData(
 
 export async function getInventoryUploadData() {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
-  return prisma.pharmacy.findMany({
-    where: {
-      tier: "TIER_2",
-      status: "ACTIVE",
-    },
-    orderBy: {
-      name: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-      address: true,
-    },
-  });
+  const { data, error } = await supabase
+    .from("pharmacies")
+    .select("id,name,address")
+    .eq("tier", "TIER_2")
+    .eq("status", "ACTIVE")
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
 }
 
 export async function getMappingData() {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
-  const [queue, products] = await Promise.all([
-    prisma.unmappedString.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      select: {
-        id: true,
-        rawString: true,
-        createdAt: true,
-        pharmacy: {
-          select: {
-            name: true,
-            address: true,
-          },
-        },
-      },
-    }),
-    prisma.product.findMany({
-      where: {
-        isSocialRisk: false,
-      },
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        dosage: true,
-        form: true,
-      },
-    }),
+  const [queueResponse, productsResponse] = await Promise.all([
+    supabase
+      .from("unmapped_strings")
+      .select("id,raw_string,pharmacies(name,address)")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("products")
+      .select("id,name,dosage,form")
+      .eq("is_social_risk", false)
+      .order("name", { ascending: true }),
   ]);
+
+  const firstError = getFirstError([queueResponse, productsResponse]);
+  if (firstError) {
+    throw firstError;
+  }
+
+  const queueRows = (queueResponse.data ?? []) as SupabaseMappingQueueRow[];
+  const products = (productsResponse.data ?? []) as SupabaseMappingProductRow[];
+  const queue = queueRows.map((item) => {
+    const pharmacy = getSingleRelation(item.pharmacies);
+
+    return {
+      id: item.id,
+      rawString: item.raw_string,
+      pharmacy: {
+        name: pharmacy?.name ?? "Аптека не найдена",
+        address: pharmacy?.address ?? "Адрес не найден",
+      },
+    };
+  });
 
   return { queue, products };
 }
 
 export async function getBlacklistManagementData() {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
-  const products = await prisma.product.findMany({
-    orderBy: {
-      name: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-      dosage: true,
-      form: true,
-      isSocialRisk: true,
-    },
-  });
+  const { data, error } = await supabase
+    .from("products")
+    .select("id,name,dosage,form,is_social_risk")
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const products = ((data ?? []) as SupabaseBlacklistProductRow[]).map((product) => ({
+    id: product.id,
+    name: product.name,
+    dosage: product.dosage,
+    form: product.form,
+    isSocialRisk: product.is_social_risk,
+  }));
 
   return {
     products,
@@ -736,33 +868,24 @@ export async function toggleProductSocialRisk(
   isSocialRisk: boolean
 ): Promise<AdminActionResponse> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
-  const normalizedProductId = productId.trim();
+  const normalizedProductId = normalizeUuid(productId);
   if (!normalizedProductId) {
     return { success: false, error: "Товар не найден" };
   }
 
-  const product = await prisma.product.findUnique({
-    where: {
-      id: normalizedProductId,
-    },
-    select: {
-      id: true,
-    },
+  const { error } = await supabase.rpc("gotmeds_admin_set_product_social_risk", {
+    p_product_id: normalizedProductId,
+    p_is_social_risk: isSocialRisk,
   });
 
-  if (!product) {
-    return { success: false, error: "Товар не найден" };
+  if (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Ошибка черного списка"),
+    };
   }
-
-  await prisma.product.update({
-    where: {
-      id: product.id,
-    },
-    data: {
-      isSocialRisk,
-    },
-  });
 
   revalidatePath("/");
   revalidatePath("/map");
@@ -789,24 +912,22 @@ export async function uploadPharmacyPrice(
   fileData: Blob
 ): Promise<AdminActionResponse<UploadPharmacyPriceReport>> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
 
-  const normalizedPharmacyId = pharmacyId.trim();
+  const normalizedPharmacyId = normalizeUuid(pharmacyId);
   if (!normalizedPharmacyId) {
     return { success: false, error: "Выберите аптеку" };
   }
 
-  const pharmacy = await prisma.pharmacy.findFirst({
-    where: {
-      id: normalizedPharmacyId,
-      tier: "TIER_2",
-      status: "ACTIVE",
-    },
-    select: {
-      id: true,
-    },
-  });
+  const { data: pharmacy, error: pharmacyError } = await supabase
+    .from("pharmacies")
+    .select("id")
+    .eq("id", normalizedPharmacyId)
+    .eq("tier", "TIER_2")
+    .eq("status", "ACTIVE")
+    .maybeSingle<{ id: string }>();
 
-  if (!pharmacy) {
+  if (pharmacyError || !pharmacy) {
     return { success: false, error: "Аптека не найдена" };
   }
 
@@ -853,41 +974,23 @@ export async function uploadPharmacyPrice(
   }
 
   const inventoryData = Array.from(inventoryByProductId.values()).map((item) => ({
-    pharmacyId: normalizedPharmacyId,
-    productId: item.productId,
-    status: "LIKELY_IN_STOCK" as const,
+    product_id: item.productId,
     price: item.price,
   }));
-  const unmappedData = Array.from(unmappedStrings).map((rawString) => ({
-    pharmacyId: normalizedPharmacyId,
-    rawString,
-  }));
+  const unmappedData = Array.from(unmappedStrings);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.inventory.deleteMany({
-      where: {
-        pharmacyId: normalizedPharmacyId,
-      },
-    });
-    await tx.unmappedString.deleteMany({
-      where: {
-        pharmacyId: normalizedPharmacyId,
-      },
-    });
-
-    if (inventoryData.length > 0) {
-      await tx.inventory.createMany({
-        data: inventoryData,
-        skipDuplicates: true,
-      });
-    }
-
-    if (unmappedData.length > 0) {
-      await tx.unmappedString.createMany({
-        data: unmappedData,
-      });
-    }
+  const { error: syncError } = await supabase.rpc("gotmeds_admin_full_sync_inventory", {
+    p_pharmacy_id: normalizedPharmacyId,
+    p_inventory_items: inventoryData,
+    p_unmapped_strings: unmappedData,
   });
+
+  if (syncError) {
+    return {
+      success: false,
+      error: getActionErrorMessage(syncError, "Не удалось загрузить прайс"),
+    };
+  }
 
   revalidatePath("/admin/inventory-upload");
   revalidatePath("/admin/mapping");
@@ -933,72 +1036,29 @@ export async function createAlias(
   productId: string
 ): Promise<AdminActionResponse> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
+  const normalizedUnmappedStringId = normalizeUuid(unmappedStringId);
+  const normalizedProductId = normalizeUuid(productId);
 
-  const [unmappedString, product] = await Promise.all([
-    prisma.unmappedString.findUnique({
-      where: {
-        id: unmappedStringId,
-      },
-      select: {
-        id: true,
-        rawString: true,
-      },
-    }),
-    prisma.product.findFirst({
-      where: {
-        id: productId,
-        isSocialRisk: false,
-      },
-      select: {
-        id: true,
-      },
-    }),
-  ]);
-
-  if (!unmappedString) {
+  if (!normalizedUnmappedStringId) {
     return { success: false, error: "Строка маппинга не найдена" };
   }
 
-  if (!product) {
+  if (!normalizedProductId) {
     return { success: false, error: "Препарат не найден" };
   }
 
-  await prisma.$transaction(async (tx) => {
-    const existingAlias = await tx.productAlias.findFirst({
-      where: {
-        originalString: unmappedString.rawString,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingAlias) {
-      await tx.productAlias.update({
-        where: {
-          id: existingAlias.id,
-        },
-        data: {
-          productId: product.id,
-          isIgnored: false,
-        },
-      });
-    } else {
-      await tx.productAlias.create({
-        data: {
-          originalString: unmappedString.rawString,
-          productId: product.id,
-          isIgnored: false,
-        },
-      });
-    }
-
-    await tx.unmappedString.delete({
-      where: {
-        id: unmappedString.id,
-      },
-    });
+  const { error } = await supabase.rpc("gotmeds_admin_create_alias", {
+    p_unmapped_string_id: normalizedUnmappedStringId,
+    p_product_id: normalizedProductId,
   });
+
+  if (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Ошибка маппинга"),
+    };
+  }
 
   revalidatePath("/admin/mapping");
   return { success: true };
@@ -1008,57 +1068,23 @@ export async function ignoreAlias(
   unmappedStringId: string
 ): Promise<AdminActionResponse> {
   await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
+  const normalizedUnmappedStringId = normalizeUuid(unmappedStringId);
 
-  const unmappedString = await prisma.unmappedString.findUnique({
-    where: {
-      id: unmappedStringId,
-    },
-    select: {
-      id: true,
-      rawString: true,
-    },
-  });
-
-  if (!unmappedString) {
+  if (!normalizedUnmappedStringId) {
     return { success: false, error: "Строка маппинга не найдена" };
   }
 
-  await prisma.$transaction(async (tx) => {
-    const existingAlias = await tx.productAlias.findFirst({
-      where: {
-        originalString: unmappedString.rawString,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (existingAlias) {
-      await tx.productAlias.update({
-        where: {
-          id: existingAlias.id,
-        },
-        data: {
-          productId: null,
-          isIgnored: true,
-        },
-      });
-    } else {
-      await tx.productAlias.create({
-        data: {
-          originalString: unmappedString.rawString,
-          productId: null,
-          isIgnored: true,
-        },
-      });
-    }
-
-    await tx.unmappedString.delete({
-      where: {
-        id: unmappedString.id,
-      },
-    });
+  const { error } = await supabase.rpc("gotmeds_admin_ignore_alias", {
+    p_unmapped_string_id: normalizedUnmappedStringId,
   });
+
+  if (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Ошибка маппинга"),
+    };
+  }
 
   revalidatePath("/admin/mapping");
   return { success: true };
