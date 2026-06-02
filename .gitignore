@@ -10,6 +10,9 @@
 
 # Тестирование
 /coverage
+/.lighthouseci
+/cypress/screenshots
+/cypress/videos
 
 # Next.js
 /.next/

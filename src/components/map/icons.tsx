@@ -2,6 +2,23 @@ import React from "react";
 
 type IconProps = React.SVGProps<SVGSVGElement>;
 
+export function ArrowBackIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
 export function SearchIcon(props: IconProps) {
   return (
     <svg
@@ -155,6 +172,58 @@ export function RouteIcon(props: IconProps) {
   );
 }
 
+export function DropletIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M12 2.5s7 7.1 7 12.2a7 7 0 0 1-14 0C5 9.6 12 2.5 12 2.5z" />
+    </svg>
+  );
+}
+
+export function ScienceIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M10 2v6.5L4.8 18A3 3 0 0 0 7.4 22h9.2a3 3 0 0 0 2.6-4L14 8.5V2" />
+      <line x1="8" y1="2" x2="16" y2="2" />
+      <path d="M7.7 16h8.6" />
+    </svg>
+  );
+}
+
+export function WarningIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M10.4 3.2a1.9 1.9 0 0 1 3.2 0l8 14.2A1.9 1.9 0 0 1 20 20.3H4a1.9 1.9 0 0 1-1.6-2.9z" />
+      <line x1="12" y1="8.5" x2="12" y2="13" />
+      <line x1="12" y1="16.5" x2="12.01" y2="16.5" />
+    </svg>
+  );
+}
+
 export function PrescriptionIcon(props: IconProps) {
   return (
     <svg
@@ -186,6 +255,46 @@ export function PrayerIcon(props: IconProps) {
       {...props}
     >
       <path d="M12 2v3M12 5c-3.5 0-6 2.5-6 6v8h12v-8c0-3.5-2.5-6-6-6zM3 19h18M7 19v-4M17 19v-4M10 19v-2M14 19v-2" />
+    </svg>
+  );
+}
+
+export function WifiOffIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <line x1="2" y1="2" x2="22" y2="22" />
+      <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+      <path d="M5.2 13.2a9 9 0 0 1 6-2.2" />
+      <path d="M18.8 13.2a9 9 0 0 0-3.2-2" />
+      <path d="M2.8 9.2A14 14 0 0 1 12 6c3.5 0 6.7 1.2 9.2 3.2" />
+      <line x1="12" y1="20" x2="12.01" y2="20" />
+    </svg>
+  );
+}
+
+export function RefreshIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M20 11a8 8 0 0 0-14.2-4.9L4 8" />
+      <path d="M4 4v4h4" />
+      <path d="M4 13a8 8 0 0 0 14.2 4.9L20 16" />
+      <path d="M20 20v-4h-4" />
     </svg>
   );
 }

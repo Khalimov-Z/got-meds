@@ -168,3 +168,10 @@
 - Сделано: активный план переведен в `plans/completed/`, удалены Prisma-конфигурация, Prisma-папка, Prisma/legacy DB-зависимости и Prisma-блок `.gitignore`; `package-lock.json` обновлен штатным npm-механизмом.
 - Влияние: проектный toolchain стал меньше и больше не требует Prisma generate/migrate/seed для текущей разработки, сборки и запуска Supabase-версии.
 - Проверка: выполнены `npm run lint`, `npm run build`, `git diff --check`; пользователь дополнительно подтвердил ручные Supabase-сценарии и готовность к push.
+
+## 2026-06-02 - Phase 10 Testing & Quality Foundation
+
+- План: [plans/completed/phase-10-testing-quality.md](../../plans/completed/phase-10-testing-quality.md)
+- Сделано: добавлены конфигурации Jest, Cypress и LHCI, npm-скрипты `test:unit`, `test:e2e`, `test:lighthouse`, `test:quality`, unit-тесты Server Actions, E2E-сценарии MVP и Lighthouse-пороги Performance/SEO/Accessibility.
+- Влияние: проект получил воспроизводимую локальную основу качества для серверных контрактов, пользовательских сценариев и SEO/PWA-аудита без добавления CI/CD или production-деплоя.
+- Проверка: выполнены `npm run lint`, `npm run build`, `npm run test:unit` и `git diff --check`; пользователь подтвердил ручную проверку UI-исправлений.

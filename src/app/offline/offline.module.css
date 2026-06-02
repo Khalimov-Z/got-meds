@@ -31,8 +31,9 @@
   box-shadow: 0 18px 48px rgba(49, 98, 118, 0.16);
 }
 
-.statusIcon span {
-  font-size: 36px;
+.statusIcon svg {
+  width: 36px;
+  height: 36px;
 }
 
 .copy {
@@ -85,8 +86,10 @@
   box-shadow: 0 16px 36px rgba(49, 98, 118, 0.22);
 }
 
-.action span:first-child {
-  font-size: 20px;
+.action svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
 }
 
 @media (max-width: 640px) {

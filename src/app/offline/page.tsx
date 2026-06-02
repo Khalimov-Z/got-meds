@@ -1,4 +1,5 @@
 import { BrandMark } from "@/components/brand-mark";
+import { WifiOffIcon } from "@/components/map/icons";
 import styles from "./offline.module.css";
 import { RetryButton } from "./retry-button";
 
@@ -13,7 +14,7 @@ export default function OfflinePage() {
       <section className={styles.content} aria-labelledby="offline-title">
         <BrandMark />
         <div className={styles.statusIcon} aria-hidden="true">
-          <span className="material-symbols-outlined">wifi_off</span>
+          <WifiOffIcon />
         </div>
         <div className={styles.copy}>
           <p className={styles.kicker}>Нет подключения</p>

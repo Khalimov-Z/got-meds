@@ -46,7 +46,7 @@ export function LoginForm() {
         </span>
       </label>
 
-      {state.error ? <p className={styles.error}>{state.error}</p> : null}
+      {state.error ? <p className={styles.loginError}>{state.error}</p> : null}
 
       <button className={styles.primaryButton} type="submit" disabled={isPending}>
         {isPending ? "Проверяем" : "Войти в кабинет"}
