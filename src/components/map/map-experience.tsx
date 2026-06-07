@@ -2,12 +2,20 @@
 
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { BrandMark } from "@/components/brand-mark";
 import type {
   PharmacyByProductItem,
   ProductDetails,
 } from "@/lib/actions/products";
+import { submitPharmacyReport } from "@/lib/actions/reports";
 import styles from "./map-experience.module.css";
 import {
   SearchIcon,
@@ -31,6 +39,7 @@ import {
 type ViewMode = "map" | "nearby";
 type GeoStatus = "idle" | "loading" | "allowed" | "denied" | "unsupported";
 type LocationSource = "gps" | "manual" | null;
+type PharmacyReportType = "wrong_number" | "closed" | "fake_stock";
 
 type PharmacyResponse = {
   success: boolean;
@@ -114,6 +123,12 @@ const STATUS_HINTS = {
   likely_in_stock: "Данные из выгрузки. Уточните перед выездом.",
   unknown: "У малой аптеки нет онлайн-остатков. Лучше написать или позвонить.",
 };
+
+const REPORT_OPTIONS: Array<{ type: PharmacyReportType; label: string }> = [
+  { type: "closed", label: "Аптека закрыта" },
+  { type: "wrong_number", label: "Неверный номер" },
+  { type: "fake_stock", label: "Препарата нет" },
+];
 
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
 const WEEKDAY_TO_INDEX: Record<string, number> = {
@@ -1522,6 +1537,27 @@ function PharmacySheet({
   const whatsappHref = formatWhatsappHref(pharmacy.whatsapp, productName);
   const phoneHref = formatPhoneHref(pharmacy.phone);
   const routeHref = formatRouteHref(pharmacy);
+  const [isReportPanelOpen, setIsReportPanelOpen] = useState(false);
+  const [reportMessage, setReportMessage] = useState("");
+  const [reportError, setReportError] = useState("");
+  const [isReportPending, startReportTransition] = useTransition();
+
+  const handleReportSubmit = (reportType: PharmacyReportType) => {
+    setReportMessage("");
+    setReportError("");
+
+    startReportTransition(async () => {
+      const result = await submitPharmacyReport(pharmacy.pharmacy_id, reportType);
+
+      if (!result.success) {
+        setReportError(result.error ?? "Не удалось отправить жалобу.");
+        return;
+      }
+
+      setIsReportPanelOpen(false);
+      setReportMessage("Спасибо, модератор проверит информацию.");
+    });
+  };
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
@@ -1665,6 +1701,48 @@ function PharmacySheet({
             <span>Маршрут</span>
           </a>
         </div>
+      </div>
+
+      <div className={styles.reportBox}>
+        <button
+          className={styles.reportToggle}
+          type="button"
+          onClick={() => {
+            setIsReportPanelOpen((isOpen) => !isOpen);
+            setReportError("");
+            setReportMessage("");
+          }}
+          aria-expanded={isReportPanelOpen}
+        >
+          Сообщить об ошибке
+        </button>
+
+        {isReportPanelOpen ? (
+          <div className={styles.reportOptions} role="group" aria-label="Тип ошибки">
+            {REPORT_OPTIONS.map((option) => (
+              <button
+                key={option.type}
+                className={styles.reportOptionButton}
+                type="button"
+                disabled={isReportPending}
+                onClick={() => handleReportSubmit(option.type)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {reportMessage ? (
+          <p className={styles.reportSuccess} role="status">
+            {reportMessage}
+          </p>
+        ) : null}
+        {reportError ? (
+          <p className={styles.reportError} role="alert">
+            {reportError}
+          </p>
+        ) : null}
       </div>
     </aside>
   );

@@ -9,6 +9,7 @@
 BEGIN;
 
 TRUNCATE TABLE
+    "pharmacy_reports",
     "search_logs",
     "unmapped_strings",
     "inventory",

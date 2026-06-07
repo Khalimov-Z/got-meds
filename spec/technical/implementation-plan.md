@@ -52,8 +52,9 @@
 - Lighthouse‑аудит (Performance ≥ 90, SEO ≥ 95, Accessibility ≥ 90).
 
 ## 7️⃣ Деплой
+- Pre-deploy readiness перед публичным запуском: rate limiting публичного поиска, пользовательские жалобы, проверка `sitemap.xml`, `.env.example`, lint/build/unit/E2E/Lighthouse по доступному окружению.
 - Vercel (Frontend) + Supabase/PostgreSQL (DB) или собственный VPS.
-- CI/CD pipeline (GitHub Actions) – lint, build, test, deploy.
+- CI/CD pipeline (GitHub Actions) переносится в будущий отдельный план и не является обязательным условием текущего пробного деплоя. До внедрения CI/CD проверки выполняются локально по преддеплойному чеклисту.
 
 ---
 **Файл:** `spec/technical/implementation-plan.md`

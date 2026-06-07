@@ -203,3 +203,11 @@
 - Сделано: добавлены Jest unit-тесты Server Actions, Cypress E2E-сценарии MVP, LHCI-конфигурация с порогами качества, npm-скрипты `test:unit`, `test:e2e`, `test:lighthouse`, `test:quality`, fixture CSV для E2E, а также точечные UI-фиксы иконок и предупреждения ошибки входа администратора.
 - Проверка: пользователь проверил исправления интерфейса; выполнены `npm run lint`, `npm run build`, `npm run test:unit` и `git diff --check`.
 - Pull request: будет создан после push
+
+## 2026-06-07 - Pre-deploy readiness
+
+- План: [plans/completed/pre-deploy-readiness.md](../plans/completed/pre-deploy-readiness.md)
+- Области: данные, поиск и бизнес-логика, backend и API, frontend и дизайн, карта и аптеки, админ-панель и безопасность, SEO и аналитика, инфраструктура и качество
+- Сделано: спецификации синхронизированы перед пробным деплоем, CI/CD вынесен в будущий отдельный этап, добавлен rate limiting публичных API, реализованы пользовательские жалобы на аптеку и админская модерация, подготовлен `.env.example`, уточнены Supabase-инструкции, исправлен ложный `404` на SSR-странице продукта при временной ошибке Supabase.
+- Проверка: выполнены `npm run lint`, `npm run build`, `npm run test:unit`, `npm run test:lighthouse` и `git diff --check`; `npm run test:e2e` не запускался из-за отсутствия тестовых админских Supabase credentials.
+- Pull request: будет создан после push

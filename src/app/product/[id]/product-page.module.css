@@ -80,6 +80,81 @@
   margin-bottom: 32px;
 }
 
+.errorState {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+  border: 1px solid hsl(43 75% 82%);
+  border-radius: 16px;
+  padding: clamp(24px, 5vw, 40px);
+  background: hsl(43 75% 94%);
+}
+
+.errorIcon {
+  display: flex;
+  width: 96px;
+  aspect-ratio: 1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  color: hsl(36 80% 32%);
+  background: hsl(43 85% 88%);
+}
+
+.errorIcon svg {
+  width: 44px;
+  height: 44px;
+}
+
+.errorContent {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.errorContent h1 {
+  color: var(--color-primary);
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  line-height: 1.15;
+}
+
+.errorContent p {
+  max-width: 620px;
+  color: hsl(36 80% 22%);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.errorAction {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition:
+    background 0.25s ease-in-out,
+    box-shadow 0.25s ease-in-out,
+    transform 0.25s ease-in-out;
+}
+
+.errorAction:hover,
+.errorAction:focus-visible {
+  background: var(--color-primary-hover);
+  box-shadow: 0 12px 24px hsl(203 42% 25% / 0.14);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
 .visualWrapper {
   position: relative;
   width: 100%;
@@ -601,6 +676,10 @@
   .productHero {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+
+  .errorState {
+    grid-template-columns: 1fr;
   }
 
   .productVisual {

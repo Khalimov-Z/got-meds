@@ -25,9 +25,12 @@ type JsonObject = { [key: string]: JsonValue };
 
 const PHARMACY_TIERS = ["TIER_1", "TIER_2", "TIER_3"] as const;
 const PHARMACY_STATUSES = ["ACTIVE", "PAUSED", "CLOSED"] as const;
+const PHARMACY_REPORT_STATUSES = ["NEW", "IN_PROGRESS", "RESOLVED"] as const;
 
 export type PharmacyTier = (typeof PHARMACY_TIERS)[number];
 export type PharmacyStatus = (typeof PHARMACY_STATUSES)[number];
+export type PharmacyReportType = "WRONG_NUMBER" | "CLOSED" | "FAKE_STOCK";
+export type PharmacyReportStatus = (typeof PHARMACY_REPORT_STATUSES)[number];
 
 export type UploadPharmacyPriceReport = {
   totalRows: number;
@@ -60,6 +63,19 @@ export type DemandDashboardData = {
   periodEnd: Date;
   totalLogsCount: number;
   rows: DemandDashboardRow[];
+};
+
+export type AdminPharmacyReportRow = {
+  id: string;
+  type: PharmacyReportType;
+  status: PharmacyReportStatus;
+  userIp: string;
+  createdAt: Date;
+  pharmacy: {
+    id: string;
+    name: string;
+    address: string;
+  };
 };
 
 type DemandDashboardRpcPayload = {
@@ -152,6 +168,18 @@ type SupabaseMappingProductRow = {
 
 type SupabaseBlacklistProductRow = SupabaseMappingProductRow & {
   is_social_risk: boolean;
+};
+
+type SupabasePharmacyReportRow = {
+  id: string;
+  report_type: PharmacyReportType;
+  status: PharmacyReportStatus;
+  user_ip: string;
+  created_at: string;
+  pharmacies:
+    | { id: string; name: string; address: string }
+    | Array<{ id: string; name: string; address: string }>
+    | null;
 };
 
 type PharmacyFormPayload = {
@@ -289,6 +317,16 @@ function parsePharmacyStatus(value: FormDataEntryValue | null) {
 
   if ((PHARMACY_STATUSES as readonly string[]).includes(normalized)) {
     return normalized as PharmacyStatus;
+  }
+
+  return null;
+}
+
+function parsePharmacyReportStatus(value: FormDataEntryValue | null) {
+  const normalized = String(value ?? "").trim();
+
+  if ((PHARMACY_REPORT_STATUSES as readonly string[]).includes(normalized)) {
+    return normalized as PharmacyReportStatus;
   }
 
   return null;
@@ -517,6 +555,7 @@ export async function getAdminHomeStats() {
     aliasesResponse,
     restrictedProductsResponse,
     zeroResultLogs7dResponse,
+    newReportsResponse,
   ] = await Promise.all([
     supabase
       .from("pharmacies")
@@ -537,6 +576,10 @@ export async function getAdminHomeStats() {
       .select("id", { count: "exact", head: true })
       .eq("results_count", 0)
       .gte("created_at", demandPeriodStart.toISOString()),
+    supabase
+      .from("pharmacy_reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "NEW"),
   ]);
 
   const firstError = getFirstError([
@@ -545,6 +588,7 @@ export async function getAdminHomeStats() {
     aliasesResponse,
     restrictedProductsResponse,
     zeroResultLogs7dResponse,
+    newReportsResponse,
   ]);
   if (firstError) {
     throw firstError;
@@ -556,6 +600,7 @@ export async function getAdminHomeStats() {
     aliasesCount: aliasesResponse.count ?? 0,
     restrictedProductsCount: restrictedProductsResponse.count ?? 0,
     zeroResultLogs7dCount: zeroResultLogs7dResponse.count ?? 0,
+    newReportsCount: newReportsResponse.count ?? 0,
   };
 }
 
@@ -861,6 +906,89 @@ export async function getBlacklistManagementData() {
     products,
     restrictedCount: products.filter((product) => product.isSocialRisk).length,
   };
+}
+
+export async function getPharmacyReportsData(): Promise<AdminPharmacyReportRow[]> {
+  await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
+
+  const { data, error } = await supabase
+    .from("pharmacy_reports")
+    .select("id,report_type,status,user_ip,created_at,pharmacies(id,name,address)")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as SupabasePharmacyReportRow[]).map((report) => {
+    const pharmacy = getSingleRelation(report.pharmacies);
+
+    return {
+      id: report.id,
+      type: report.report_type,
+      status: report.status,
+      userIp: report.user_ip,
+      createdAt: parseRpcDate(report.created_at, new Date(0)),
+      pharmacy: {
+        id: pharmacy?.id ?? "",
+        name: pharmacy?.name ?? "Аптека не найдена",
+        address: pharmacy?.address ?? "Адрес не найден",
+      },
+    };
+  });
+}
+
+export async function updatePharmacyReportStatus(
+  reportId: string,
+  status: PharmacyReportStatus
+): Promise<AdminActionResponse> {
+  await requireAdmin();
+  const normalizedReportId = normalizeUuid(reportId);
+  const parsedStatus = parsePharmacyReportStatus(status);
+
+  if (!normalizedReportId) {
+    return { success: false, error: "Жалоба не найдена" };
+  }
+
+  if (!parsedStatus) {
+    return { success: false, error: "Выберите статус жалобы" };
+  }
+
+  const supabase = await createSupabaseAuthServerClient();
+  const { error } = await supabase.rpc("gotmeds_admin_set_pharmacy_report_status", {
+    p_report_id: normalizedReportId,
+    p_status: parsedStatus,
+  });
+
+  if (error) {
+    return {
+      success: false,
+      error: getActionErrorMessage(error, "Не удалось обновить статус жалобы"),
+    };
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/reports");
+
+  return { success: true };
+}
+
+export async function updatePharmacyReportStatusForm(formData: FormData) {
+  const reportId = String(formData.get("reportId") ?? "");
+  const status = parsePharmacyReportStatus(formData.get("status"));
+
+  if (!status) {
+    redirect("/admin/reports?error=Выберите%20статус%20жалобы");
+  }
+
+  const result = await updatePharmacyReportStatus(reportId, status);
+
+  if (!result.success) {
+    redirect(`/admin/reports?error=${encodeURIComponent(result.error ?? "Ошибка жалобы")}`);
+  }
+
+  redirect("/admin/reports?updated=1");
 }
 
 export async function toggleProductSocialRisk(

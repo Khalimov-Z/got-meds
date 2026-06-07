@@ -105,3 +105,10 @@
 - Сделано: удалены Prisma-схема, Prisma migrations и Prisma seed; текущие источники схемы и тестовых данных закреплены за Supabase SQL migrations и `supabase/seed.sql`.
 - Влияние: данные GotMeds больше не имеют отдельного legacy seed/rollback-слоя в `prisma/`; рабочим слоем остается Supabase PostgreSQL с SQL-артефактами проекта.
 - Проверка: пользователь подтвердил ручную Supabase-проверку; выполнены `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-07 - Pre-deploy readiness
+
+- План: [plans/completed/pre-deploy-readiness.md](../../plans/completed/pre-deploy-readiness.md)
+- Сделано: добавлена Supabase SQL-миграция для `pharmacy_reports`, enum-статусов и RPC модерации жалоб; seed расширен тестовыми данными для проверки пользовательской жалобы на аптеку.
+- Влияние: база поддерживает пользовательские сообщения об ошибках аптек и защищенную админскую обработку этих сообщений без расширения клиентской авторизации.
+- Проверка: выполнены `npm run test:unit`, `npm run build` и `git diff --check`; миграция описана в Supabase-инструкции для ручной проверки.

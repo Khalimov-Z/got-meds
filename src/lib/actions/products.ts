@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_cache } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase-server";
 
 type JsonValue =
@@ -27,6 +28,8 @@ export interface ProductDetails {
   description: string;
 }
 
+type ProductDetailsErrorStatus = "not_found" | "temporary_error";
+
 export interface ProductAnalog {
   id: string;
   name: string;
@@ -41,6 +44,7 @@ export interface ProductDetailsResponse {
   success: boolean;
   data?: ProductDetails;
   error?: string;
+  status?: ProductDetailsErrorStatus;
 }
 
 export interface ProductAnalogsResponse {
@@ -118,6 +122,7 @@ const CATEGORY_MAP: Record<string, ProductCategory> = {
 
 const PHARMACY_TIER_VALUES = new Set(["1", "2", "Chain"]);
 const INVENTORY_STATUS_VALUES = new Set(["in_stock", "likely_in_stock", "unknown"]);
+const PRODUCT_CACHE_REVALIDATE_SECONDS = 300;
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -143,7 +148,32 @@ function isUuid(value: string) {
   return UUID_PATTERN.test(value);
 }
 
-async function fetchProductDetailsRow(normalizedId: string) {
+function isMissingIncrementalCacheError(error: unknown) {
+  return error instanceof Error && error.message.includes("incrementalCache missing");
+}
+
+function createCachedRpcReader<TArgs extends unknown[], TResult>(
+  reader: (...args: TArgs) => Promise<TResult>,
+  keyParts: string[]
+) {
+  const cachedReader = unstable_cache(reader, keyParts, {
+    revalidate: PRODUCT_CACHE_REVALIDATE_SECONDS,
+  });
+
+  return async (...args: TArgs) => {
+    try {
+      return await cachedReader(...args);
+    } catch (error) {
+      if (isMissingIncrementalCacheError(error)) {
+        return reader(...args);
+      }
+
+      throw error;
+    }
+  };
+}
+
+async function fetchProductDetailsRowFromSupabase(normalizedId: string) {
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.rpc("gotmeds_get_product_details", {
     p_product_id: normalizedId,
@@ -156,18 +186,49 @@ async function fetchProductDetailsRow(normalizedId: string) {
   return (data as ProductDetailsRpcRow[] | null)?.[0] ?? null;
 }
 
+const fetchCachedProductDetailsRow = createCachedRpcReader(
+  fetchProductDetailsRowFromSupabase,
+  ["gotmeds-product-details"]
+);
+
+async function fetchProductAnalogsRowsFromSupabase(normalizedId: string) {
+  const supabase = getSupabaseServerClient();
+  const { data, error } = await supabase.rpc("gotmeds_get_product_analogs", {
+    p_product_id: normalizedId,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data as ProductAnalogRpcRow[] | null) ?? [];
+}
+
+const fetchCachedProductAnalogsRows = createCachedRpcReader(
+  fetchProductAnalogsRowsFromSupabase,
+  ["gotmeds-product-analogs"]
+);
+
+async function fetchProductDetailsRow(normalizedId: string) {
+  return fetchCachedProductDetailsRow(normalizedId);
+}
+
+async function fetchProductAnalogsRows(normalizedId: string) {
+  return fetchCachedProductAnalogsRows(normalizedId);
+}
+
 export async function getProductDetails(
   productId: string
 ): Promise<ProductDetailsResponse> {
   try {
     const normalizedId = productId?.trim();
     if (!normalizedId || !isUuid(normalizedId)) {
-      return { success: false, error: "Препарат не найден" };
+      return { success: false, status: "not_found", error: "Препарат не найден" };
     }
 
     const product = await fetchProductDetailsRow(normalizedId);
     if (!product) {
-      return { success: false, error: "Препарат не найден" };
+      return { success: false, status: "not_found", error: "Препарат не найден" };
     }
 
     return {
@@ -189,6 +250,7 @@ export async function getProductDetails(
     console.error("Ошибка получения препарата:", error);
     return {
       success: false,
+      status: "temporary_error",
       error: "Не удалось получить данные препарата. Попробуйте позже.",
     };
   }
@@ -208,16 +270,7 @@ export async function getAnalogs(
       return { success: false, error: "Препарат не найден" };
     }
 
-    const supabase = getSupabaseServerClient();
-    const { data, error } = await supabase.rpc("gotmeds_get_product_analogs", {
-      p_product_id: normalizedId,
-    });
-
-    if (error) {
-      throw error;
-    }
-
-    const analogs = (data as ProductAnalogRpcRow[] | null) ?? [];
+    const analogs = await fetchProductAnalogsRows(normalizedId);
 
     return {
       success: true,
