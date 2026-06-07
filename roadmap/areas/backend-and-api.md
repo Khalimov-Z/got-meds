@@ -140,3 +140,10 @@
 - Сделано: добавлены Jest unit-тесты для `searchProducts`, `getAnalogs`, `getPharmaciesByProduct` и `logZeroResultSearch` через мок Supabase server client.
 - Влияние: серверные контракты поиска, аналогов, аптек и аналитики нулевой выдачи получили быстрые регрессионные проверки без обращения к production-данным.
 - Проверка: выполнены `npm run test:unit`, `npm run lint`, `npm run build` и `git diff --check`.
+
+## 2026-06-07 - Pre-deploy readiness
+
+- План: [plans/completed/pre-deploy-readiness.md](../../plans/completed/pre-deploy-readiness.md)
+- Сделано: добавлены серверный rate limiting для `/api/search` и `/api/pharmacies`, Server Actions для создания и модерации `pharmacy_reports`, а `getProductDetails` начал возвращать статусы `not_found` и `temporary_error`.
+- Влияние: публичные route handlers стали устойчивее к массовым запросам, жалобы обрабатываются через серверную границу, а SSR-продуктовая страница получает явный контракт ошибки.
+- Проверка: выполнены `npm run test:unit`, `npm run build`, `npm run lint` и `git diff --check`.

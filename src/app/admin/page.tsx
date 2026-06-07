@@ -48,6 +48,10 @@ export default async function AdminPage() {
           <strong>{stats.zeroResultLogs7dCount}</strong>
           <span className={styles.tableMeta}>за 7 дней</span>
         </div>
+        <div className={styles.stat}>
+          <span>Новые жалобы</span>
+          <strong>{stats.newReportsCount}</strong>
+        </div>
       </section>
 
       <section className={styles.navGrid} aria-label="Разделы админки">
@@ -69,6 +73,11 @@ export default async function AdminPage() {
         <Link className={styles.navCard} href="/admin/blacklist">
           <h2>Черный список</h2>
           <p>Ограничить поиск товаров социального риска на уровне бэкенда.</p>
+          <span className={styles.secondaryLink}>Открыть</span>
+        </Link>
+        <Link className={styles.navCard} href="/admin/reports">
+          <h2>Жалобы</h2>
+          <p>Проверить пользовательские сообщения о неверных данных аптек.</p>
           <span className={styles.secondaryLink}>Открыть</span>
         </Link>
         <Link className={styles.navCard} href="/admin/demand">

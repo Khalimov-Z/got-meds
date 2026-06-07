@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPharmaciesByProduct } from "@/lib/actions/products";
+import { applyPublicApiRateLimit } from "@/lib/public-api-rate-limit";
 
 export async function GET(request: NextRequest) {
+  const rateLimitResponse = applyPublicApiRateLimit(request, "api-pharmacies");
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const { searchParams } = request.nextUrl;
   const productId = searchParams.get("productId") ?? "";
   const lat = searchParams.get("lat");

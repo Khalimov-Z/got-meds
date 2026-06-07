@@ -175,3 +175,10 @@
 - Сделано: добавлены конфигурации Jest, Cypress и LHCI, npm-скрипты `test:unit`, `test:e2e`, `test:lighthouse`, `test:quality`, unit-тесты Server Actions, E2E-сценарии MVP и Lighthouse-пороги Performance/SEO/Accessibility.
 - Влияние: проект получил воспроизводимую локальную основу качества для серверных контрактов, пользовательских сценариев и SEO/PWA-аудита без добавления CI/CD или production-деплоя.
 - Проверка: выполнены `npm run lint`, `npm run build`, `npm run test:unit` и `git diff --check`; пользователь подтвердил ручную проверку UI-исправлений.
+
+## 2026-06-07 - Pre-deploy readiness
+
+- План: [plans/completed/pre-deploy-readiness.md](../../plans/completed/pre-deploy-readiness.md)
+- Сделано: активный план переведен в `plans/completed/`, добавлен безопасный `.env.example`, Supabase-инструкция дополнена преддеплойными проверками и миграцией жалоб, спецификации синхронизированы с фактическим MVP-объемом без CI/CD.
+- Влияние: проект получил оформленный преддеплойный пакет для пробного запуска, где секреты не коммитятся, CI/CD остается будущим отдельным этапом, а качество проверяется локальными командами.
+- Проверка: выполнены `npm run lint`, `npm run build`, `npm run test:unit`, `npm run test:lighthouse` и `git diff --check`; `npm run test:e2e` заблокирован отсутствием тестовых Supabase credentials администратора.

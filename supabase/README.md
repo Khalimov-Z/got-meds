@@ -6,9 +6,10 @@
 - `migrations/20260601120000_read_layer_functions.sql` — RPC-функции чтения для этапа Supabase read layer.
 - `migrations/20260601143000_auth_rls.sql` — связь администраторов с Supabase Auth и RLS-политики для этапа Supabase Auth and RLS.
 - `migrations/20260602120000_admin_mutations.sql` — RPC-функции админских мутаций для этапа Supabase admin mutations.
+- `migrations/20260603120000_pharmacy_reports.sql` — таблица жалоб, антиспам и RPC-модерация для этапа Pre-deploy readiness.
 - `seed.sql` — тестовый набор данных для чистой Supabase PostgreSQL базы.
 
-Supabase SQL migrations и `seed.sql` являются текущим источником схемы и тестовых данных. Публичные и аналитические чтения, админский вход, RLS и админские мутации выполняются через server-only Supabase SDK/RPC.
+Supabase SQL migrations и `seed.sql` являются текущим источником схемы и тестовых данных. Публичные и аналитические чтения, админский вход, RLS, пользовательские жалобы и админские мутации выполняются через server-only Supabase SDK/RPC.
 
 ## Важное ограничение
 
@@ -27,9 +28,8 @@ SQL-миграция создает текущую реализованную с
 - `inventory`;
 - `product_aliases`;
 - `unmapped_strings`;
-- `search_logs`.
-
-Зафиксированное расхождение со спецификацией: `spec/features/data-architecture/data-architecture.md` описывает будущую таблицу `Pharmacy_Reports` и enum для жалоб, но текущая реализованная SQL-схема и runtime-код ее пока не реализуют. Эта SQL-миграция не добавляет `pharmacy_reports`; добавление жалоб требует отдельного утвержденного плана или обновления текущего плана до изменения схемы.
+- `search_logs`;
+- `pharmacy_reports`.
 
 ## Применение на чистой тестовой базе
 
@@ -40,7 +40,8 @@ SQL-миграция создает текущую реализованную с
 3. Выполните содержимое `supabase/migrations/20260601120000_read_layer_functions.sql`.
 4. Выполните содержимое `supabase/migrations/20260601143000_auth_rls.sql`.
 5. Выполните содержимое `supabase/migrations/20260602120000_admin_mutations.sql`.
-6. Выполните содержимое `supabase/seed.sql`.
+6. Выполните содержимое `supabase/migrations/20260603120000_pharmacy_reports.sql`.
+7. Выполните содержимое `supabase/seed.sql`.
 
 Через `psql`, если он установлен локально:
 
@@ -49,6 +50,7 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260531120000_in
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260601120000_read_layer_functions.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260601143000_auth_rls.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260602120000_admin_mutations.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20260603120000_pharmacy_reports.sql
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/seed.sql
 ```
 
@@ -74,12 +76,14 @@ where schemaname = 'public'
     'admins_email_key',
     'unmapped_strings_pharmacy_id_idx',
     'search_logs_city_id_created_at_idx',
-    'search_logs_search_term_idx'
+    'search_logs_search_term_idx',
+    'pharmacy_reports_status_created_at_idx',
+    'pharmacy_reports_pharmacy_ip_created_at_idx'
   )
 order by indexname;
 ```
 
-Ожидаемый результат: все шесть индексов присутствуют.
+Ожидаемый результат: все восемь индексов присутствуют.
 
 ## Проверка таблиц и внешних ключей
 
@@ -95,12 +99,13 @@ where table_schema = 'public'
     'inventory',
     'product_aliases',
     'unmapped_strings',
-    'search_logs'
+    'search_logs',
+    'pharmacy_reports'
   )
 order by table_name;
 ```
 
-Ожидаемый результат: все восемь таблиц присутствуют.
+Ожидаемый результат: все девять таблиц присутствуют.
 
 ```sql
 select conname
@@ -112,12 +117,13 @@ where contype = 'f'
     'inventory_product_id_fkey',
     'product_aliases_product_id_fkey',
     'unmapped_strings_pharmacy_id_fkey',
-    'search_logs_city_id_fkey'
+    'search_logs_city_id_fkey',
+    'pharmacy_reports_pharmacy_id_fkey'
   )
 order by conname;
 ```
 
-Ожидаемый результат: все шесть внешних ключей присутствуют.
+Ожидаемый результат: все семь внешних ключей присутствуют.
 
 ## Проверка seed-данных
 
@@ -180,7 +186,7 @@ order by proname;
 
 Ожидаемый результат: все шесть RPC-функций присутствуют.
 
-Проверка закрытого публичного доступа:
+Проверка закрытого публичного доступа к read layer:
 
 ```sql
 select
@@ -192,7 +198,14 @@ select
 from pg_proc p
 join pg_namespace n on n.oid = p.pronamespace
 where n.nspname = 'public'
-  and p.proname like 'gotmeds_%'
+  and p.proname in (
+    'gotmeds_search_products',
+    'gotmeds_get_product_details',
+    'gotmeds_get_product_analogs',
+    'gotmeds_get_pharmacies_by_product',
+    'gotmeds_get_sitemap_product_ids',
+    'gotmeds_get_demand_dashboard'
+  )
 order by p.proname;
 ```
 
@@ -239,7 +252,8 @@ where schemaname = 'public'
     'inventory',
     'product_aliases',
     'unmapped_strings',
-    'search_logs'
+    'search_logs',
+    'pharmacy_reports'
   )
 order by tablename;
 ```
@@ -275,7 +289,7 @@ select
 1. Запустите `npm run dev`.
 2. Откройте `/admin/login`.
 3. Войдите email/password пользователя из Supabase Auth, связанного с `admins.auth_user_id`.
-4. Откройте `/admin`, `/admin/pharmacies`, `/admin/inventory-upload`, `/admin/mapping`, `/admin/blacklist` и `/admin/demand`.
+4. Откройте `/admin`, `/admin/pharmacies`, `/admin/inventory-upload`, `/admin/mapping`, `/admin/blacklist`, `/admin/reports` и `/admin/demand`.
 5. В приватном окне откройте `/admin`.
 
 Ожидаемый результат: связанный администратор входит в админку, выход возвращает на `/admin/login`, приватное окно без сессии редиректится на `/admin/login`, пользователь Supabase Auth без доменной роли получает отказ.
@@ -345,6 +359,74 @@ select public.gotmeds_admin_set_product_social_risk(
 7. Выполните стабильный нулевой поиск на главной и проверьте появление записи в `/admin/demand`.
 
 Ожидаемый результат: все операции проходят только после админского входа, UI не меняется, CSV full sync заменяет данные атомарно, restricted-поиск и аналитика нулевой выдачи сохраняют прежнее поведение.
+
+## Проверка pharmacy reports
+
+После применения `20260603120000_pharmacy_reports.sql` проверьте наличие таблицы, enum и RPC:
+
+```sql
+select table_name
+from information_schema.tables
+where table_schema = 'public'
+  and table_name = 'pharmacy_reports';
+```
+
+Ожидаемый результат: одна строка `pharmacy_reports`.
+
+```sql
+select typname
+from pg_type
+where typname in ('PharmacyReportType', 'PharmacyReportStatus')
+order by typname;
+```
+
+Ожидаемый результат: оба enum присутствуют.
+
+```sql
+select proname
+from pg_proc
+where proname in (
+  'gotmeds_submit_pharmacy_report',
+  'gotmeds_admin_set_pharmacy_report_status'
+)
+order by proname;
+```
+
+Ожидаемый результат: обе RPC-функции присутствуют.
+
+Проверьте права выполнения:
+
+```sql
+select
+  p.proname as function_name,
+  has_function_privilege('anon', p.oid, 'EXECUTE') as anon_can_execute,
+  has_function_privilege('authenticated', p.oid, 'EXECUTE') as authenticated_can_execute,
+  has_function_privilege('service_role', p.oid, 'EXECUTE') as service_role_can_execute
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public'
+  and p.proname in (
+    'gotmeds_submit_pharmacy_report',
+    'gotmeds_admin_set_pharmacy_report_status'
+  )
+order by p.proname;
+```
+
+Ожидаемый результат:
+
+- `gotmeds_submit_pharmacy_report`: `anon_can_execute = false`, `authenticated_can_execute = false`, `service_role_can_execute = true`;
+- `gotmeds_admin_set_pharmacy_report_status`: `anon_can_execute = false`, `authenticated_can_execute = true`, `service_role_can_execute = true`.
+
+Проверка приложения:
+
+1. Запустите `npm run dev`.
+2. Откройте `/map?q=Нурофен`, выберите аптеку и нажмите `Сообщить об ошибке`.
+3. Отправьте жалобу одного из трех типов.
+4. Повторите отправку жалобы по той же аптеке.
+5. Откройте `/admin/reports` под администратором.
+6. Измените статус жалобы.
+
+Ожидаемый результат: первая жалоба сохраняется, повторная жалоба за 24 часа блокируется, администратор видит жалобу и может обновить статус.
 
 ## Пользовательская приемка
 

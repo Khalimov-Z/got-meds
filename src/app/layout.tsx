@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from "next";
+import { Hanken_Grotesk } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
+
+const hankenGrotesk = Hanken_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-primary",
+});
 
 /**
  * Метаданные приложения GotMeds.
@@ -40,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body>
+      <body className={hankenGrotesk.variable}>
         {children}
         <ServiceWorkerRegister />
       </body>

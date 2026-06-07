@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
@@ -35,6 +36,10 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
+type ProductDataErrorProps = {
+  message: string;
+};
+
 function formatPrice(price?: number) {
   if (typeof price !== "number") {
     return "Цена уточняется";
@@ -42,11 +47,46 @@ function formatPrice(price?: number) {
 
   return `${new Intl.NumberFormat("ru-RU").format(price)} ₽`;
 }
+
+function ProductDataError({ message }: ProductDataErrorProps) {
+  return (
+    <main className={styles.shell}>
+      <header className={styles.header}>
+        <BrandMark />
+        <Link className={styles.backLink} href="/">
+          <ArrowBackIcon aria-hidden="true" />
+          <span>Назад к поиску</span>
+        </Link>
+      </header>
+
+      <section className={styles.errorState} aria-labelledby="product-error-title">
+        <div className={styles.errorIcon} aria-hidden="true">
+          <WarningIcon />
+        </div>
+        <div className={styles.errorContent}>
+          <span className={styles.categoryLabel}>Временная ошибка</span>
+          <h1 id="product-error-title">Не удалось загрузить карточку препарата</h1>
+          <p>{message}</p>
+          <Link className={styles.errorAction} href="/">
+            Вернуться к поиску
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const result = await getProductDetails(id);
 
   if (!result.success || !result.data) {
+    if (result.status === "temporary_error") {
+      return {
+        title: "Не удалось загрузить препарат | GotMeds",
+      };
+    }
+
     return {
       title: "Препарат не найден | GotMeds",
     };
@@ -87,7 +127,15 @@ export default async function ProductPage({ params }: PageProps) {
   ]);
 
   if (!result.success || !result.data) {
-    notFound();
+    if (result.status === "not_found") {
+      notFound();
+    }
+
+    return (
+      <ProductDataError
+        message={result.error ?? "Повторите попытку позже или вернитесь к поиску."}
+      />
+    );
   }
 
   const product = result.data;
@@ -110,10 +158,14 @@ export default async function ProductPage({ params }: PageProps) {
           <div className={styles.spotlight} aria-hidden="true" />
           <div className={styles.productVisual}>
             {product.image_url ? (
-              <img
+              <Image
                 src={product.image_url}
                 alt={product.name}
                 className={styles.productImage}
+                width={360}
+                height={360}
+                sizes="(max-width: 760px) 80vw, 360px"
+                unoptimized
               />
             ) : (
               <div className={styles.productFallback}>

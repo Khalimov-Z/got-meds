@@ -52,8 +52,43 @@ describe("getProductDetails", () => {
     const { getProductDetails } = await loadProductActions();
     const result = await getProductDetails("not-a-uuid");
 
-    expect(result).toEqual({ success: false, error: "Препарат не найден" });
+    expect(result).toEqual({
+      success: false,
+      status: "not_found",
+      error: "Препарат не найден",
+    });
     expect(getSupabaseServerClientMock).not.toHaveBeenCalled();
+  });
+
+  it("отличает отсутствие препарата от временной ошибки Supabase", async () => {
+    useRpcQueue({ data: [], error: null });
+    const { getProductDetails } = await loadProductActions();
+
+    const result = await getProductDetails(PRODUCT_ID);
+
+    expect(result).toEqual({
+      success: false,
+      status: "not_found",
+      error: "Препарат не найден",
+    });
+  });
+
+  it("возвращает временную ошибку, если Supabase не отдал данные препарата", async () => {
+    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    useRpcQueue({
+      data: null,
+      error: { message: "Connection timeout" },
+    });
+    const { getProductDetails } = await loadProductActions();
+
+    const result = await getProductDetails(PRODUCT_ID);
+
+    expect(result).toEqual({
+      success: false,
+      status: "temporary_error",
+      error: "Не удалось получить данные препарата. Попробуйте позже.",
+    });
+    consoleErrorSpy.mockRestore();
   });
 
   it("маппит строку RPC в публичный контракт SEO-страницы препарата", async () => {

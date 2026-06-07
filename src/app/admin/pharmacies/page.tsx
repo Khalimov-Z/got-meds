@@ -14,6 +14,7 @@ type PharmaciesPageProps = {
   searchParams: Promise<{
     error?: string;
     created?: string;
+    edit?: string;
     updated?: string;
   }>;
 };
@@ -317,7 +318,11 @@ export default async function PharmaciesPage({ searchParams }: PharmaciesPagePro
                 </tr>
               </thead>
               {pharmacies.map((pharmacy) => (
-                <tbody className={styles.pharmacyGroup} key={pharmacy.id}>
+                <tbody
+                  className={styles.pharmacyGroup}
+                  id={`pharmacy-${pharmacy.id}`}
+                  key={pharmacy.id}
+                >
                     <tr>
                       <td data-label="Аптека">
                         <strong>{pharmacy.name}</strong>
@@ -347,7 +352,10 @@ export default async function PharmaciesPage({ searchParams }: PharmaciesPagePro
                     </tr>
                     <tr className={styles.detailRow}>
                       <td colSpan={7}>
-                        <details className={styles.rowDetails}>
+                        <details
+                          className={styles.rowDetails}
+                          open={params.edit === pharmacy.id}
+                        >
                           <summary className={styles.summaryButton}>
                             Редактировать: {pharmacy.name}
                           </summary>
