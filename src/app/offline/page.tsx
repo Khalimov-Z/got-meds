@@ -4,8 +4,8 @@ import styles from "./offline.module.css";
 import { RetryButton } from "./retry-button";
 
 export const metadata = {
-  title: "Нет связи | GotMeds",
-  description: "Offline-экран GotMeds для нестабильного мобильного интернета.",
+  title: "Нет связи | где.таблетка",
+  description: "Offline-экран где.таблетка для нестабильного мобильного интернета.",
 };
 
 export default function OfflinePage() {

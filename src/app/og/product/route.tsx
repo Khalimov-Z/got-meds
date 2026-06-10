@@ -21,8 +21,8 @@ export async function GET(request: Request) {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px",
-          color: "#17333d",
-          background: "linear-gradient(135deg, #f4fbf8 0%, #e6f2ef 54%, #f6f1e8 100%)",
+          color: "#1A2F3B",
+          background: "linear-gradient(135deg, #FAFAFA 0%, #E4EEF2 54%, #f6f1e8 100%)",
         }}
       >
         <div
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
             gap: "22px",
             fontSize: 34,
             fontWeight: 800,
-            color: "#316276",
+            color: "#2D5A6E",
           }}
         >
           <div
@@ -42,16 +42,16 @@ export async function GET(request: Request) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: 22,
+              borderRadius: 34,
               color: "#ffffff",
-              background: "#316276",
-              fontSize: 42,
+              background: "#2D5A6E",
+              fontSize: 34,
               fontWeight: 900,
             }}
           >
-            +
+            ●
           </div>
-          <div>GotMeds</div>
+          <div>где.таблетка</div>
         </div>
 
         <div
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
               display: "flex",
               padding: "12px 20px",
               borderRadius: 999,
-              color: "#316276",
+              color: "#2D5A6E",
               background: "rgba(255,255,255,0.72)",
               fontSize: 26,
               fontWeight: 800,
@@ -98,9 +98,9 @@ export async function GET(request: Request) {
           }}
         >
           <span>Цены</span>
-          <span style={{ color: "#7fb069" }}>•</span>
+          <span style={{ color: "#64C5B1" }}>•</span>
           <span>Аптеки рядом</span>
-          <span style={{ color: "#7fb069" }}>•</span>
+          <span style={{ color: "#64C5B1" }}>•</span>
           <span>Карта города</span>
         </div>
       </div>

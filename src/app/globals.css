@@ -9,6 +9,11 @@
 :root {
   --color-primary: #316276;
   --color-primary-hover: #1e4d5f;
+  --brand-teal: #2d5a6e;
+  --brand-light-sage: #e4eef2;
+  --brand-mint: #64c5b1;
+  --brand-charcoal: #1a2f3b;
+  --brand-soft-white: #fafafa;
   --color-bg: hsl(225 100% 99%);
   --color-surface: hsl(0, 0%, 100%);
   --color-text-main: hsl(211, 52%, 13%);
@@ -17,10 +22,11 @@
   --color-warning: hsl(40, 95%, 50%);
   --color-neutral: hsl(220, 15%, 70%);
   --color-danger: hsl(350, 85%, 55%);
-  --brand-name-font-size: 1.25rem;
-  --brand-name-font-size-wide: 1.32rem;
-  --brand-name-font-size-compact: 1.05rem;
-  --brand-name-line-height: 1.25;
+  --brand-name-font-size: 1.38rem;
+  --brand-name-font-size-wide: 1.6rem;
+  --brand-name-font-size-compact: 1.02rem;
+  --brand-name-line-height: 1.05;
+  --font-brand: var(--font-primary);
   --font-primary: "Hanken Grotesk", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
