@@ -86,7 +86,7 @@ const CATEGORY_ICONS = {
 function HeaderContent() {
   return (
     <>
-      <div className={styles.brand} aria-label="GotMeds">
+      <Link className={styles.brand} href="/" aria-label="где.таблетка">
         <span className={styles.logoMark} aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" role="img" focusable="false">
             <g transform="rotate(-42 12 12)">
@@ -95,8 +95,8 @@ function HeaderContent() {
             </g>
           </svg>
         </span>
-        <span className={styles.brandName}>Got Meds</span>
-      </div>
+        <span className={styles.brandName}>где.таблетка</span>
+      </Link>
       <Link className={styles.adminEntry} href="/admin">
         Администратор
       </Link>
@@ -338,7 +338,7 @@ export function SearchExperience() {
       </section>
 
       <section className={styles.howItWorks} aria-labelledby="how-it-works-title">
-        <h2 id="how-it-works-title">Как это работает?</h2>
+        <h2 id="how-it-works-title">Как работает где.таблетка?</h2>
         <div className={styles.steps}>
           {HOW_IT_WORKS.map((step, index) => (
             <article className={styles.step} key={step.title}>
@@ -415,7 +415,7 @@ function SearchResults({
     return (
       <div className={`${styles.feedback} ${styles.restrictedFeedback}`} role="status">
         <span className={styles.restrictedIcon} aria-hidden="true" />
-        <span>Поиск данного препарата ограничен сервисом GotMeds согласно правилам платформы</span>
+        <span>Поиск данного препарата ограничен сервисом где.таблетка согласно правилам платформы</span>
       </div>
     );
   }

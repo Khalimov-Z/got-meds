@@ -72,7 +72,7 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <BrandMark href="/admin" label="GotMeds Admin" />
+          <BrandMark />
           <h1>Жалобы</h1>
           <p>Пользовательские сообщения о неверных данных аптек.</p>
         </div>
@@ -150,36 +150,39 @@ export default async function ReportsPage({ searchParams }: ReportsPageProps) {
                       </time>
                     </td>
                     <td data-label="Действие">
-                      <div className={styles.actionsRow}>
-                        <Link
-                          className={styles.secondaryLink}
-                          href={
-                            report.pharmacy.id
-                              ? `/admin/pharmacies?edit=${report.pharmacy.id}#pharmacy-${report.pharmacy.id}`
-                              : "/admin/pharmacies"
-                          }
+                      <form className={styles.reportStatusForm} action={updatePharmacyReportStatusForm}>
+                        <input name="reportId" type="hidden" value={report.id} />
+                        <select
+                          className={styles.select}
+                          name="status"
+                          defaultValue={report.status}
+                          aria-label="Статус жалобы"
                         >
-                          Редактировать
-                        </Link>
-                        <form className={styles.actionsRow} action={updatePharmacyReportStatusForm}>
-                          <input name="reportId" type="hidden" value={report.id} />
-                          <select
-                            className={styles.select}
-                            name="status"
-                            defaultValue={report.status}
-                            aria-label="Статус жалобы"
+                          {reportStatusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <div className={styles.reportActionButtons}>
+                          <button
+                            className={`${styles.primaryButton} ${styles.compactAction}`}
+                            type="submit"
                           >
-                            {reportStatusOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          <button className={styles.primaryButton} type="submit">
                             Сохранить
                           </button>
-                        </form>
-                      </div>
+                          <Link
+                            className={`${styles.primaryButton} ${styles.compactAction}`}
+                            href={
+                              report.pharmacy.id
+                                ? `/admin/pharmacies?edit=${report.pharmacy.id}#pharmacy-${report.pharmacy.id}`
+                                : "/admin/pharmacies"
+                            }
+                          >
+                            Редактировать
+                          </Link>
+                        </div>
+                      </form>
                     </td>
                   </tr>
                 ))}

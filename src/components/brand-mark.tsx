@@ -6,7 +6,7 @@ type BrandMarkProps = {
   label?: string;
 };
 
-export function BrandMark({ href = "/", label = "GotMeds" }: BrandMarkProps) {
+export function BrandMark({ href = "/", label = "где.таблетка" }: BrandMarkProps) {
   return (
     <Link className={styles.brand} href={href} aria-label={label}>
       <span className={styles.icon} aria-hidden="true">
@@ -17,7 +17,7 @@ export function BrandMark({ href = "/", label = "GotMeds" }: BrandMarkProps) {
           </g>
         </svg>
       </span>
-      <span className={styles.name}>Got Meds</span>
+      <span className={styles.name}>{label}</span>
     </Link>
   );
 }

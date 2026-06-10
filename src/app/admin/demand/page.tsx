@@ -41,7 +41,7 @@ export default async function DemandPage({ searchParams }: DemandPageProps) {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <BrandMark href="/admin" label="GotMeds Admin" />
+          <BrandMark />
           <h1>Дефицитные позиции</h1>
           <p>Топ-50 поисковых запросов без результата за последнюю неделю.</p>
         </div>

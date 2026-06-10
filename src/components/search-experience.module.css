@@ -63,6 +63,22 @@
   gap: 8px;
   color: #0b1c30;
   text-decoration: none;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.brand:hover,
+.brand:focus-visible {
+  color: var(--home-teal);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.brand:focus-visible {
+  border-radius: 9999px;
+  outline: 3px solid hsl(196 41% 41% / 0.18);
+  outline-offset: 4px;
 }
 
 .logoMark {
@@ -227,9 +243,10 @@
 
 .heroCopy p {
   max-width: 34ch;
-  color: var(--home-ink-soft);
-  font-size: 1rem;
-  line-height: 1.55;
+  color: hsl(204 18% 24%);
+  font-size: clamp(1.05rem, 4vw, 1.18rem);
+  font-weight: 680;
+  line-height: 1.6;
 }
 
 .searchPanel {
@@ -379,7 +396,7 @@
   flex-wrap: nowrap;
   gap: 12px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 4px 2px 8px;
   scrollbar-width: none;
 }
 
@@ -393,11 +410,13 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   border: 1px solid hsl(0 0% 100% / 0.4);
   border-radius: 9999px;
   padding: 0 24px;
   color: var(--home-ink-soft);
   background: hsl(0 0% 100% / 0.3);
+  background-clip: padding-box;
   box-shadow:
     0 8px 18px hsl(203 42% 25% / 0.06),
     inset 0 1px 0 hsl(0 0% 100% / 0.66);
@@ -407,15 +426,19 @@
   font-size: 0.88rem;
   font-weight: 800;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     border-color 0.25s ease-in-out,
+    background 0.25s ease-in-out,
     color 0.25s ease-in-out,
     transform 0.25s ease-in-out,
     box-shadow 0.25s ease-in-out;
 }
 
-.quickButton:hover {
+.quickButton:hover,
+.quickButton:focus-visible {
   border-color: var(--home-teal);
+  border-radius: 9999px;
   color: hsl(0 0% 100%);
   background: var(--home-teal);
   box-shadow:
@@ -424,7 +447,13 @@
   transform: translateY(-2px);
 }
 
+.quickButton:focus-visible {
+  outline: 3px solid hsl(196 41% 41% / 0.18);
+  outline-offset: 2px;
+}
+
 .quickButton:active {
+  border-radius: 9999px;
   transform: translateY(0);
 }
 
@@ -1047,8 +1076,8 @@
 
   .heroCopy p {
     max-width: 35ch;
-    font-size: 1.12rem;
-    line-height: 1.55;
+    font-size: 1.18rem;
+    line-height: 1.58;
   }
 
   .searchPanel {

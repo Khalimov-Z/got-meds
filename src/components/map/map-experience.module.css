@@ -1701,12 +1701,15 @@
   }
 
   .searchForm {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
   }
 
   .searchButton {
-    width: 100%;
+    width: auto;
+    min-height: 46px;
+    padding: 0 16px;
+    font-size: 0.9rem;
   }
 
   .resultTopRow,

@@ -232,6 +232,7 @@
 .primaryButton:hover,
 .primaryButton:focus-visible {
   background: var(--color-primary-hover);
+  text-decoration: none;
 }
 
 .secondaryLink:hover,
@@ -847,6 +848,33 @@
   gap: 10px;
 }
 
+.compactAction,
+.compactSubmitButton {
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 13px;
+  font-size: 0.9rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.compactSubmitButton {
+  justify-self: start;
+  min-width: 132px;
+}
+
+.reportStatusForm {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.reportActionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .emptyState {
   border: 1px dashed var(--admin-border-strong);
   border-radius: 8px;
@@ -899,6 +927,11 @@
   .inlineFilter,
   .primaryButton {
     width: 100%;
+  }
+
+  .compactAction,
+  .compactSubmitButton {
+    width: fit-content;
   }
 
   .demandTable,
