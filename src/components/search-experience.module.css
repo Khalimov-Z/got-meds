@@ -56,68 +56,6 @@
   padding-bottom: 16px;
 }
 
-.brand {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 8px;
-  color: #0b1c30;
-  text-decoration: none;
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.brand:hover,
-.brand:focus-visible {
-  color: var(--home-teal);
-  text-decoration: none;
-  transform: translateY(-1px);
-}
-
-.brand:focus-visible {
-  border-radius: 9999px;
-  outline: 3px solid hsl(196 41% 41% / 0.18);
-  outline-offset: 4px;
-}
-
-.logoMark {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  color: #ffffff;
-  background: var(--home-teal);
-  flex: 0 0 auto;
-}
-
-.logoMark svg {
-  width: 22px;
-  height: 22px;
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.6;
-}
-
-.logoDivider {
-  fill: none;
-  stroke: var(--home-teal);
-  stroke-width: 2;
-}
-
-.brandName {
-  overflow: hidden;
-  font-size: var(--brand-name-font-size);
-  font-weight: 600;
-  line-height: var(--brand-name-line-height);
-  letter-spacing: 0;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .adminEntry {
   display: inline-flex;
   align-items: center;
@@ -792,6 +730,14 @@
   content: "";
 }
 
+.headingBrand {
+  color: var(--brand-teal);
+  font-family: var(--font-brand), var(--font-primary);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
 .steps {
   display: flex;
   gap: 14px;
@@ -1038,15 +984,6 @@
     background-position: right 30% center;
   }
 
-  .logoMark {
-    width: 42px;
-    height: 42px;
-  }
-
-  .brandName {
-    font-size: var(--brand-name-font-size-wide);
-  }
-
   .adminEntry {
     min-height: 36px;
     padding: 0 16px;
@@ -1163,20 +1100,6 @@
 @media (max-width: 420px) {
   .headerInner {
     gap: 10px;
-  }
-
-  .logoMark {
-    width: 34px;
-    height: 34px;
-  }
-
-  .logoMark svg {
-    width: 21px;
-    height: 21px;
-  }
-
-  .brandName {
-    font-size: var(--brand-name-font-size-compact);
   }
 
   .adminEntry {

@@ -8,6 +8,7 @@ import {
   CategoryMedicineIcon,
   CategoryVitaminsIcon,
 } from "@/components/map/icons";
+import { BrandMark } from "@/components/brand-mark";
 import { logZeroResultSearchForActiveCity } from "@/lib/actions/search";
 import styles from "./search-experience.module.css";
 
@@ -81,22 +82,11 @@ const CATEGORY_ICONS = {
 
 /**
  * Содержимое шапки сайта (логотип и служебная кнопка администратора).
- * Разметка полностью соответствует структуре предоставленного HTML-макета.
  */
 function HeaderContent() {
   return (
     <>
-      <Link className={styles.brand} href="/" aria-label="где.таблетка">
-        <span className={styles.logoMark} aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" role="img" focusable="false">
-            <g transform="rotate(-42 12 12)">
-              <rect x="4.2" y="9" width="15.6" height="6" rx="3" />
-              <path className={styles.logoDivider} d="M12 9v6" />
-            </g>
-          </svg>
-        </span>
-        <span className={styles.brandName}>где.таблетка</span>
-      </Link>
+      <BrandMark />
       <Link className={styles.adminEntry} href="/admin">
         Администратор
       </Link>
@@ -338,7 +328,9 @@ export function SearchExperience() {
       </section>
 
       <section className={styles.howItWorks} aria-labelledby="how-it-works-title">
-        <h2 id="how-it-works-title">Как работает где.таблетка?</h2>
+        <h2 id="how-it-works-title">
+          Как работает <span className={styles.headingBrand}>где.таблетка</span>?
+        </h2>
         <div className={styles.steps}>
           {HOW_IT_WORKS.map((step, index) => (
             <article className={styles.step} key={step.title}>

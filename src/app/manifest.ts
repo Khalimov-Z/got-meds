@@ -2,14 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "GotMeds — Навигатор по лекарствам",
-    short_name: "GotMeds",
+    name: "где.таблетка — навигатор по лекарствам",
+    short_name: "где.таблетка",
     description: "Поиск лекарств, цен и наличия в аптеках Гудермеса.",
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#f4fbf8",
-    theme_color: "#316276",
+    background_color: "#FAFAFA",
+    theme_color: "#2D5A6E",
     lang: "ru",
     icons: [
       {

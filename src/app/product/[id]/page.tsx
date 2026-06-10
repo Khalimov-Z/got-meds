@@ -83,17 +83,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result.success || !result.data) {
     if (result.status === "temporary_error") {
       return {
-        title: "Не удалось загрузить препарат | GotMeds",
+        title: "Не удалось загрузить препарат | где.таблетка",
       };
     }
 
     return {
-      title: "Препарат не найден | GotMeds",
+      title: "Препарат не найден | где.таблетка",
     };
   }
 
   const product = result.data;
-  const title = `Купить ${product.name} в Гудермесе — наличие в аптеках, цены | GotMeds`;
+  const title = `Купить ${product.name} в Гудермесе — наличие в аптеках, цены | где.таблетка`;
   const description = `Поиск препарата ${product.name} в аптеках Гудермеса. Адреса дежурных аптек, цены и наличие на карте города.`;
   const ogImage = `/og/product?name=${encodeURIComponent(product.name)}`;
 

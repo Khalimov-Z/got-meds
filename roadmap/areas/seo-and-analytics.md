@@ -105,3 +105,10 @@
 - Сделано: production-like `sitemap.xml` проверен через Supabase, страница продукта отделяет временную ошибку Supabase от настоящего `404`, а Lighthouse-проверки зафиксированы для главной и SEO-страницы продукта.
 - Влияние: SEO-страницы не теряют индексируемость из-за временного сбоя подключения, sitemap остается устойчивым, а преддеплойные пороги качества подтверждены локально.
 - Проверка: выполнены `npm run build`, `npm run test:lighthouse`, unit-тест SSR-ветвления продукта и `git diff --check`.
+
+## 2026-06-10 - Фирменный логотип и публичное имя приложения
+
+- План: [plans/completed/brand-logo-and-public-app-name.md](../../plans/completed/brand-logo-and-public-app-name.md)
+- Сделано: публичные metadata, PWA manifest, Apple Web App title, offline metadata, SEO-title страницы продукта и OG-бренд заменены с `GotMeds` на `где.таблетка`.
+- Влияние: во вкладке браузера, PWA-ярлыке, SEO-сниппетах и Open Graph-изображении пользователь видит публичный бренд, а GotMeds сохраняется как внутреннее имя проекта.
+- Проверка: выполнены `npm run build`, `git diff --check` и локальная HTTP-проверка title, `application-name`, `apple-mobile-web-app-title` и manifest.
