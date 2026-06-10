@@ -13,7 +13,7 @@ export default async function InventoryUploadPage() {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <BrandMark href="/admin" label="GotMeds Admin" />
+          <BrandMark />
           <h1>Загрузка остатков</h1>
           <p>CSV должен содержать колонки «Название» и «Остаток».</p>
         </div>

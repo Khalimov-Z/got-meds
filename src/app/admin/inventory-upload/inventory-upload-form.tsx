@@ -44,7 +44,11 @@ export function InventoryUploadForm({ pharmacies }: { pharmacies: PharmacyOption
 
         {state.error ? <p className={styles.error}>{state.error}</p> : null}
 
-        <button className={styles.primaryButton} type="submit" disabled={isPending}>
+        <button
+          className={`${styles.primaryButton} ${styles.compactSubmitButton}`}
+          type="submit"
+          disabled={isPending}
+        >
           {isPending ? "Загружаем" : "Загрузить"}
         </button>
       </form>

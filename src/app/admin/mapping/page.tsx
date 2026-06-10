@@ -22,7 +22,7 @@ export default async function MappingPage({ searchParams }: MappingPageProps) {
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <BrandMark href="/admin" label="GotMeds Admin" />
+          <BrandMark />
           <h1>Маппинг товаров</h1>
           <p>Связь строк из CSV с эталонной базой препаратов.</p>
         </div>

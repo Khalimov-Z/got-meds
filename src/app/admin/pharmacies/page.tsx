@@ -264,7 +264,7 @@ export default async function PharmaciesPage({ searchParams }: PharmaciesPagePro
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <BrandMark href="/admin" label="GotMeds Admin" />
+          <BrandMark />
           <h1>Аптеки</h1>
           <p>Справочник аптек, координаты, график работы и статус на карте.</p>
         </div>

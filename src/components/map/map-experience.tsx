@@ -199,7 +199,7 @@ function formatWhatsappHref(phone: string | null, productName: string) {
   }
 
   const digits = phone.replace(/\D/g, "");
-  const text = `Здравствуйте! У вас есть в наличии ${productName}? Я нашел вас через сервис GotMeds`;
+  const text = `Здравствуйте! У вас есть в наличии ${productName}? Я нашел вас через сервис где.таблетка`;
 
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
@@ -605,7 +605,7 @@ function MapExperienceContent({
         <section className={styles.restrictedMapState} role="status">
           <span className={styles.restrictedMapIcon} aria-hidden="true" />
           <span>
-            Поиск данного препарата ограничен сервисом GotMeds согласно правилам
+            Поиск данного препарата ограничен сервисом где.таблетка согласно правилам
             платформы
           </span>
         </section>

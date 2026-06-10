@@ -32,7 +32,7 @@ export default async function BlacklistPage({ searchParams }: BlacklistPageProps
     <main className={styles.shell}>
       <header className={styles.header}>
         <div>
-          <BrandMark href="/admin" label="GotMeds Admin" />
+          <BrandMark />
           <h1>Черный список</h1>
           <p>Управление ограничением поиска для товаров социального риска.</p>
         </div>
