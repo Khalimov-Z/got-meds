@@ -1,6 +1,6 @@
 # План разработки: Legacy database decommission
 
-**Статус:** Выполнен (Completed)
+**Статус:** Завершён (Completed)
 **Основание:** [supabase-platform-migration.md](../../spec/technical/supabase-platform-migration.md), [tech-stack.md](../../spec/technical/tech-stack.md), [data-architecture.md](../../spec/features/data-architecture/data-architecture.md)
 
 ## Цель

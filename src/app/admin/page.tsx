@@ -35,10 +35,10 @@ export default async function AdminPage() {
           <span>В очереди маппинга</span>
           <strong>{stats.unmappedCount}</strong>
         </div>
-        <div className={styles.stat}>
+        <Link href="/admin/aliases" className={styles.stat} style={{ textDecoration: "none", color: "inherit" }}>
           <span>Алиасов</span>
           <strong>{stats.aliasesCount}</strong>
-        </div>
+        </Link>
         <div className={styles.stat}>
           <span>В черном списке</span>
           <strong>{stats.restrictedProductsCount}</strong>

@@ -1069,3 +1069,24 @@
     display: none;
   }
 }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.pageIndicator {
+  color: var(--color-text-muted);
+  font-weight: 750;
+  font-size: 0.94rem;
+}
+
+.disabledLink {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

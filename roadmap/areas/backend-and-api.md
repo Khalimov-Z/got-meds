@@ -147,3 +147,10 @@
 - Сделано: добавлены серверный rate limiting для `/api/search` и `/api/pharmacies`, Server Actions для создания и модерации `pharmacy_reports`, а `getProductDetails` начал возвращать статусы `not_found` и `temporary_error`.
 - Влияние: публичные route handlers стали устойчивее к массовым запросам, жалобы обрабатываются через серверную границу, а SSR-продуктовая страница получает явный контракт ошибки.
 - Проверка: выполнены `npm run test:unit`, `npm run build`, `npm run lint` и `git diff --check`.
+
+## 2026-06-16 - Отказоустойчивость импорта и управление синонимами
+
+- План: [plans/completed/mapping-and-pipeline-resilience.md](../../plans/completed/mapping-and-pipeline-resilience.md)
+- Сделано: в [admin.ts](../../src/lib/actions/admin.ts) внедрены новые Server Actions: `getAliasesData` (с двухэтапным поиском по совпадению оригинальной строки или ID найденных продуктов) и `deleteAliasAction` / `deleteAliasForm` для отмены связи синонимов. Server Action `uploadPharmacyPrice` обновлен для поддержки параметра `forceUpload` и проверки текущего количества записей в таблице `inventory`.
+- Влияние: расширен API-слой панели администратора функциями безопасного импорта и модерации ошибочных связей.
+- Проверка: успешно пройдены юнит-тесты (`npm run test:unit`) и проверка типов при компиляции.

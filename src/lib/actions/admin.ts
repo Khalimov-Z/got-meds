@@ -177,9 +177,9 @@ type SupabasePharmacyReportRow = {
   user_ip: string;
   created_at: string;
   pharmacies:
-    | { id: string; name: string; address: string }
-    | Array<{ id: string; name: string; address: string }>
-    | null;
+  | { id: string; name: string; address: string }
+  | Array<{ id: string; name: string; address: string }>
+  | null;
 };
 
 type PharmacyFormPayload = {
@@ -1037,7 +1037,8 @@ export async function toggleProductSocialRiskForm(formData: FormData) {
 
 export async function uploadPharmacyPrice(
   pharmacyId: string,
-  fileData: Blob
+  fileData: Blob,
+  forceUpload = false
 ): Promise<AdminActionResponse<UploadPharmacyPriceReport>> {
   await requireAdmin();
   const supabase = await createSupabaseAuthServerClient();
@@ -1107,6 +1108,27 @@ export async function uploadPharmacyPrice(
   }));
   const unmappedData = Array.from(unmappedStrings);
 
+  // --- Защита от сбоев импорта (Thresholds) ---
+  const { count: currentInventoryCount, error: countError } = await supabase
+    .from("inventory")
+    .select("product_id", { count: "exact", head: true })
+    .eq("pharmacy_id", normalizedPharmacyId);
+
+  if (countError) {
+    console.error("❌ Ошибка при получении текущих остатков для проверки порога:", countError);
+  }
+
+  const currentCount = currentInventoryCount ?? 0;
+  const newCount = inventoryData.length;
+
+  if (!forceUpload && currentCount > 10 && (newCount === 0 || newCount < currentCount * 0.5)) {
+    return {
+      success: false,
+      error: `Импорт заблокирован: количество распознанных позиций (${newCount}) снизилось более чем на 50% по сравнению с текущими остатками (${currentCount}). Если вы действительно хотите затереть данные, установите галочку «Принудительная загрузка» и повторите попытку.`,
+    };
+  }
+  // ----------------------------------------------
+
   const { error: syncError } = await supabase.rpc("gotmeds_admin_full_sync_inventory", {
     p_pharmacy_id: normalizedPharmacyId,
     p_inventory_items: inventoryData,
@@ -1140,6 +1162,7 @@ export async function uploadPharmacyPriceForm(
 ): Promise<UploadPharmacyPriceState> {
   const pharmacyId = String(formData.get("pharmacyId") ?? "");
   const file = formData.get("file");
+  const forceUpload = formData.get("forceUpload") === "true";
 
   if (!(file instanceof Blob) || file.size === 0) {
     return { error: INVALID_FILE_ERROR };
@@ -1150,7 +1173,7 @@ export async function uploadPharmacyPriceForm(
     return { error: INVALID_FILE_ERROR };
   }
 
-  const result = await uploadPharmacyPrice(pharmacyId, file);
+  const result = await uploadPharmacyPrice(pharmacyId, file, forceUpload);
 
   if (!result.success || !result.data) {
     return { error: result.error ?? "Не удалось загрузить прайс" };
@@ -1239,4 +1262,147 @@ export async function ignoreAliasForm(formData: FormData) {
   }
 
   redirect("/admin/mapping?ignored=1");
+}
+
+export async function deleteAliasAction(aliasId: string): Promise<AdminActionResponse> {
+  await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
+  const normalizedAliasId = normalizeUuid(aliasId);
+
+  if (!normalizedAliasId) {
+    return { success: false, error: "Синоним не найден" };
+  }
+
+  // Получим информацию об алиасе перед удалением
+  const { data: alias, error: selectError } = await supabase
+    .from("product_aliases")
+    .select("original_string")
+    .eq("id", normalizedAliasId)
+    .maybeSingle();
+
+  if (selectError || !alias) {
+    return { success: false, error: "Синоним не найден" };
+  }
+
+  const { error: deleteError } = await supabase
+    .from("product_aliases")
+    .delete()
+    .eq("id", normalizedAliasId);
+
+  if (deleteError) {
+    console.error("❌ Ошибка удаления синонима:", deleteError);
+    return {
+      success: false,
+      error: getActionErrorMessage(deleteError, "Не удалось удалить синоним"),
+    };
+  }
+
+  revalidatePath("/admin/mapping");
+  revalidatePath("/admin/aliases");
+  return { success: true };
+}
+
+export type AdminAliasRow = {
+  id: string;
+  originalString: string;
+  productId: string;
+  productName: string;
+  productDosage: string | null;
+  productForm: string | null;
+};
+
+export type AdminAliasesData = {
+  aliases: AdminAliasRow[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+};
+
+export async function getAliasesData(
+  search = "",
+  page = 1
+): Promise<AdminAliasesData> {
+  await requireAdmin();
+  const supabase = await createSupabaseAuthServerClient();
+
+  const limit = 20;
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  let query = supabase
+    .from("product_aliases")
+    .select(
+      "id,original_string,product_id,products(name,dosage,form)",
+      { count: "exact" }
+    )
+    .eq("is_ignored", false);
+
+  if (search.trim()) {
+    const cleanSearch = `%${search.trim()}%`;
+    const { data: matchedProducts } = await supabase
+      .from("products")
+      .select("id")
+      .ilike("name", cleanSearch);
+    
+    const productIds = (matchedProducts ?? []).map((p) => p.id);
+
+    if (productIds.length > 0) {
+      query = query.or(
+        `original_string.ilike.${cleanSearch},product_id.in.(${productIds.map(id => `"${id}"`).join(",")})`
+      );
+    } else {
+      query = query.ilike("original_string", cleanSearch);
+    }
+  }
+
+  const { data, count, error } = await query
+    .order("original_string", { ascending: true })
+    .range(from, to);
+
+  if (error) {
+    throw error;
+  }
+
+  type SupabaseAliasJoinRow = {
+    id: string;
+    original_string: string;
+    product_id: string | null;
+    products:
+    | { name: string; dosage: string | null; form: string | null }
+    | Array<{ name: string; dosage: string | null; form: string | null }>
+    | null;
+  };
+
+  const aliases = ((data ?? []) as unknown as SupabaseAliasJoinRow[]).map((row) => {
+    const product = getSingleRelation(row.products);
+    return {
+      id: row.id,
+      originalString: row.original_string,
+      productId: row.product_id ?? "",
+      productName: product?.name ?? "Препарат не найден",
+      productDosage: product?.dosage ?? null,
+      productForm: product?.form ?? null,
+    };
+  });
+
+  const totalCount = count ?? 0;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  return {
+    aliases,
+    totalCount,
+    totalPages,
+    currentPage: page,
+  };
+}
+
+export async function deleteAliasForm(formData: FormData) {
+  const aliasId = String(formData.get("aliasId") ?? "");
+  const result = await deleteAliasAction(aliasId);
+
+  if (!result.success) {
+    redirect(`/admin/aliases?error=${encodeURIComponent(result.error ?? "Ошибка удаления синонима")}`);
+  }
+
+  redirect("/admin/aliases?deleted=1");
 }
