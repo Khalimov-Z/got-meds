@@ -81,6 +81,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const result = await getProductDetails(id);
 
   if (!result.success || !result.data) {
+    if (result.status === "restricted") {
+      return {
+        title: "Поиск ограничен | где.таблетка",
+        robots: {
+          index: false,
+          follow: false,
+        },
+      };
+    }
+
     if (result.status === "temporary_error") {
       return {
         title: "Не удалось загрузить препарат | где.таблетка",
@@ -127,6 +137,36 @@ export default async function ProductPage({ params }: PageProps) {
   ]);
 
   if (!result.success || !result.data) {
+    if (result.status === "restricted") {
+      return (
+        <main className={styles.shell}>
+          <header className={styles.header}>
+            <BrandMark />
+            <Link className={styles.backLink} href="/">
+              <ArrowBackIcon aria-hidden="true" />
+              <span>Назад к поиску</span>
+            </Link>
+          </header>
+
+          <section className={`${styles.errorState} ${styles.restrictedState}`} aria-labelledby="product-restricted-title">
+            <div className={`${styles.errorIcon} ${styles.restrictedIcon}`} aria-hidden="true">
+              <WarningIcon />
+            </div>
+            <div className={styles.errorContent}>
+              <span className={styles.categoryLabel}>Доступ ограничен</span>
+              <h1 id="product-restricted-title" className={styles.restrictedText}>Поиск препарата ограничен</h1>
+              <p className={styles.restrictedText}>
+                {result.error ?? "Поиск данного препарата ограничен сервисом где.таблетка согласно правилам платформы."}
+              </p>
+              <Link className={styles.errorAction} href="/">
+                Вернуться к поиску
+              </Link>
+            </div>
+          </section>
+        </main>
+      );
+    }
+
     if (result.status === "not_found") {
       notFound();
     }

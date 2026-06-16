@@ -119,6 +119,22 @@ describe("getProductDetails", () => {
       },
     });
   });
+
+  it("возвращает restricted статус, если у препарата включен is_social_risk", async () => {
+    useRpcQueue({
+      data: [productDetailsRow({ is_social_risk: true })],
+      error: null,
+    });
+    const { getProductDetails } = await loadProductActions();
+
+    const result = await getProductDetails(PRODUCT_ID);
+
+    expect(result).toEqual({
+      success: false,
+      status: "restricted",
+      error: "Поиск данного препарата ограничен сервисом где.таблетка согласно правилам платформы",
+    });
+  });
 });
 
 describe("getAnalogs", () => {
@@ -129,6 +145,15 @@ describe("getAnalogs", () => {
 
   it("возвращает ошибку, если исходный препарат не найден", async () => {
     useRpcQueue({ data: [], error: null });
+    const { getAnalogs } = await loadProductActions();
+
+    const result = await getAnalogs(PRODUCT_ID);
+
+    expect(result).toEqual({ success: false, error: "Препарат не найден" });
+  });
+
+  it("возвращает ошибку, если исходный препарат заблокирован", async () => {
+    useRpcQueue({ data: [productDetailsRow({ is_social_risk: true })], error: null });
     const { getAnalogs } = await loadProductActions();
 
     const result = await getAnalogs(PRODUCT_ID);
@@ -277,5 +302,14 @@ describe("getPharmaciesByProduct", () => {
       tier: "2",
       status: "unknown",
     });
+  });
+
+  it("возвращает ошибку, если препарат заблокирован", async () => {
+    useRpcQueue({ data: [productDetailsRow({ is_social_risk: true })], error: null });
+    const { getPharmaciesByProduct } = await loadProductActions();
+
+    const result = await getPharmaciesByProduct(PRODUCT_ID);
+
+    expect(result).toEqual({ success: false, error: "Препарат не найден" });
   });
 });
