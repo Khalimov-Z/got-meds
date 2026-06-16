@@ -42,6 +42,15 @@ export function InventoryUploadForm({ pharmacies }: { pharmacies: PharmacyOption
           />
         </label>
 
+        <label className={`${styles.checkboxField} ${styles.wideField}`}>
+          <input
+            name="forceUpload"
+            type="checkbox"
+            value="true"
+          />
+          <span>Принудительная загрузка (пропустить проверку снижения остатков)</span>
+        </label>
+
         {state.error ? <p className={styles.error}>{state.error}</p> : null}
 
         <button

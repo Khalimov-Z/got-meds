@@ -28,6 +28,9 @@ export default async function MappingPage({ searchParams }: MappingPageProps) {
         </div>
         <div className={styles.adminMeta}>
           <span>{admin.email}</span>
+          <Link className={styles.secondaryLink} href="/admin/aliases">
+            Синонимы (Алиасы)
+          </Link>
           <Link className={styles.secondaryLink} href="/admin">
             Админ-панель
           </Link>
