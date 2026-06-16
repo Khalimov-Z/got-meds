@@ -1,6 +1,6 @@
 # План разработки: Отказоустойчивость импорта и управление синонимами (Mapping & Pipeline Resilience)
 
-**Статус:** Выполнен (Completed)
+**Статус:** Завершён (Completed)
 **Основание:** [spec/features/admin-panel/admin-panel-spec.md](../../spec/features/admin-panel/admin-panel-spec.md), [spec/features/data-pipelines/data-pipelines.md](../../spec/features/data-pipelines/data-pipelines.md)
 
 ## Цель
