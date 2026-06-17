@@ -112,3 +112,11 @@
 - Сделано: публичные metadata, PWA manifest, Apple Web App title, offline metadata, SEO-title страницы продукта и OG-бренд заменены с `GotMeds` на `где.таблетка`.
 - Влияние: во вкладке браузера, PWA-ярлыке, SEO-сниппетах и Open Graph-изображении пользователь видит публичный бренд, а GotMeds сохраняется как внутреннее имя проекта.
 - Проверка: выполнены `npm run build`, `git diff --check` и локальная HTTP-проверка title, `application-name`, `apple-mobile-web-app-title` и manifest.
+
+## 2026-06-16 - Расширение черного списка и повышение безопасности
+
+- План: [plans/completed/blacklist-and-safety-polish.md](../../plans/completed/blacklist-and-safety-polish.md)
+- Сделано: реализована генерация мета-тега `<meta name="robots" content="noindex" />` для страниц заблокированных продуктов с помощью динамической функции `generateMetadata` в Next.js.
+- Влияние: заблокированные товары полностью исключаются из индексации поисковыми роботами.
+- Проверка: протестированы metadata в коде страницы и в Jest unit-тестах страницы `/product/[id]`.
+

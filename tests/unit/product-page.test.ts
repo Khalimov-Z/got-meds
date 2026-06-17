@@ -63,4 +63,21 @@ describe("ProductPage", () => {
     ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFoundMock).toHaveBeenCalledTimes(1);
   });
+
+  it("не вызывает notFound при restricted статусе и рендерит заглушку", async () => {
+    getProductDetailsMock.mockResolvedValue({
+      success: false,
+      status: "restricted",
+      error: "Поиск данного препарата ограничен",
+    });
+    getAnalogsMock.mockResolvedValue({ success: false, error: "Ошибка аналогов" });
+    const { default: ProductPage } = await loadProductPage();
+
+    const result = await ProductPage({
+      params: Promise.resolve({ id: PRODUCT_ID }),
+    });
+
+    expect(notFoundMock).not.toHaveBeenCalled();
+    expect(React.isValidElement(result)).toBe(true);
+  });
 });

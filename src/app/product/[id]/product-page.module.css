@@ -700,3 +700,18 @@
     margin-top: 4px;
   }
 }
+
+.restrictedState {
+  border-color: hsl(350 80% 78%) !important;
+  background: hsl(350 85% 96%) !important;
+}
+
+.restrictedIcon {
+  color: #ffffff !important;
+  background: var(--color-danger, #ef4444) !important;
+}
+
+.restrictedText {
+  color: #c62828 !important;
+}
+

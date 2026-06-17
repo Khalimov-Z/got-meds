@@ -28,7 +28,7 @@ export interface ProductDetails {
   description: string;
 }
 
-type ProductDetailsErrorStatus = "not_found" | "temporary_error";
+type ProductDetailsErrorStatus = "not_found" | "temporary_error" | "restricted";
 
 export interface ProductAnalog {
   id: string;
@@ -85,6 +85,7 @@ type ProductDetailsRpcRow = {
   price_estimate: number | null;
   description: string | null;
   image_url: string | null;
+  is_social_risk: boolean | null;
 };
 
 type ProductAnalogRpcRow = {
@@ -231,6 +232,14 @@ export async function getProductDetails(
       return { success: false, status: "not_found", error: "Препарат не найден" };
     }
 
+    if (product.is_social_risk) {
+      return {
+        success: false,
+        status: "restricted",
+        error: "Поиск данного препарата ограничен сервисом где.таблетка согласно правилам платформы",
+      };
+    }
+
     return {
       success: true,
       data: {
@@ -266,7 +275,7 @@ export async function getAnalogs(
     }
 
     const product = await fetchProductDetailsRow(normalizedId);
-    if (!product) {
+    if (!product || product.is_social_risk) {
       return { success: false, error: "Препарат не найден" };
     }
 
@@ -306,7 +315,7 @@ export async function getPharmaciesByProduct(
     }
 
     const product = await fetchProductDetailsRow(normalizedId);
-    if (!product) {
+    if (!product || product.is_social_risk) {
       return { success: false, error: "Препарат не найден" };
     }
 
