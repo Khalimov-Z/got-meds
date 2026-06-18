@@ -251,7 +251,9 @@ export function SearchExperience() {
       `.${styles.resultsArea}, .${styles.feedback}`
     );
     if (!resultsEl) {
-      setResultsHeight(0);
+      requestAnimationFrame(() => {
+        setResultsHeight(0);
+      });
       return;
     }
 
