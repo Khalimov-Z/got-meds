@@ -52,8 +52,12 @@ export default async function AdminPage() {
           <span>Новые жалобы</span>
           <strong>{stats.newReportsCount}</strong>
         </div>
+        <Link href="/admin/partner-requests" className={styles.stat} style={{ textDecoration: "none", color: "inherit" }}>
+          <span>Новые заявки</span>
+          <strong>{stats.newPartnerRequestsCount}</strong>
+        </Link>
       </section>
-
+ 
       <section className={styles.navGrid} aria-label="Разделы админки">
         <Link className={styles.navCard} href="/admin/pharmacies">
           <h2>Аптеки</h2>
@@ -78,6 +82,11 @@ export default async function AdminPage() {
         <Link className={styles.navCard} href="/admin/reports">
           <h2>Жалобы</h2>
           <p>Проверить пользовательские сообщения о неверных данных аптек.</p>
+          <span className={styles.secondaryLink}>Открыть</span>
+        </Link>
+        <Link className={styles.navCard} href="/admin/partner-requests">
+          <h2>Заявки от аптек</h2>
+          <p>Просмотреть и обработать обращения от владельцев аптек.</p>
           <span className={styles.secondaryLink}>Открыть</span>
         </Link>
         <Link className={styles.navCard} href="/admin/demand">

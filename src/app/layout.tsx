@@ -6,7 +6,7 @@ import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const hankenGrotesk = Hanken_Grotesk({
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic-ext"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-primary",

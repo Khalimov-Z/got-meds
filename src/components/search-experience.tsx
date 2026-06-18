@@ -100,6 +100,7 @@ export function SearchExperience() {
   const [status, setStatus] = useState<SearchStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
+  const [stepHeight, setStepHeight] = useState<number | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const loggedZeroResultQueriesRef = useRef<Set<string>>(new Set());
 
@@ -228,6 +229,22 @@ export function SearchExperience() {
     };
   }, [status, trimmedQuery]);
 
+  useEffect(() => {
+    const updateHeights = () => {
+      const stepEl = document.querySelector(`.${styles.step}`);
+      if (stepEl) {
+        setStepHeight(stepEl.getBoundingClientRect().height);
+      }
+    };
+
+    const timeoutId = setTimeout(updateHeights, 100);
+    window.addEventListener("resize", updateHeights);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", updateHeights);
+    };
+  }, []);
+
   const heroSearchStateClass =
     status === "loading" || status === "success"
       ? styles.heroWithResults
@@ -339,6 +356,28 @@ export function SearchExperience() {
               <p>{step.text}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className={styles.partnerSection} aria-labelledby="partner-section-title">
+        <h2 id="partner-section-title" className={styles.partnerSectionTitle}>
+          Для владельцев аптек
+        </h2>
+        <div
+          className={styles.partnerBanner}
+          style={stepHeight ? { minHeight: `${stepHeight}px` } : undefined}
+        >
+          <div className={styles.partnerInner}>
+            <div className={styles.partnerCopy}>
+              <h2 id="partner-title">Владелец аптеки?</h2>
+              <p>
+                Подключите свою аптеку к поиску <span>где.таблетка</span>, обновите контактные данные или отправьте запрос на скрытие информации.
+              </p>
+            </div>
+            <Link href="/partner" className={styles.partnerLink}>
+              Стать партнером
+            </Link>
+          </div>
         </div>
       </section>
 
