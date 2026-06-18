@@ -556,6 +556,7 @@ export async function getAdminHomeStats() {
     restrictedProductsResponse,
     zeroResultLogs7dResponse,
     newReportsResponse,
+    newPartnerRequestsResponse,
   ] = await Promise.all([
     supabase
       .from("pharmacies")
@@ -580,6 +581,10 @@ export async function getAdminHomeStats() {
       .from("pharmacy_reports")
       .select("id", { count: "exact", head: true })
       .eq("status", "NEW"),
+    supabase
+      .from("partner_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "NEW"),
   ]);
 
   const firstError = getFirstError([
@@ -589,6 +594,7 @@ export async function getAdminHomeStats() {
     restrictedProductsResponse,
     zeroResultLogs7dResponse,
     newReportsResponse,
+    newPartnerRequestsResponse,
   ]);
   if (firstError) {
     throw firstError;
@@ -601,6 +607,7 @@ export async function getAdminHomeStats() {
     restrictedProductsCount: restrictedProductsResponse.count ?? 0,
     zeroResultLogs7dCount: zeroResultLogs7dResponse.count ?? 0,
     newReportsCount: newReportsResponse.count ?? 0,
+    newPartnerRequestsCount: newPartnerRequestsResponse.count ?? 0,
   };
 }
 
@@ -1406,3 +1413,115 @@ export async function deleteAliasForm(formData: FormData) {
 
   redirect("/admin/aliases?deleted=1");
 }
+
+export type AdminPartnerRequestRow = {
+  id: string;
+  pharmacyName: string;
+  address: string;
+  representativeName: string;
+  contactPhone: string;
+  requestType: "ADD" | "EDIT" | "DELETE";
+  message: string | null;
+  status: "NEW" | "PROCESSED" | "REJECTED";
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export async function getPartnerRequestsAction(
+  search = "",
+  statusFilter = "",
+  typeFilter = ""
+): Promise<AdminActionResponse<AdminPartnerRequestRow[]>> {
+  try {
+    await requireAdmin();
+    const supabase = await createSupabaseAuthServerClient();
+
+    let query = supabase
+      .from("partner_requests")
+      .select("*");
+
+    if (statusFilter) {
+      query = query.eq("status", statusFilter);
+    }
+
+    if (typeFilter) {
+      query = query.eq("request_type", typeFilter);
+    }
+
+    if (search.trim()) {
+      query = query.ilike("pharmacy_name", `%${search.trim()}%`);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
+
+    if (error) {
+      return { success: false, error: getActionErrorMessage(error, "Не удалось загрузить заявки") };
+    }
+
+    const requests: AdminPartnerRequestRow[] = (data ?? []).map((row) => ({
+      id: row.id,
+      pharmacyName: row.pharmacy_name,
+      address: row.address,
+      representativeName: row.representative_name,
+      contactPhone: row.contact_phone,
+      requestType: row.request_type,
+      message: row.message,
+      status: row.status,
+      createdAt: new Date(row.created_at),
+      updatedAt: new Date(row.updated_at),
+    }));
+
+    return { success: true, data: requests };
+  } catch (error) {
+    console.error("Ошибка при получении заявок партнеров:", error);
+    return { success: false, error: "Не удалось получить список заявок." };
+  }
+}
+
+export async function updatePartnerRequestStatusAction(
+  requestId: string,
+  status: string
+): Promise<AdminActionResponse> {
+  try {
+    await requireAdmin();
+    const normalizedId = normalizeUuid(requestId);
+    if (!normalizedId) {
+      return { success: false, error: "Неверный идентификатор заявки." };
+    }
+
+    const normalizedStatus = status?.trim().toUpperCase();
+    if (!["NEW", "PROCESSED", "REJECTED"].includes(normalizedStatus)) {
+      return { success: false, error: "Неверный статус заявки." };
+    }
+
+    const supabase = await createSupabaseAuthServerClient();
+    const { error } = await supabase.rpc("gotmeds_admin_set_partner_request_status", {
+      p_request_id: normalizedId,
+      p_status: normalizedStatus,
+    });
+
+    if (error) {
+      return { success: false, error: getActionErrorMessage(error, "Не удалось обновить статус заявки") };
+    }
+
+    revalidatePath("/admin/partner-requests");
+    return { success: true };
+  } catch (error) {
+    console.error("Ошибка при обновлении статуса заявки:", error);
+    return { success: false, error: "Не удалось обновить статус заявки. Попробуйте позже." };
+  }
+}
+
+export async function updatePartnerRequestStatusForm(formData: FormData) {
+  const requestId = String(formData.get("requestId") ?? "");
+  const status = String(formData.get("status") ?? "");
+
+  const result = await updatePartnerRequestStatusAction(requestId, status);
+
+  if (!result.success) {
+    redirect(`/admin/partner-requests?error=${encodeURIComponent(result.error ?? "Ошибка обновления статуса")}`);
+  }
+
+  redirect("/admin/partner-requests?updated=1");
+}
+
