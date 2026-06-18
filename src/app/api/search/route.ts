@@ -27,23 +27,24 @@ export async function GET(request: NextRequest) {
     return rateLimitResponse;
   }
 
-  // Извлекаем query-параметр `q` из URL
+  // Извлекаем query-параметры из URL
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("q");
+  const category = searchParams.get("category");
 
-  // Валидация: параметр `q` обязателен
-  if (!query || query.trim().length === 0) {
+  // Валидация: нужен хотя бы один параметр — q или category
+  if ((!query || query.trim().length === 0) && (!category || category.trim().length === 0)) {
     return NextResponse.json(
       {
         success: false,
-        error: "Параметр 'q' обязателен. Пример: /api/search?q=нурофен",
+        error: "Параметр 'q' или 'category' обязателен. Пример: /api/search?q=нурофен или /api/search?category=equipment",
       },
       { status: 400 }
     );
   }
 
-  // Вызов серверного действия поиска
-  const result = await searchProducts(query);
+  // Вызов серверного действия поиска (с необязательным фильтром по категории)
+  const result = await searchProducts(query ?? "", category ?? undefined);
 
   // Возвращаем результат с соответствующим HTTP-статусом
   return NextResponse.json(result, {

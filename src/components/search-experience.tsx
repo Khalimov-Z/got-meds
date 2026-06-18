@@ -42,7 +42,11 @@ const CATEGORY_LABELS: Record<SearchCategory, string> = {
   mother_and_baby: "Мать и дитя",
 };
 
-const QUICK_SEARCHES = ["Медтехника", "Витамины", "Мать и дитя"];
+const QUICK_SEARCHES: { label: string; category: SearchCategory }[] = [
+  { label: "Медтехника", category: "equipment" },
+  { label: "Витамины", category: "vitamins" },
+  { label: "Мать и дитя", category: "mother_and_baby" },
+];
 const ZERO_RESULT_LOG_DELAY_MS = 1500;
 const MIN_ZERO_RESULT_LOG_LENGTH = 3;
 
@@ -102,18 +106,33 @@ export function SearchExperience() {
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [stepHeight, setStepHeight] = useState<number | null>(null);
   const [resultsHeight, setResultsHeight] = useState<number>(0);
+  const [activeCategory, setActiveCategory] = useState<SearchCategory | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const loggedZeroResultQueriesRef = useRef<Set<string>>(new Set());
 
   const trimmedQuery = useMemo(() => query.trim(), [query]);
 
+  // Метка активной категории для отображения в заголовке
+  const activeCategoryLabel = activeCategory ? CATEGORY_LABELS[activeCategory] : null;
+
+  // Обновление текстового запроса (сбрасывает категорию)
   const updateQuery = (nextQuery: string) => {
     const normalizedQuery = nextQuery.trim();
 
     setQuery(nextQuery);
+    setActiveCategory(null);
     setResults([]);
     setErrorMessage("");
     setStatus(normalizedQuery ? "loading" : "idle");
+  };
+
+  // Выбор категории (сбрасывает текстовый запрос)
+  const selectCategory = (category: SearchCategory) => {
+    setQuery("");
+    setActiveCategory(category);
+    setResults([]);
+    setErrorMessage("");
+    setStatus("loading");
   };
 
   useEffect(() => {
@@ -156,17 +175,26 @@ export function SearchExperience() {
   }, []);
 
   useEffect(() => {
-    if (!trimmedQuery) {
+    // Если нет ни текстового запроса, ни категории — ничего не ищем
+    if (!trimmedQuery && !activeCategory) {
       return;
     }
 
     const controller = new AbortController();
+    // Для категории без текста — запрос без задержки, для текста — debounce 280мс
+    const delay = activeCategory && !trimmedQuery ? 0 : 280;
     const timeoutId = window.setTimeout(async () => {
       setStatus("loading");
       setErrorMessage("");
 
       try {
-        const params = new URLSearchParams({ q: trimmedQuery });
+        const params = new URLSearchParams();
+        if (trimmedQuery) {
+          params.set("q", trimmedQuery);
+        }
+        if (activeCategory) {
+          params.set("category", activeCategory.toUpperCase());
+        }
         const response = await fetch(`/api/search?${params.toString()}`, {
           signal: controller.signal,
         });
@@ -198,13 +226,13 @@ export function SearchExperience() {
             : "Не удалось выполнить поиск. Попробуйте позже."
         );
       }
-    }, 280);
+    }, delay);
 
     return () => {
       controller.abort();
       window.clearTimeout(timeoutId);
     };
-  }, [trimmedQuery]);
+  }, [trimmedQuery, activeCategory]);
 
   useEffect(() => {
     if (status !== "empty" || trimmedQuery.length < MIN_ZERO_RESULT_LOG_LENGTH) {
@@ -341,12 +369,12 @@ export function SearchExperience() {
                 <div className={styles.quickSearches} aria-label="Популярные категории">
                   {QUICK_SEARCHES.map((item) => (
                     <button
-                      key={item}
-                      className={styles.quickButton}
+                      key={item.category}
+                      className={`${styles.quickButton} ${activeCategory === item.category ? styles.quickButtonActive : ""}`}
                       type="button"
-                      onClick={() => updateQuery(item)}
+                      onClick={() => selectCategory(item.category)}
                     >
-                      {item}
+                      {item.label}
                     </button>
                   ))}
                 </div>
@@ -354,6 +382,7 @@ export function SearchExperience() {
                 <SearchResults
                   status={status}
                   query={trimmedQuery}
+                  categoryLabel={activeCategoryLabel}
                   results={results}
                   errorMessage={errorMessage}
                 />
@@ -424,11 +453,13 @@ export function SearchExperience() {
 function SearchResults({
   status,
   query,
+  categoryLabel,
   results,
   errorMessage,
 }: {
   status: SearchStatus;
   query: string;
+  categoryLabel: string | null;
   results: SearchResultItem[];
   errorMessage: string;
 }) {
@@ -486,8 +517,8 @@ function SearchResults({
   return (
     <div className={styles.resultsArea} aria-live="polite">
       <div className={styles.resultsHeader}>
-        <span>Результаты по запросу</span>
-        <strong>{query}</strong>
+        <span>{categoryLabel ? "Категория" : "Результаты по запросу"}</span>
+        <strong>{categoryLabel ?? query}</strong>
       </div>
       <ul className={styles.resultList}>
         {results.map((result) => {
