@@ -7,6 +7,7 @@
   font-family: var(--font-primary), sans-serif;
   line-height: 1;
   text-decoration: none;
+  margin-left: -6.5px;
   transition:
     color 0.2s ease,
     transform 0.2s ease;
@@ -80,6 +81,10 @@
 }
 
 @media (min-width: 900px) {
+  .brand {
+    margin-left: -7.5px;
+  }
+
   .icon {
     width: 48px;
     height: 48px;
@@ -92,6 +97,7 @@
 
 @media (max-width: 420px) {
   .brand {
+    margin-left: -5.5px;
     gap: 0.5rem;
   }
 
