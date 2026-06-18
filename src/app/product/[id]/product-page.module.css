@@ -3,6 +3,8 @@
   min-height: 100svh;
   margin: 0 auto;
   padding: 24px 0 48px;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
@@ -12,7 +14,7 @@
   gap: 16px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 16px;
-  margin: 0 0 32px;
+  margin: 0 0 64px;
   padding: 12px 20px;
   background: rgba(255, 255, 255, 0.42);
   box-shadow:
@@ -77,7 +79,9 @@
   grid-template-columns: 1fr 1.2fr;
   gap: 48px;
   align-items: start;
-  margin-bottom: 32px;
+  flex: 1 0 auto;
+  padding-top: 16px;
+  padding-bottom: 64px;
 }
 
 .errorState {
@@ -646,7 +650,7 @@
 }
 
 .disclaimerBlock {
-  margin-top: 48px;
+  margin-top: auto;
   background: hsl(43 75% 94%);
   border: 1px solid hsl(43 75% 82%);
   border-radius: 16px;

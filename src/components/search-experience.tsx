@@ -101,6 +101,7 @@ export function SearchExperience() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   const [stepHeight, setStepHeight] = useState<number | null>(null);
+  const [resultsHeight, setResultsHeight] = useState<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const loggedZeroResultQueriesRef = useRef<Set<string>>(new Set());
 
@@ -245,6 +246,27 @@ export function SearchExperience() {
     };
   }, []);
 
+  useEffect(() => {
+    const resultsEl = document.querySelector(
+      `.${styles.resultsArea}, .${styles.feedback}`
+    );
+    if (!resultsEl) {
+      setResultsHeight(0);
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setResultsHeight(entry.contentRect.height);
+      }
+    });
+
+    resizeObserver.observe(resultsEl);
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [status, results, errorMessage]);
+
   const heroSearchStateClass =
     status === "loading" || status === "success"
       ? styles.heroWithResults
@@ -260,7 +282,15 @@ export function SearchExperience() {
         </div>
       </header>
 
-      <section className={`${styles.hero} ${heroSearchStateClass}`} aria-labelledby="home-title">
+      <section
+        className={`${styles.hero} ${heroSearchStateClass}`}
+        style={
+          resultsHeight
+            ? ({ "--hero-search-space": `${resultsHeight + 16}px` } as React.CSSProperties)
+            : undefined
+        }
+        aria-labelledby="home-title"
+      >
         <div className={styles.heroFrame}>
           <div className={styles.heroGrid}>
             <div className={styles.heroContent}>
