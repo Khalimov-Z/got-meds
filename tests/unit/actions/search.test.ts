@@ -71,6 +71,7 @@ describe("searchProducts", () => {
       p_query: "Нуроф таб 200мг",
       p_similarity_threshold: 0.15,
       p_limit: 20,
+      p_category: null,
     });
     expect(result).toEqual({
       success: true,
