@@ -188,11 +188,14 @@ export async function logZeroResultSearchForActiveCity(
  * @param query — строка поискового запроса (например, "нурафен", "аспирин 500мг")
  * @returns стандартизированный ответ с массивом найденных препаратов
  */
-export async function searchProducts(query: string): Promise<SearchResponse> {
+export async function searchProducts(query: string, category?: string): Promise<SearchResponse> {
   try {
     // Валидация входных данных
-    const trimmedQuery = query?.trim();
-    if (!trimmedQuery || trimmedQuery.length === 0) {
+    const trimmedQuery = query?.trim() ?? "";
+    const trimmedCategory = category?.trim() || null;
+
+    // Если нет ни запроса, ни категории — пустой результат
+    if (trimmedQuery.length === 0 && !trimmedCategory) {
       return { success: true, data: [] };
     }
 
@@ -203,6 +206,7 @@ export async function searchProducts(query: string): Promise<SearchResponse> {
       p_query: searchTerm,
       p_similarity_threshold: SIMILARITY_THRESHOLD,
       p_limit: MAX_RESULTS,
+      p_category: trimmedCategory,
     });
 
     if (error) {
